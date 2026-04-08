@@ -1,0 +1,203 @@
+<div class="admin-container animate-fade-in">
+    <!-- DASHBOARD HEADER -->
+    <header class="dashboard-header">
+        <div class="header-left">
+            <h1 class="premium-title">Gestion des Utilisateurs</h1>
+            <nav class="breadcrumb">
+                <span>Admin</span> <i class="bi bi-chevron-right"></i>
+                <span class="active">Utilisateurs</span>
+            </nav>
+        </div>
+        <div class="header-actions">
+            <div class="last-sync">
+                <i class="bi bi-people-fill"></i>
+                {{ stats.admins }} Admins actifs
+            </div>
+        </div>
+    </header>
+
+    <!-- STATS ROW -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-blue">
+                <i class="bi bi-person-badge-fill"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Total Utilisateurs</span>
+                <h3 class="stat-value">{{ stats.total }}</h3>
+            </div>
+        </div>
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-green">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Comptes Actifs</span>
+                <h3 class="stat-value text-success">{{ stats.active }}</h3>
+            </div>
+        </div>
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-purple">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Sécurité & Rôles</span>
+                <h3 class="stat-value">{{ stats.controleurs }} <small>Ctrl</small> / {{ stats.techniciens }} <small>Tech</small></h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <section class="main-card glass-premium">
+        <div class="card-header-main">
+            <div class="header-titles">
+                <h2>Liste des collaborateurs</h2>
+                <span class="badge-count">Accès et permissions</span>
+            </div>
+            <div class="filter-tools">
+                <div class="search-box-mini">
+                    <i class="bi bi-search"></i>
+                    <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher par nom, prénom ou email...">
+                </div>
+            </div>
+        </div>
+
+        <!-- MESSAGES -->
+        <div *ngIf="success" class="alert-premium success-alert slide-up">
+            <i class="bi bi-check-circle-fill"></i> {{ success }}
+        </div>
+        <div *ngIf="error" class="alert-premium error-alert slide-up">
+            <i class="bi bi-exclamation-octagon-fill"></i> {{ error }}
+        </div>
+
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Identité</th>
+                        <th>Coordonnées</th>
+                        <th>Rôle système</th>
+                        <th>État du compte</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of filteredUsers; let i = index" 
+                        class="table-row-animate" 
+                        [style.animation-delay]="i * 0.05 + 's'">
+                        <td>
+                            <div class="user-identity">
+                                <div class="user-avatar">
+                                    {{ user.nom.charAt(0) }}{{ user.prenom.charAt(0) }}
+                                </div>
+                                <div class="name-info">
+                                    <span class="full-name">{{ user.nom }} {{ user.prenom }}</span>
+                                    <span class="id-tag">ID: #{{ user.idUtilisateur }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="email-info">
+                                <i class="bi bi-envelope-at"></i>
+                                <span>{{ user.email }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge-role" [ngClass]="user.role.toLowerCase()">
+                                <i class="bi" 
+                                   [class.bi-shield-shaded]="user.role === 'ADMIN'"
+                                   [class.bi-tools]="user.role === 'TECHNICIEN'"
+                                   [class.bi-eye-fill]="user.role === 'CONTROLEUR'">
+                                </i>
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-indicator" [ngClass]="user.statut.toLowerCase()">
+                                <span class="dot"></span>
+                                {{ user.statut }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <div class="action-group">
+                                <button *ngIf="user.statut === 'PENDING' || user.statut === 'INACTIVE'" 
+                                        (click)="updateStatus(user.idUtilisateur!, 'ACTIVE')" 
+                                        class="btn-action-round approve" title="Activer">
+                                    <i class="bi bi-person-check"></i>
+                                </button>
+                                <button *ngIf="user.statut === 'ACTIVE'" 
+                                        (click)="updateStatus(user.idUtilisateur!, 'INACTIVE')" 
+                                        class="btn-action-round deactivate" title="Désactiver">
+                                    <i class="bi bi-person-dash"></i>
+                                </button>
+                                <button (click)="openEdit(user)" class="btn-action-round edit" title="Modifier">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button (click)="deleteUser(user.idUtilisateur!)" class="btn-action-round delete" title="Supprimer">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- MODAL EDIT -->
+    <div class="modal-overlay" *ngIf="showEditModal" (click)="cancelEdit()">
+        <div class="modal-container glass-premium-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header-pro">
+                <div class="modal-title-group">
+                    <i class="bi bi-person-gear"></i>
+                    <h2>Modifier le collaborateur</h2>
+                </div>
+                <button class="btn-close" (click)="cancelEdit()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            
+            <form #editForm="ngForm" (ngSubmit)="editForm.valid && saveEdit()" class="modal-body-form">
+                <div class="form-grid-modal">
+                    <div class="form-group-pro">
+                        <label>Nom <span class="required">*</span></label>
+                        <input type="text" [(ngModel)]="editingUser.nom" name="nom" required placeholder="Entrez le nom">
+                    </div>
+                    <div class="form-group-pro">
+                        <label>Prénom <span class="required">*</span></label>
+                        <input type="text" [(ngModel)]="editingUser.prenom" name="prenom" required placeholder="Entrez le prénom">
+                    </div>
+                    <div class="form-group-pro full-width">
+                        <label>Adresse Email <span class="required">*</span></label>
+                        <div class="input-icon-group">
+                            <i class="bi bi-at"></i>
+                            <input type="email" [(ngModel)]="editingUser.email" name="email" required email placeholder="email@exemple.com">
+                        </div>
+                    </div>
+                    <div class="form-group-pro">
+                        <label>Rôle Système</label>
+                        <select [(ngModel)]="editingUser.role" name="role" required class="select-modal">
+                            <option value="TECHNICIEN">Technicien</option>
+                            <option value="MAGASINIER">Magasinier</option>
+                            <option value="CONTROLEUR">Contrôleur</option>
+                        </select>
+                    </div>
+                    <div class="form-group-pro">
+                        <label>Nouveau Mot de Passe</label>
+                        <div class="input-icon-group">
+                            <i class="bi bi-key-fill"></i>
+                            <input type="password" [(ngModel)]="editingUser.newPassword" name="newPassword" minlength="6" placeholder="Optionnel">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer-actions">
+                    <button type="button" class="btn-cancel" (click)="cancelEdit()">Annuler</button>
+                    <button type="submit" class="btn-submit-gradient" [disabled]="editForm.invalid">
+                        Enregistrer les modifications
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

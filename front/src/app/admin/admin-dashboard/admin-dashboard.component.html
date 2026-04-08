@@ -1,0 +1,164 @@
+<div class="admin-dashboard-container animate-fade-in">
+
+    <!-- ═══ CLEAN HEADER ═══ -->
+    <header class="hero-header">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="bi bi-shield-check"></i> Espace Sécurisé
+            </div>
+            <h1>Tableau de Bord Administratif</h1>
+            <p>Supervision globale de l'inventaire et des mouvements de stock G-PIÈCES</p>
+        </div>
+        <div class="hero-date">
+            <i class="bi bi-calendar3"></i>
+            {{ today | date:'EEEE d MMMM yyyy' }}
+        </div>
+    </header>
+
+    <!-- ═══ MINIMAL STATS GRID ═══ -->
+    <section class="stats-section">
+        <div class="stats-grid">
+
+            <div class="stat-card" routerLink="/admin/products">
+                <div class="stat-icon-wrap blue">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-label">Produits</span>
+                    <div class="stat-value" *ngIf="!loading">{{ stats.totalProducts }}</div>
+                    <div class="stat-skeleton" *ngIf="loading"></div>
+                    <span class="stat-sublabel">références actives</span>
+                </div>
+                <i class="bi bi-arrow-up-right stat-arrow"></i>
+            </div>
+
+            <div class="stat-card" routerLink="/admin/categories">
+                <div class="stat-icon-wrap green">
+                    <i class="bi bi-tags"></i>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-label">Catégories</span>
+                    <div class="stat-value" *ngIf="!loading">{{ stats.totalCategories }}</div>
+                    <div class="stat-skeleton" *ngIf="loading"></div>
+                    <span class="stat-sublabel">familles de pièces</span>
+                </div>
+                <i class="bi bi-arrow-up-right stat-arrow"></i>
+            </div>
+
+            <div class="stat-card" routerLink="/admin/mouvements">
+                <div class="stat-icon-wrap purple">
+                    <i class="bi bi-arrow-down-up"></i>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-label">Mouvements</span>
+                    <div class="stat-value" *ngIf="!loading">{{ stats.recentMovements }}</div>
+                    <div class="stat-skeleton" *ngIf="loading"></div>
+                    <span class="stat-sublabel">ce mois-ci</span>
+                </div>
+                <i class="bi bi-arrow-up-right stat-arrow"></i>
+            </div>
+
+            <div class="stat-card alert-card" [class.has-alerts]="stats.lowStockAlerts > 0">
+                <div class="stat-icon-wrap red">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-label">Alertes Stock</span>
+                    <div class="stat-value alert-val" *ngIf="!loading">{{ stats.lowStockAlerts }}</div>
+                    <div class="stat-skeleton" *ngIf="loading"></div>
+                    <span class="stat-sublabel">en rupture ou faible</span>
+                </div>
+                <i class="bi bi-arrow-up-right stat-arrow"></i>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ═══ MAIN CONTENT GRID ═══ -->
+    <div class="main-grid">
+
+        <!-- Pending Inscriptions Table -->
+        <section class="panel users-panel">
+            <div class="panel-header">
+                <span class="panel-title">Inscriptions en Attente</span>
+                <span class="badge-count" *ngIf="pendingUsers.length > 0">{{ pendingUsers.length }}</span>
+            </div>
+            <div class="users-table-container">
+                <table class="dashboard-table" *ngIf="pendingUsers.length > 0 && !loadingUsers">
+                    <thead>
+                        <tr>
+                            <th>UTILISATEUR</th>
+                            <th>RÔLE</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let user of pendingUsers" class="animate-fade-in">
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar-sm">
+                                        {{ getInitials(user) }}
+                                    </div>
+                                    <div class="user-meta">
+                                        <span class="u-name">{{ user.nom }} {{ user.prenom }}</span>
+                                        <span class="u-mail">{{ user.email }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="role-chip" [ngClass]="user.role.toLowerCase()">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn-approve-dash" (click)="approveUser(user)" title="Accepter">
+                                    <i class="bi bi-check2"></i>
+                                    <span>Activer</span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div *ngIf="pendingUsers.length === 0 && !loadingUsers" class="empty-users">
+                    <i class="bi bi-person-check"></i>
+                    <p>Aucune inscription en attente</p>
+                </div>
+
+                <div *ngIf="loadingUsers" class="skeleton-rows">
+                    <div class="skel-row" *ngFor="let i of [1,2,3]"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Movements -->
+        <section class="panel activity-panel">
+            <div class="panel-header">
+                <span class="panel-title">Mouvements Récents</span>
+                <a class="see-all-link" routerLink="/admin/mouvements">Tout voir</a>
+            </div>
+            <div class="activity-feed">
+                <div *ngFor="let m of recentMovements" class="activity-row">
+                    <div class="act-icon-wrap" [ngClass]="m.typeMouvement === 'ENTREE' ? 'act-in' : 'act-out'">
+                        <i class="bi"
+                            [ngClass]="m.typeMouvement === 'ENTREE' ? 'bi-arrow-down-short' : 'bi-arrow-up-short'"></i>
+                    </div>
+                    <div class="act-content">
+                        <span class="act-piece">Pièce #{{ m.produitId }} &mdash; {{ m.motif || 'Aucun motif' }}</span>
+                        <span class="act-type" [ngClass]="m.typeMouvement === 'ENTREE' ? 'type-in' : 'type-out'">
+                            {{ m.typeMouvement === 'ENTREE' ? 'Entrée' : 'Sortie' }} · {{ m.quantite }} unités
+                        </span>
+                    </div>
+                    <span class="act-date">{{ m.dateMouvement | date:'dd/MM HH:mm' }}</span>
+                </div>
+                <div *ngIf="recentMovements.length === 0 && !loading" class="empty-feed">
+                    <p>Aucun mouvement récent</p>
+                </div>
+                <div *ngIf="loading" class="skeleton-rows">
+                    <div class="skel-row" *ngFor="let i of [1,2,3]"></div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>

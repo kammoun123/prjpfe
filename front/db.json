@@ -1,0 +1,134 @@
+{
+  "categories": [
+    {
+      "idCategorie": 1,
+      "nomCategorie": "Stockage",
+      "description": "Disques durs, SSD, clés USB",
+      "statut": "Actif",
+      "id": "2756"
+    },
+    {
+      "idCategorie": 2,
+      "nomCategorie": "Mémoire",
+      "description": "Modules RAM DDR3, DDR4, DDR5",
+      "statut": "Actif",
+      "id": "32dc"
+    },
+    {
+      "idCategorie": 3,
+      "nomCategorie": "Périphériques",
+      "description": "Claviers, souris, écrans",
+      "statut": "Actif",
+      "id": "e1e8"
+    },
+    {
+      "idCategorie": 4,
+      "nomCategorie": "Énergie",
+      "description": "Batteries, chargeurs, onduleurs",
+      "statut": "Actif",
+      "id": "0410"
+    },
+    {
+      "idCategorie": 5,
+      "nomCategorie": "Composants",
+      "description": "Processeurs, ventilateurs et composants internes",
+      "statut": "Actif",
+      "id": "ff4b"
+    },
+    {
+      "id": "93b3",
+      "idCategorie": 5,
+      "nomCategorie": "clavier ",
+      "description": "1245hamdi",
+      "statut": "Actif"
+    },
+    {
+      "id": "ad2d",
+      "idCategorie": 12,
+      "nomCategorie": "*ùmf",
+      "description": ",ck,d",
+      "statut": "Actif"
+    },
+    {
+      "id": "b4d6",
+      "idCategorie": 7,
+      "nomCategorie": " ncnn",
+      "description": "cc",
+      "statut": "Inactif"
+    }
+  ],
+  "pieces": [
+    {
+      "idPiece": 1,
+      "reference": "PIE-SSD-500",
+      "designation": "Disque Dur SSD 500Go KingSpec",
+      "quantiteStock": 10,
+      "seuilAlerte": 2,
+      "statut": "disponible",
+      "idCategorie": 1,
+      "id": "bf77"
+    },
+    {
+      "idPiece": 2,
+      "reference": "PIE-RAM-8G",
+      "designation": "Mémoire RAM 8Go DDR4 Crucial",
+      "quantiteStock": 15,
+      "seuilAlerte": 3,
+      "statut": "disponible",
+      "idCategorie": 2,
+      "id": "57d6"
+    },
+    {
+      "idPiece": 3,
+      "reference": "PIE-CLA-FR",
+      "designation": "Clavier AZERTY PC Portable HP",
+      "quantiteStock": 5,
+      "seuilAlerte": 1,
+      "statut": "disponible",
+      "idCategorie": 3,
+      "id": "7df4"
+    },
+    {
+      "idPiece": 4,
+      "reference": "PIE-ECR-15",
+      "designation": "Dalle Écran 15.6\" Full HD Slim",
+      "quantiteStock": 4,
+      "seuilAlerte": 1,
+      "statut": "disponible",
+      "idCategorie": 3,
+      "id": "a2b3"
+    },
+    {
+      "idPiece": 5,
+      "reference": "PIE-BAT-DELL",
+      "designation": "Batterie Dell Latitude 5480 68Wh",
+      "quantiteStock": 8,
+      "seuilAlerte": 2,
+      "statut": "disponible",
+      "idCategorie": 4,
+      "id": "c4d5"
+    },
+    {
+      "idPiece": 6,
+      "reference": "PIE-CHG-65W",
+      "designation": "Chargeur Universel 65W Type-C",
+      "quantiteStock": 20,
+      "seuilAlerte": 5,
+      "statut": "disponible",
+      "idCategorie": 4,
+      "id": "e6f7"
+    },
+    {
+      "idPiece": 7,
+      "reference": "PIE-VEN-CPU",
+      "designation": "Ventilateur CPU Silencieux BeQuiet",
+      "quantiteStock": 12,
+      "seuilAlerte": 2,
+      "statut": "disponible",
+      "idCategorie": 5,
+      "id": "g8h9"
+    }
+  ],
+  "demandes": [],
+  "$schema": "./node_modules/json-server/schema.json"
+}

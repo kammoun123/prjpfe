@@ -1,0 +1,128 @@
+<div class="container-fluid py-4 animate-fade-in">
+    <div class="row justify-content-center">
+        <div class="col-xl-6 col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-dark p-4 d-flex align-items-center gap-3">
+                    <div class="p-2 bg-primary rounded-3 text-white">
+                        <i class="bi bi-file-earmark-plus fs-4"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 text-white fw-bold">Nouvelle Requête de Pièce</h4>
+                        <p class="text-white-50 small mb-0">Remplissez le formulaire pour soumettre votre demande</p>
+                    </div>
+                </div>
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form [formGroup]="demandeForm" (ngSubmit)="onSubmit()">
+                        <div class="mb-4">
+                            <label class="form-label-pro">CATÉGORIE</label>
+                            <select class="form-select-pro" formControlName="categorie" (change)="onCategorieChange()">
+                                <option [ngValue]="null">Toutes les catégories</option>
+                                <option *ngFor="let cat of categories" [ngValue]="cat.idCategorie">
+                                    {{ cat.nomCategorie }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label-pro">SÉLECTION DE LA PIÈCE</label>
+                            <div class="input-group-pro">
+                                <i class="bi bi-search input-icon-pro"></i>
+                                <select class="form-select-pro" formControlName="piece"
+                                    [class.is-invalid]="f['piece'].touched && f['piece'].invalid">
+                                    <option [ngValue]="null" disabled selected>
+                                        {{ pieces.length === 0 ? 'Aucune pièce disponible' : 'Choisir une pièce...' }}
+                                    </option>
+                                    <option *ngFor="let piece of pieces" [ngValue]="piece">
+                                        {{ piece.designation }} (Ref: {{ piece.reference }})
+                                    </option>
+                                </select>
+                            </div>
+                            <div *ngIf="f['piece'].value?.ficheTechniqueUrl" class="mt-2 animate-fade-in">
+                                <a [href]="backendUrl + f['piece'].value.ficheTechniqueUrl" target="_blank" class="text-primary small fw-bold text-decoration-none d-flex align-items-center gap-2">
+                                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                                    Consulter la fiche technique du produit
+                                </a>
+                            </div>
+                            <div *ngIf="f['piece'].touched && f['piece'].invalid" class="text-danger small mt-1">
+                                Veuillez sélectionner une pièce.
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4 align-items-end">
+                            <div class="col-md-5">
+                                <label class="form-label-pro">QUANTITÉ</label>
+                                <input type="number" class="form-input-pro" formControlName="quantite"
+                                    placeholder="Qté">
+                            </div>
+                            <div class="col-md-7">
+                                <button type="button" (click)="ajouterAuPanier()" 
+                                    class="btn bg-primary-soft text-primary w-100 py-2 fw-bold border-0 h-100"
+                                    style="min-height: 48px;">
+                                    <i class="bi bi-cart-plus me-2"></i> Ajouter au panier
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Panier Section -->
+                        <div class="basket-container mb-4 animate-slide-up" *ngIf="panier.length > 0">
+                            <label class="form-label-pro">PANIER DE LA DEMANDE ({{ panier.length }})</label>
+                            <div class="table-responsive rounded-3 border bg-light-soft">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-3 py-2 small fw-bold">Article</th>
+                                            <th class="py-2 small fw-bold text-center">Qté</th>
+                                            <th class="pe-3 py-2 text-end"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of panier; let i = index">
+                                            <td class="ps-3 py-2 small fw-medium">{{ item.designation }}</td>
+                                            <td class="py-2 text-center">
+                                                <span class="badge bg-white text-dark border">{{ item.quantite }}</span>
+                                            </td>
+                                            <td class="pe-3 py-2 text-end">
+                                                <button type="button" (click)="retirerDuPanier(i)" class="btn btn-sm text-danger p-0">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label-pro">URGENCE</label>
+                                <select class="form-select-pro" formControlName="urgence">
+                                    <option value="Normale">Normale</option>
+                                    <option value="Urgent">Urgent</option>
+                                    <option value="Critique">Critique</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label-pro">COMPLEMENT D'INFORMATION</label>
+                            <textarea class="form-input-pro" formControlName="motif" rows="3"
+                                placeholder="Description courte du motif de remplacement..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-primary-pro w-100 py-3 mt-2"
+                            [disabled]="panier.length === 0 || loading">
+                            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                            {{ loading ? 'Transmission en cours...' : 'Envoyer la Demande Officielle (' + panier.length + ' articles)' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <a routerLink="/technicien" class="btn btn-link text-muted text-decoration-none small">
+                    <i class="bi bi-arrow-left me-1"></i> Retour au tableau de bord
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

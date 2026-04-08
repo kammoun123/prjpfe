@@ -1,0 +1,206 @@
+<div class="dashboard-advanced animate-fade-in">
+
+    <!-- Top Stats Summary -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card-kpi glass-premium p-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted fw-semibold small">PROFIL RÉCAPITULATIF</span>
+                    <i class="bi bi-activity text-primary fs-5"></i>
+                </div>
+                <div class="h2 fw-bold mb-1">{{ statsTotal }}</div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success-soft text-success">+12%</span>
+                    <small class="text-muted">vs mois dernier</small>
+                </div>
+                <div class="progress mt-3" style="height: 4px; background: rgba(0,0,0,0.05);">
+                    <div class="progress-bar bg-primary" role="progressbar" [style.width]="'70%'"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card-kpi glass-premium p-4 border-start-warning">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted fw-semibold small">COMMANDES EN ATTENTE</span>
+                    <i class="bi bi-clock-history text-warning fs-5"></i>
+                </div>
+                <div class="h2 fw-bold mb-1">{{ statsPending }}</div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-warning small fst-italic">Validation requise</span>
+                </div>
+                <div class="progress mt-3" style="height: 4px; background: rgba(0,0,0,0.05);">
+                    <div class="progress-bar bg-warning" role="progressbar"
+                        [style.width]="(statsPending / (statsTotal || 1) * 100) + '%'"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card-kpi glass-premium p-4 border-start-success">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted fw-semibold small">DEMANDES VALIDÉES</span>
+                    <i class="bi bi-patch-check-fill text-success fs-5"></i>
+                </div>
+                <div class="h2 fw-bold mb-1">{{ statsValidated }}</div>
+                <div class="d-flex align-items-center gap-2">
+                    <small class="text-muted">Prêt pour l'atelier</small>
+                </div>
+                <div class="progress mt-3" style="height: 4px; background: rgba(0,0,0,0.05);">
+                    <div class="progress-bar bg-success" role="progressbar"
+                        [style.width]="(statsValidated / (statsTotal || 1) * 100) + '%'"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card-kpi glass-premium p-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted fw-semibold small">TAUX DE RÉUSSITE</span>
+                    <i class="bi bi-graph-up-arrow text-info fs-5"></i>
+                </div>
+                <div class="h2 fw-bold mb-1">{{ statsSuccessRate }}%</div>
+                <div class="d-flex align-items-center gap-2">
+                    <small class="text-muted">Performance optimale</small>
+                </div>
+                <div class="progress mt-3" style="height: 4px; background: rgba(0,0,0,0.05);">
+                    <div class="progress-bar bg-info" role="progressbar" [style.width]="statsSuccessRate + '%'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Middle Section: Statistics/Visuals -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 glass-premium">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h5 class="fw-bold mb-1">Tendances d'Activité</h5>
+                            <p class="text-muted small mb-0">Évolution des demandes sur les {{ chartPeriod === 'weekly' ? '7 derniers jours' : '30 derniers jours' }}</p>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary" [class.active]="chartPeriod === 'weekly'" 
+                                    (click)="setChartPeriod('weekly')">Hebdomadaire</button>
+                            <button class="btn btn-outline-secondary" [class.active]="chartPeriod === 'monthly'" 
+                                    (click)="setChartPeriod('monthly')">Mensuel</button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-end justify-content-between px-2 pb-2" 
+                         [class.gap-3]="chartPeriod === 'weekly'"
+                         [class.gap-1]="chartPeriod === 'monthly'"
+                         style="height: 151px;">
+                        <div *ngFor="let day of chartData; let i = index" class="text-center w-100 h-100 d-flex flex-column justify-content-end">
+                            <div class="bg-primary rounded-top-3 transition-all" 
+                                 [style.height.%]="day.height"
+                                 [style.opacity]="0.25 + (i * 0.1)"
+                                 [title]="day.count + ' demandes'"></div>
+                            <div class="small text-muted mt-2">{{ day.label }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Section: History -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div
+                    class="p-4 border-bottom bg-white d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history fs-4 text-primary"></i>
+                        <h5 class="mb-0 fw-bold">Historique Récent</h5>
+                        <span class="badge bg-light text-dark border ms-2">{{ filteredDemandes.length }} items</span>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <div class="input-group input-group-sm rounded-pill overflow-hidden border shadow-sm"
+                            style="width: 200px;">
+                            <span class="input-group-text bg-white border-0"><i
+                                    class="bi bi-search text-muted"></i></span>
+                            <input type="text" class="form-control border-0 ps-0" placeholder="Réf ou motif..."
+                                (keyup)="onSearch(searchInput.value)" #searchInput>
+                        </div>
+
+                        <input type="date" class="form-control form-control-sm rounded-pill shadow-sm"
+                            style="width: 150px;" (change)="onDateChange(dateInput.value)" #dateInput>
+
+                        <select class="form-select form-select-sm rounded-pill w-auto shadow-sm"
+                            (change)="onFilterChange(statusFilter.value)" #statusFilter>
+                            <option value="All">Tous les statuts</option>
+                            <option value="En attente">En attente</option>
+                            <option value="Validée">Validée</option>
+                            <option value="Rejetée">Rejetée</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light-pro">
+                                <tr>
+                                    <th class="px-4 py-3">Date</th>
+                                    <th class="py-3">Référence</th>
+                                    <th class="py-3">Quantité</th>
+                                    <th class="py-3">Motif</th>
+                                    <th class="py-3">Statut</th>
+                                    <th class="px-4 py-3 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                <tr *ngFor="let d of filteredDemandes" class="align-middle border-bottom-soft">
+                                    <td class="px-4 py-3">
+                                        <div class="fw-medium small">{{ d.dateDemande | date:'dd MMM yyyy' }}</div>
+                                        <div class="text-muted smaller">{{ d.dateDemande | date:'HH:mm' }}</div>
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="badge bg-light text-dark fw-bold" [title]="'ID-' + (d.produitId || 'Inconnu')">
+                                            {{ getPieceReference(d) }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3">
+                                        <div class="fw-bold">
+                                            {{ d.quantite || 0 }} <small class="text-muted fw-normal">unités</small>
+                                        </div>
+                                    </td>
+                                    <td class="py-3">
+                                        <div class="text-truncate" style="max-width: 150px;" [title]="d.motif">
+                                            {{ d.motif || 'Aucun motif spécifié' }}
+                                        </div>
+                                    </td>
+                                    <td class="py-3">
+                                        <div [ngClass]="{
+                                            'status-pill pending': (d.statut || '').toLowerCase().includes('attente') || (d.statut || '').toLowerCase().includes('commande'),
+                                            'status-pill success': d.statut === 'Validée',
+                                            'status-pill error': d.statut === 'Rejetée'
+                                        }">{{ d.statut }}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button class="btn btn-icon-sm btn-delete-pro"
+                                                (click)="onDeleteDemande(d.id)" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr *ngIf="filteredDemandes.length === 0">
+                                    <td colspan="6" class="text-center py-5">
+                                        <i class="bi bi-calendar-x text-muted fs-1 mb-3 d-block"></i>
+                                        <p class="text-muted mb-0">Aucune activité enregistrée.</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

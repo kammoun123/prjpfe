@@ -1,0 +1,146 @@
+<div class="dashboard-wrapper">
+  <header class="page-title-section">
+    <h1>Tableau de Bord</h1>
+    <p>Aperçu en temps réel de l'entrepôt et des demandes.</p>
+  </header>
+
+  <!-- Stats Grid -->
+  <div class="stats-cards-grid">
+    <div class="stat-card green-border">
+      <div class="stat-main">
+        <div class="stat-info">
+          <span class="stat-label">TOTAL STOCK</span>
+          <h2 class="stat-number">{{ totalStock() }} <span class="unit">unités</span></h2>
+        </div>
+        <div class="stat-icon green-bg">
+          <i class="bi bi-box-seam"></i>
+        </div>
+      </div>
+      <div class="stat-footer">
+        <span class="trend up"><i class="bi bi-arrow-up-short"></i> +2.4%</span>
+        <span class="footer-text">depuis hier</span>
+      </div>
+    </div>
+
+    <div class="stat-card orange-border">
+      <div class="stat-main">
+        <div class="stat-info">
+          <span class="stat-label">DEMANDES EN ATTENTE</span>
+          <h2 class="stat-number text-orange">{{ pendingRequests().length }}</h2>
+        </div>
+        <div class="stat-icon orange-bg">
+          <i class="bi bi-clock-history"></i>
+        </div>
+      </div>
+      <div class="stat-footer">
+        <span class="trend neutral">Stable</span>
+        <span class="footer-text">Priorité haute</span>
+      </div>
+    </div>
+
+    <div class="stat-card blue-border">
+      <div class="stat-main">
+        <div class="stat-info">
+          <span class="stat-label">TRAITÉES AUJOURD'HUI</span>
+          <h2 class="stat-number text-blue">{{ processedCount() }}</h2>
+        </div>
+        <div class="stat-icon blue-bg">
+          <i class="bi bi-check2-circle"></i>
+        </div>
+      </div>
+      <div class="stat-footer">
+        <span class="trend up"><i class="bi bi-arrow-up-short"></i> +12</span>
+        <span class="footer-text">validations</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Section -->
+  <section class="activity-section">
+    <div class="section-header">
+       <div class="title-with-subtitle">
+         <h3>Tendances d'Activité</h3>
+         <p>Évolution des demandes sur les 7 derniers jours</p>
+       </div>
+       <div class="toggle-buttons">
+          <button (click)="switchPeriod('Hebdomadaire')" [class.active]="currentPeriod() === 'Hebdomadaire'">Hebdomadaire</button>
+          <button (click)="switchPeriod('Mensuel')" [class.active]="currentPeriod() === 'Mensuel'">Mensuel</button>
+       </div>
+    </div>
+    
+    <div class="chart-container">
+      <div class="bar-chart">
+        <div class="bar-wrapper" *ngFor="let day of activityData()">
+          <div class="bar-bg">
+            <div class="bar" [style.height]="day.value + '%'">
+              <span class="bar-tooltip">{{ day.value }}%</span>
+            </div>
+          </div>
+          <span class="day-label">{{ day.label }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Two-Column Grid -->
+  <div class="dashboard-grid">
+    <!-- Stock Critique -->
+    <div class="grid-card">
+      <div class="card-header">
+        <h3>Stock Critique</h3>
+        <a routerLink="/magasinier/stock" class="see-all">Tout voir</a>
+      </div>
+      <div class="table-mini-responsive">
+        <table class="mini-table">
+          <thead>
+            <tr>
+              <th>Pièce</th>
+              <th>Stock</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of criticalStock()">
+              <td>{{ p.designation }}</td>
+              <td class="bold">{{ p.quantiteStock }}</td>
+              <td><span class="badge danger">Critique</span></td>
+            </tr>
+            <tr *ngIf="criticalStock().length === 0">
+              <td colspan="3" class="empty">Aucune alerte de stock.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Dernières Demandes -->
+    <div class="grid-card">
+      <div class="card-header">
+        <h3>Dernières Demandes</h3>
+        <a routerLink="/magasinier/demandes" class="see-all">Gérer</a>
+      </div>
+      <div class="table-mini-responsive">
+        <table class="mini-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Technicien</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of recentDemandes()">
+              <td class="small-date">{{ d.dateDemande | date:'dd MMM HH:mm' }}</td>
+              <td>{{ $any(d).technicien?.prenom || 'Tech' }}</td>
+              <td>
+                <span class="badge" [ngClass]="getStatusBadgeClass(d.statut)">
+                  {{ (d.statut === 'EN_ATTENTE' || d.statut === 'PENDING') ? 'Attente' : 'Traité' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

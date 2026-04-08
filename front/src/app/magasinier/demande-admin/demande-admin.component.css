@@ -1,0 +1,50 @@
+.demande-admin-layout { padding: 40px; animation: fadeIn 0.4s ease-out; }
+
+/* Top Form Card */
+.form-card {
+  background: white; border-radius: 20px; padding: 40px;
+  max-width: 580px; margin: 0 auto 40px;
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); border: 1px solid #f8fafc;
+}
+.form-card h2 { text-align: center; font-size: 1.35rem; font-weight: 800; color: #1e293b; margin: 0 0 32px 0; }
+
+.form-group { margin-bottom: 24px; }
+.form-group label { display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; margin-bottom: 10px; letter-spacing: 0.5px; }
+
+.select-wrapper { position: relative; }
+.select-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; font-size: 0.8rem; }
+
+.form-control {
+  width: 100%; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px;
+  padding: 14px 20px; font-size: 0.95rem; font-weight: 600; color: #1e293b; outline: none; transition: 0.2s;
+  appearance: none; -webkit-appearance: none;
+}
+.form-control:focus { border-color: #6366f1; background: white; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+
+.btn-submit {
+  width: 100%; background: #6366f1; color: white; border: none; padding: 16px; border-radius: 12px;
+  font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+.btn-submit:hover:not(:disabled) { background: #4f46e5; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35); }
+.btn-submit:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
+
+/* Bottom History Card */
+.history-card { background: white; border-radius: 20px; padding: 32px 40px; box-shadow: 0 4px 20px -10px rgba(0,0,0,0.05); border: 1px solid #f8fafc; }
+.history-card h3 { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 32px 0; }
+
+.table-responsive { overflow-x: auto; }
+.h-table { width: 100%; border-collapse: collapse; }
+.h-table th { text-align: left; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; padding: 0 16px 20px 16px; border-bottom: 2px solid #f8fafc; letter-spacing: 0.5px; }
+.h-table td { padding: 24px 16px; font-size: 0.9rem; color: #1e293b; border-bottom: 1px solid #f8fafc; font-weight: 700; }
+
+.date-text { color: #94a3b8; font-weight: 600; font-size: 0.9rem; }
+.qty-badge { background: white; border: 1px solid #e2e8f0; padding: 6px 16px; border-radius: 8px; font-weight: 800; color: #1e293b; font-size: 0.85rem; }
+.status-pill { font-size: 0.65rem; font-weight: 800; color: #d97706; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.text-center { text-align: center; }
+.empty-state { text-align: center; color: #94a3b8; font-style: italic; padding: 40px; }
+
+.loader { width: 18px; height: 18px; border: 2px solid white; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+@keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

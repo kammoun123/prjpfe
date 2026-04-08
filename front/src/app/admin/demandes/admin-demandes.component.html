@@ -1,0 +1,118 @@
+<div class="demandes-admin-container">
+  <header class="page-header-admin">
+    <div class="header-content">
+      <div class="header-icon">
+        <i class="bi bi-clipboard-check-fill"></i>
+      </div>
+      <div class="header-text">
+        <h1>Gestion des Demandes</h1>
+        <p>Validez ou refusez les demandes d'achat et de réapprovisionnement.</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-refresh" (click)="loadDemandes()">
+        <i class="bi bi-arrow-clockwise"></i> Actualiser
+      </button>
+    </div>
+  </header>
+
+  <!-- Filter/Tabs Section -->
+  <div class="admin-tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'pending'" (click)="activeTab = 'pending'">
+      En attente <span class="badge" *ngIf="pendingCount() > 0">{{ pendingCount() }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">
+      Historique Récent
+    </button>
+  </div>
+
+  <!-- Main Content Card -->
+  <div class="demandes-main-card shadow-sm">
+    <div class="table-responsive">
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>DATE</th>
+            <th>DEMANDEUR</th>
+            <th>PRODUIT</th>
+            <th class="text-center">QUANTITÉ</th>
+            <th>MOTIF</th>
+            <th class="text-center">STATUT</th>
+            <th class="text-end">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of filteredDemandes()">
+            <td class="date-cell">
+              <span class="d-block">{{ d.dateDemande | date:'dd/MM/yyyy' }}</span>
+              <span class="text-muted smaller">{{ d.dateDemande | date:'HH:mm' }}</span>
+            </td>
+            <td class="user-cell">
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar-mini">{{ getInitial($any(d).technicien) }}</div>
+                <div class="user-info">
+                    <span class="fw-bold d-block">{{ $any(d).technicien?.prenom }} {{ $any(d).technicien?.nom }}</span>
+                    <span class="badge-role">{{ $any(d).technicien?.role || 'MAGASINIER' }}</span>
+                </div>
+              </div>
+            </td>
+            <td class="product-cell">
+              <span class="fw-bold">{{ d.produit?.designation || 'Produit Inconnu' }}</span>
+              <div class="text-muted smaller">REF: {{ d.produit?.reference }}</div>
+            </td>
+            <td class="text-center">
+              <span class="qty-badge">{{ d.quantite }}</span>
+            </td>
+            <td class="motif-cell">
+              <span class="text-truncate d-inline-block" style="max-width: 150px;" [title]="d.motif">
+                {{ d.motif || '---' }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="status-pill" [ngClass]="getStatusClass(d.statut)">
+                {{ d.statut }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="action-btns" *ngIf="getStatusClass(d.statut) === 'EN_ATTENTE'">
+                <button class="btn-action approve" (click)="updateStatus(d, 'VALIDATED')" title="Approuver">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+                <button class="btn-action reject" (click)="updateStatus(d, 'REFUSED')" title="Refuser">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <div class="action-btns" *ngIf="getStatusClass(d.statut) !== 'EN_ATTENTE'">
+                <button class="btn-action-view" disabled>
+                   <i class="bi bi-dash-circle"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredDemandes().length === 0">
+            <td colspan="7" class="empty-state">
+               <i class="bi bi-inbox opacity-25 d-block mb-3" style="font-size: 3rem;"></i>
+               <p>Aucune demande trouvée dans cette catégorie.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="stats-mini-grid mt-4">
+    <div class="stat-mini-card">
+       <span class="label">Total Demandes</span>
+       <span class="value">{{ demandes().length }}</span>
+    </div>
+    <div class="stat-mini-card">
+        <span class="label">En Attente</span>
+        <span class="value text-warning">{{ pendingCount() }}</span>
+     </div>
+     <div class="stat-mini-card">
+        <span class="label">Approuvées</span>
+        <span class="value text-success">{{ validatedCount() }}</span>
+     </div>
+  </div>
+</div>

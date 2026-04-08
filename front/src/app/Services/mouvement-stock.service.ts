@@ -1,0 +1,27 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { MouvementStock } from '../models/mouvement-stock.model';
+import { environment } from '../../environments/environment';
+
+@Injectable({
+    providedIn: 'root'
+})
+export class MouvementStockService {
+    private apiUrl = `${environment.apiUrl}/mouvements`;
+
+    constructor(private http: HttpClient) { }
+
+    getAllMouvements(): Observable<MouvementStock[]> {
+        return this.http.get<MouvementStock[]>(this.apiUrl);
+    }
+
+    createMouvement(mouvement: any): Observable<any> {
+        return this.http.post<any>(this.apiUrl, mouvement);
+    }
+
+    deleteMouvement(id: number): Observable<any> {
+        return this.http.delete<any>(`${this.apiUrl}/${id}`);
+    }
+}
+

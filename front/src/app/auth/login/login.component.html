@@ -1,0 +1,88 @@
+<div class="login-page-premium animate-fade-in">
+  <!-- Background Decorations -->
+  <div class="bg-decoration">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="login-wrapper">
+    <!-- Brand Side (Visible on desktop) -->
+    <div class="brand-section">
+      <div class="brand-content">
+        <div class="logo-box-pro">
+          <i class="bi bi-gear-fill"></i>
+        </div>
+        <h2 class="brand-title">G-PIÈCES</h2>
+        <p class="brand-subtitle">Solution Intelligente de Gestion d'Inventaire</p>
+        
+        <div class="feature-list-mini">
+          <div class="f-item"><i class="bi bi-shield-check"></i> Sécurisé</div>
+          <div class="f-item"><i class="bi bi-lightning-charge"></i> Rapide</div>
+          <div class="f-item"><i class="bi bi-bar-chart"></i> Analytique</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Side -->
+    <div class="form-section glass-premium">
+      <div class="form-header">
+        <h1>Bon retour !</h1>
+        <p>Connectez-vous pour accéder à votre tableau de bord</p>
+      </div>
+
+      <form (ngSubmit)="login()" #loginForm="ngForm" class="login-form-pro">
+        <div class="form-group-premium">
+          <label>Identifiant Email</label>
+          <div class="input-container-pro">
+            <i class="bi bi-envelope"></i>
+            <input 
+              type="email" 
+              name="email" 
+              [(ngModel)]="credentials.email" 
+              #email="ngModel"
+              placeholder="nom@entreprise.com" 
+              required email
+              class="input-pro">
+          </div>
+          <div *ngIf="email.invalid && email.touched" class="pro-error">
+            <i class="bi bi-exclamation-circle"></i> Format d'email invalide
+          </div>
+        </div>
+
+        <div class="form-group-premium">
+          <div class="label-row">
+            <label>Mot de passe</label>
+            <a href="#" class="forgot-link">Oublié ?</a>
+          </div>
+          <div class="input-container-pro">
+            <i class="bi bi-lock"></i>
+            <input 
+              type="password" 
+              name="password" 
+              [(ngModel)]="credentials.motDePasse" 
+              #password="ngModel"
+              placeholder="••••••••" 
+              required
+              class="input-pro">
+          </div>
+        </div>
+
+        <div *ngIf="error" class="alert-premium-error fade-in">
+          <i class="bi bi-x-circle-fill"></i>
+          <span>{{ error }}</span>
+        </div>
+
+        <button type="submit" class="btn-login-gradient mt-3" [disabled]="!loginForm.form.valid">
+          <span>Se Connecter</span>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+
+        <div class="register-footer">
+          <p>Nouveau sur la plateforme ?</p>
+          <button type="button" (click)="goToRegister()" class="btn-link-pro">Créer un compte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

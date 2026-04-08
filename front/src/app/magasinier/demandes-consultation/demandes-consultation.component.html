@@ -1,0 +1,82 @@
+<div class="demandes-layout">
+  <!-- Tabs above the card -->
+  <div class="tabs-wrapper">
+    <button class="tab-btn" [class.active]="activeTab() === 'attente'" (click)="setTab('attente')">
+      <i class="bi bi-hourglass-split"></i> En attente
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'historique'" (click)="setTab('historique')">
+      <i class="bi bi-clock-history"></i> Historique
+    </button>
+  </div>
+
+  <!-- Main Card -->
+  <div class="demandes-card">
+    <div class="card-header">
+       <div class="title-with-icon">
+          <!-- Using standard bootstrap yellow folder/inbox icon -->
+          <i class="bi class-icon" [ngClass]="activeTab() === 'attente' ? 'bi-inbox text-warning' : 'bi-archive text-secondary'"></i>
+          <h3>{{ activeTab() === 'attente' ? 'Demandes en attente' : 'Historique des demandes' }}</h3>
+       </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="d-table">
+        <thead>
+          <tr>
+            <th>DATE</th>
+            <th>PIÈCE</th>
+            <th class="text-center">QUANTITÉ</th>
+            <th class="text-center">MOTIF</th>
+            <th class="text-center">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of filteredDemandes()">
+            <td class="date-col">{{ d.dateDemande | date:'MMM d, yyyy' }}</td>
+            <td class="piece-col">{{ getPieceName($any(d).idProduit) || $any(d).produit?.designation || 'Pièce Inconnue' }}</td>
+            <td class="text-center">
+               <span class="qty-badge">{{ $any(d).quantiteDemandee || $any(d).quantite }}</span>
+            </td>
+            <td class="text-center motif-col">
+               {{ $any(d).motif || 'Aucun motif' }}
+            </td>
+            
+            <td class="text-center">
+              <!-- Actions for Pending -->
+              <div class="action-buttons" *ngIf="activeTab() === 'attente'">
+                <button class="btn-icon btn-approve" (click)="validerDemande($any(d), 'VALIDATED')" title="Valider">
+                  <i class="bi bi-check2"></i>
+                </button>
+                <button class="btn-icon btn-forward" (click)="transfererAdmin($any(d))" title="Transférer à l'Admin">
+                  <i class="bi bi-send-fill" style="transform: rotate(45deg); font-size: 0.9rem;"></i>
+                </button>
+                <button class="btn-icon btn-reject" (click)="validerDemande($any(d), 'Refusé')" title="Refuser">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <!-- Status Pill for History -->
+              <div *ngIf="activeTab() === 'historique'">
+                <span class="status-pill" [ngClass]="getStatusClass(d.statut)">
+                  <i [class]="getStatusIcon(d.statut)"></i>
+                  {{ formatStatut(d.statut) }}
+                </span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="filteredDemandes().length === 0">
+            <td colspan="5">
+              <div class="empty-state-wrapper">
+                <div class="check-marks">
+                   <i class="bi bi-check2"></i><i class="bi bi-check2 double-check"></i>
+                </div>
+                <p>{{ activeTab() === 'attente' ? 'Aucune demande en attente. Tout est à jour !' : 'Aucun historique disponible.' }}</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

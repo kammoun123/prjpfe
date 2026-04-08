@@ -1,0 +1,312 @@
+<div class="dashboard-container">
+  <!-- Modals -->
+
+  <!-- Profil Modal -->
+  <div class="modal-overlay" *ngIf="showProfileModal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h2>Mon Profil Contrôleur</h2>
+        <button class="btn-close" (click)="showProfileModal = false"><i class="bi bi-x"></i></button>
+      </div>
+      <div class="modal-body" *ngIf="profil">
+        <div class="form-group">
+          <label>Identifiant (ID)</label>
+          <input type="text" [value]="profil.idUtilisateur" disabled class="disabled-input">
+        </div>
+        <div class="form-group row">
+          <div class="col">
+            <label>Nom</label>
+            <input type="text" [(ngModel)]="profil.nom">
+          </div>
+          <div class="col">
+            <label>Prénom</label>
+            <input type="text" [(ngModel)]="profil.prenom">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="profil.email">
+        </div>
+        <div class="form-group">
+          <label>Nouveau Mot de passe</label>
+          <input type="password" [(ngModel)]="profil.motDePasse" placeholder="••••••••">
+        </div>
+      </div>
+      <div class="modal-footer mt-4">
+        <button class="btn btn-secondary" (click)="showProfileModal = false">Annuler</button>
+        <button class="btn btn-primary" (click)="sauvegarderProfil()">Sauvegarder les modifications</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Rapport d'Audit -->
+  <div class="modal-overlay" *ngIf="showReportModal">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h2><i class="bi bi-file-earmark-bar-graph"></i> {{ isViewing ? 'Consultation' : 'Rapport' }} d'Audit de Stock
+        </h2>
+        <button class="btn-close" (click)="showReportModal = false">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Réf.</th>
+              <th>Désignation</th>
+              <th>Système</th>
+              <th>Réel (Manuel)</th>
+              <th>Écart</th>
+              <th>État</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of piecesReport">
+              <td><strong>{{ p.reference }}</strong></td>
+              <td>{{ p.designation }}</td>
+              <td class="text-center">{{ p.quantiteStock }}</td>
+              <td>
+                <input type="number" *ngIf="!isViewing" [(ngModel)]="p.quantiteReelle" (input)="updateItemEcart(p)"
+                  style="width: 70px; padding: 0.2rem;">
+                <span *ngIf="isViewing">{{ p.quantiteReelle }}</span>
+              </td>
+              <td class="text-center">
+                <strong [ngClass]="p.ecart < 0 ? 'text-danger' : p.ecart > 0 ? 'text-success' : ''">
+                  {{ p.ecart > 0 ? '+' : '' }}{{ p.ecart }}
+                </strong>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="p.ecart < 0 ? 'error' : p.ecart > 0 ? 'valid' : 'pending'">
+                  {{ p.ecart === 0 ? 'Conforme' : p.ecart < 0 ? 'Manquant' : 'Surplus' }} </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+        <button class="btn btn-outline" (click)="showReportModal = false">Fermer</button>
+        <button class="btn btn-outline" (click)="exporterEnPDF()">
+          <i class="bi bi-file-earmark-pdf"></i> Télécharger PDF
+        </button>
+        <button class="btn btn-primary" (click)="envoyerAAdmin()">
+          <i class="bi bi-send"></i> Envoyer à l'Admin
+        </button>
+        <button class="btn btn-success" *ngIf="!isViewing" (click)="fermerRapport()">
+          <i class="bi bi-save"></i> Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Vérification Stock -->
+  <div class="modal-overlay" *ngIf="showVerificationModal">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h2><i class="bi bi-exclamation-triangle text-warning"></i> Articles en Déficit</h2>
+        <button class="btn-close" (click)="fermerVerification()">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+        <table class="report-table" *ngIf="piecesDeficit.length > 0">
+          <thead>
+            <tr>
+              <th>Réf.</th>
+              <th>Désignation</th>
+              <th>En Stock</th>
+              <th>Seuil d'Alerte</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of piecesDeficit">
+              <td><strong>{{ p.reference }}</strong></td>
+              <td>{{ p.designation }}</td>
+              <td><strong class="text-danger">{{ p.quantiteStock }}</strong></td>
+              <td>{{ p.seuilAlerte }}</td>
+              <td>
+                <button class="btn btn-outline btn-sm" (click)="modifierStock(p)">
+                  <i class="bi bi-pencil"></i> Ajuster
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="piecesDeficit.length === 0" class="text-center py-4">
+          <h3 class="text-success"><i class="bi bi-check-circle"></i> Tout est conforme !</h3>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" (click)="fermerVerification()">Terminer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="brand">
+      <h1>ESPACE CONTRÔLEUR</h1>
+      <span class="badge">Inspection & Audit System</span>
+    </div>
+    <div class="user-actions">
+      <div class="notification-wrapper">
+        <button class="btn btn-outline relative" (click)="toggleNotifDropdown()">
+          <i class="bi bi-bell"></i>
+          <span class="pulse-dot" *ngIf="unreadCount() > 0"></span>
+        </button>
+        <div class="notif-dropdown" *ngIf="showNotifDropdown">
+          <div class="notif-header">
+            <span>Alertes & Activités</span>
+            <button class="btn-link" *ngIf="unreadCount() > 0" (click)="markAllAsRead()">Tout marquer lu</button>
+          </div>
+          <div class="notif-body">
+            <div *ngIf="notifications().length === 0" class="p-4 text-center text-muted" style="color: #94a3b8; font-size: 0.9rem;">
+              <i class="bi bi-bell-slash" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>
+              Aucune notification
+            </div>
+            <div *ngFor="let n of notifications()" class="notif-item" [class.unread]="n.statut === 'NON_LUE'" (click)="markAsRead(n)">
+              <div class="notif-icon-wrapper">
+                <i class="bi" [ngClass]="{
+                  'bi-exclamation-triangle': n.typeNotification === 'warning',
+                  'bi-check-circle': n.typeNotification === 'success',
+                  'bi-info-circle': n.typeNotification !== 'warning' && n.typeNotification !== 'success'
+                }"></i>
+              </div>
+              <div class="notif-content">
+                <p>{{ n.message }}</p>
+                <small><i class="bi bi-clock"></i> {{ n.dateCreation | date:'shortTime' }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-outline" (click)="modifierProfil()"><i class="bi bi-person"></i> {{ profil?.nom || 'Profil' }}</button>
+      <button class="btn btn-danger-outline" (click)="seDeconnecter()"><i class="bi bi-box-arrow-right"></i></button>
+    </div>
+  </header>
+
+  <!-- Tabs Navigation -->
+  <nav class="dashboard-tabs">
+    <button class="tab-item" [class.active]="currentTab === 'dashboard'" (click)="setTab('dashboard')">
+      <i class="bi bi-speedometer2"></i> Tableau de Bord
+    </button>
+    <button class="tab-item" [class.active]="currentTab === 'inventories'" (click)="setTab('inventories')">
+      <i class="bi bi-clipboard-check"></i> Inventaires
+    </button>
+    <button class="tab-item" [class.active]="currentTab === 'reports'" (click)="setTab('reports')">
+      <i class="bi bi-file-earmark-bar-graph"></i> Audits
+    </button>
+  </nav>
+
+  <!-- Dashboard Tab -->
+  <div class="tab-content animate-fade-in" *ngIf="currentTab === 'dashboard'">
+    <div class="stats-grid mb-4">
+      <div class="stat-card blue">
+        <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
+        <div class="stat-info"><h3>{{ totalStockUnits }}</h3><p>Stock Total</p></div>
+      </div>
+      <div class="stat-card orange clickable" (click)="verifierStock()">
+        <div class="stat-icon"><i class="bi bi-exclamation-octagon"></i></div>
+        <div class="stat-info"><h3>{{ alertCount }}</h3><p>Alertes Critiques</p></div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon"><i class="bi bi-file-earmark-check"></i></div>
+        <div class="stat-info"><h3>{{ rapports.length }}</h3><p>Rapports Session</p></div>
+      </div>
+    </div>
+
+    <div class="main-dashboard-grid">
+      <div class="card recent-activity">
+        <h2><i class="bi bi-activity"></i> Notifications Récentes</h2>
+        <div class="activity-feed">
+          <div *ngIf="notifications().length === 0" class="text-center py-5" style="color: #94a3b8;">
+            <i class="bi bi-chat-left-dots" style="font-size: 2rem;"></i>
+            <p class="mt-2">Aucune activité récente</p>
+          </div>
+          <div *ngFor="let n of notifications().slice(0, 6)" class="activity-item">
+            <div class="activity-icon" [ngClass]="n.typeNotification || 'info'">
+              <i class="bi" [ngClass]="{
+                'bi-exclamation-triangle': n.typeNotification === 'warning',
+                'bi-shield-check': n.typeNotification === 'success',
+                'bi-info-circle': n.typeNotification !== 'warning' && n.typeNotification !== 'success'
+              }"></i>
+            </div>
+            <div class="activity-content">
+              <p>{{ n.message }}</p>
+              <small><i class="bi bi-clock"></i> {{ n.dateCreation | date:'dd/MM HH:mm' }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card schedule-panel" [ngClass]="inventoryStatus.toLowerCase().replace(' ', '-')">
+        <h2><i class="bi bi-calendar3"></i> Planning Audit</h2>
+        <div class="status-pill mb-3" [ngClass]="inventoryStatus.toLowerCase().replace(' ', '-')">{{ inventoryStatus }}</div>
+        <div class="date-value">{{ nextInventoryDate | date:'fullDate' }}</div>
+        <div class="countdown-wrapper" *ngIf="inventoryStatus !== 'EN COURS'">
+          <div class="countdown-value">Dans <strong>{{ Math.abs(daysUntilNext) }} jours</strong></div>
+        </div>
+        <button class="btn btn-primary w-100 mt-3" (click)="setTab('inventories')">Voir Détails</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inventories Tab -->
+  <div class="tab-content animate-fade-in" *ngIf="currentTab === 'inventories'">
+    <div class="card">
+      <div class="d-flex justify-content-between mb-3">
+        <h2>Gestion d'Inventaire</h2>
+        <button class="btn btn-primary" (click)="nouveauInventaire()"><i class="bi bi-plus-circle"></i> Nouveau</button>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Date Début</th><th>Date Fin</th><th>Statut</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let inv of inventaires">
+              <td>#{{ inv.idInventaire || inv.id }}</td>
+              <td>{{ inv.dateDebut | date:'short' }}</td>
+              <td>{{ inv.dateFin ? (inv.dateFin | date:'short') : '-' }}</td>
+              <td><span class="status-badge" [ngClass]="inv.statut === 'Validé' ? 'valid' : inv.statut === 'Refusé' ? 'error' : 'pending'">{{ inv.statut }}</span></td>
+              <td class="action-cell">
+                <div *ngIf="inv.statut === 'En cours'">
+                  <button class="btn btn-success btn-sm" (click)="validerInventaire(inv)"><i class="bi bi-check2"></i></button>
+                  <button class="btn btn-danger-outline btn-sm" (click)="refuserInventaire(inv)"><i class="bi bi-x"></i></button>
+                </div>
+                <button class="btn btn-danger-outline btn-sm" (click)="supprimerInventaire(inv)"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reports Tab -->
+  <div class="tab-content animate-fade-in" *ngIf="currentTab === 'reports'">
+    <div class="card mb-4">
+      <h2>Actions d'Audit</h2>
+      <div class="d-flex gap-3">
+        <button class="btn btn-success flex-1" (click)="genererRapport()"><i class="bi bi-file-earmark-text"></i> Générer Audit</button>
+        <button class="btn btn-info flex-1 text-white" (click)="envoyerRapportGeneral()"><i class="bi bi-send-check"></i> Rapport Général</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Historique Session</h2>
+      <table>
+        <thead><tr><th>Titre</th><th>Date</th><th>Articles</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let r of rapports">
+            <td><strong>{{ r.titre }}</strong></td>
+            <td>{{ r.date | date:'short' }}</td>
+            <td>{{ r.data.length }}</td>
+            <td>
+              <button class="btn btn-outline btn-sm me-2" (click)="voirRapport(r)"><i class="bi bi-eye"></i></button>
+              <button class="btn btn-outline btn-sm" (click)="voirRapport(r); exporterEnPDF()"><i class="bi bi-file-pdf"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

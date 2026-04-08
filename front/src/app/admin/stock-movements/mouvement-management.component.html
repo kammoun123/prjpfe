@@ -1,0 +1,175 @@
+<div class="admin-container animate-fade-in">
+    <!-- DASHBOARD HEADER -->
+    <header class="dashboard-header">
+        <div class="header-left">
+            <h1 class="premium-title">Mouvements de Stock</h1>
+            <nav class="breadcrumb">
+                <span>Admin</span> <i class="bi bi-chevron-right"></i>
+                <span class="active">Mouvements</span>
+            </nav>
+        </div>
+        <div class="header-actions">
+            <div class="last-sync">
+                <i class="bi bi-clock-history"></i>
+                Dernière activité: {{ stats.lastUpdate }}
+            </div>
+        </div>
+    </header>
+
+    <!-- STATS ROW -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-blue">
+                <i class="bi bi-arrow-down-up"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Flux d'Inventaire</span>
+                <h3 class="stat-value">{{ stats.total }}</h3>
+            </div>
+        </div>
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-green">
+                <i class="bi bi-box-arrow-in-down"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Quantité Entrante</span>
+                <h3 class="stat-value text-success">+{{ stats.entries }}</h3>
+            </div>
+        </div>
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-red">
+                <i class="bi bi-box-arrow-up-right"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Quantité Sortante</span>
+                <h3 class="stat-value text-danger">-{{ stats.exits }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK ENTRY FORM -->
+    <section class="quick-entry-card glass-premium mb-4">
+        <div class="card-header-pro">
+            <i class="bi bi-lightning-fill"></i>
+            <h2>Saisie Rapide de Mouvement</h2>
+        </div>
+        <form (ngSubmit)="enregistrerMouvement()" #mouvForm="ngForm" class="quick-form-pro">
+            <div class="form-grid-pro">
+                <div class="form-group-pro">
+                    <label>Sélectionner un Produit</label>
+                    <div class="input-icon-group">
+                        <i class="bi bi-box-seam"></i>
+                        <select [(ngModel)]="newMouvement.produitId" name="produit" required>
+                            <option *ngFor="let p of produits" [value]="p.idProduit">{{ p.designation }} ({{ p.reference }})</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group-pro">
+                    <label>Nature du Mouvement</label>
+                    <div class="type-toggle">
+                        <label class="toggle-btn" [class.active]="newMouvement.typeMouvement === 'ENTREE'">
+                            <input type="radio" [(ngModel)]="newMouvement.typeMouvement" name="type" value="ENTREE" hidden>
+                            <i class="bi bi-arrow-down-left"></i> Entrée
+                        </label>
+                        <label class="toggle-btn" [class.active]="newMouvement.typeMouvement === 'SORTIE'">
+                            <input type="radio" [(ngModel)]="newMouvement.typeMouvement" name="type" value="SORTIE" hidden>
+                            <i class="bi bi-arrow-up-right"></i> Sortie
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group-pro">
+                    <label>Quantité</label>
+                    <div class="qty-input">
+                        <button type="button" (click)="newMouvement.quantite = newMouvement.quantite > 1 ? newMouvement.quantite - 1 : 1">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                        <input type="number" [(ngModel)]="newMouvement.quantite" name="qty" required>
+                        <button type="button" (click)="newMouvement.quantite = newMouvement.quantite + 1">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-actions-pro">
+                    <button type="submit" class="btn-submit-pro" [disabled]="!mouvForm.valid">
+                        <i class="bi bi-bookmark-check-fill"></i>
+                        <span>Enregistrer l'Opération</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <!-- MOVEMENT HISTORY -->
+    <section class="main-card glass-premium">
+        <div class="card-header-main">
+            <div class="header-titles">
+                <h2>Historique des Opérations</h2>
+                <span class="badge-count">{{ mouvements.length }} mouvements enregistrés</span>
+            </div>
+            <div class="filter-tools">
+                <button class="btn-tool"><i class="bi bi-filter"></i> Filtrer</button>
+                <button class="btn-tool"><i class="bi bi-printer"></i> Imprimer</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Horodatage</th>
+                        <th>Référence & Produit</th>
+                        <th>Type de flux</th>
+                        <th>Quantité</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let m of mouvements; let i = index" 
+                        class="table-row-animate" 
+                        [style.animation-delay]="i * 0.05 + 's'">
+                        <td>
+                            <div class="timestamp">
+                                <span class="date">{{ m.dateMouvement | date:'dd MMM yyyy' }}</span>
+                                <span class="time">{{ m.dateMouvement | date:'HH:mm' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="product-info-cell">
+                                <span class="product-name">{{ getNomPiece(m.produitId) }}</span>
+                                <span class="motif-text">{{ m.motif }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge-mouvement" [class.entry]="m.typeMouvement === 'ENTREE'" [class.exit]="m.typeMouvement === 'SORTIE'">
+                                <i class="bi" [class.bi-plus-circle]="m.typeMouvement === 'ENTREE'" [class.bi-dash-circle]="m.typeMouvement === 'SORTIE'"></i>
+                                {{ m.typeMouvement }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="qty-pill" [class.entry]="m.typeMouvement === 'ENTREE'">
+                                {{ m.typeMouvement === 'ENTREE' ? '+' : '-' }}{{ m.quantite }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn-trash" (click)="supprimerMouvement(m.id)" title="Supprimer">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="mouvements.length === 0 && !loading">
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <img src="https://img.icons8.com/bubbles/200/empty-box.png" alt="Empty list">
+                                <h3>Aucun historique trouvé</h3>
+                                <p>Commencez à enregistrer vos mouvements pour voir l'historique ici.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

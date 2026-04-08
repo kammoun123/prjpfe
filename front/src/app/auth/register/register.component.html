@@ -1,0 +1,133 @@
+<div class="login-page-premium animate-fade-in">
+  <!-- Background Decorations -->
+  <div class="bg-decoration">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="login-wrapper register-wrapper">
+    <!-- Brand Side (Visible on desktop) -->
+    <div class="brand-section">
+      <div class="brand-content">
+        <div class="logo-box-pro">
+          <i class="bi bi-gear-fill"></i>
+        </div>
+        <h2 class="brand-title">G-PIÈCES</h2>
+        <p class="brand-subtitle">Rejoignez la plateforme de gestion N°1</p>
+
+        <div class="feature-list-mini">
+          <div class="f-item"><i class="bi bi-shield-check"></i> Fiable</div>
+          <div class="f-item"><i class="bi bi-people"></i> Collaboratif</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Side -->
+    <div class="form-section glass-premium">
+      <div class="form-header">
+        <h1>Créer un compte</h1>
+        <p>Entrez vos informations pour commencer</p>
+      </div>
+
+      <form *ngIf="!success" (ngSubmit)="register()" #registerForm="ngForm" class="login-form-pro">
+        <div class="form-row">
+          <div class="form-group-premium half-width">
+            <label>Nom</label>
+            <div class="input-container-pro">
+              <i class="bi bi-person"></i>
+              <input type="text" name="nom" [(ngModel)]="user.nom" #nom="ngModel" placeholder="Nom" required
+                class="input-pro">
+            </div>
+            <div *ngIf="nom.invalid && nom.touched" class="pro-error"><i class="bi bi-exclamation-circle"></i> Le nom
+              est requis</div>
+          </div>
+          <div class="form-group-premium half-width">
+            <label>Prénom</label>
+            <div class="input-container-pro">
+              <i class="bi bi-person"></i>
+              <input type="text" name="prenom" [(ngModel)]="user.prenom" #prenom="ngModel" placeholder="Prénom" required
+                class="input-pro">
+            </div>
+            <div *ngIf="prenom.invalid && prenom.touched" class="pro-error"><i class="bi bi-exclamation-circle"></i> Le
+              prénom est requis</div>
+          </div>
+        </div>
+
+        <div class="form-group-premium">
+          <label>Email</label>
+          <div class="input-container-pro">
+            <i class="bi bi-envelope"></i>
+            <input type="email" name="email" [(ngModel)]="user.email" #email="ngModel" placeholder="votre@email.com"
+              required email class="input-pro">
+          </div>
+          <div *ngIf="email.invalid && email.touched" class="pro-error">
+            <i class="bi bi-exclamation-circle"></i>
+            <span *ngIf="email.errors?.['required']">L'email est requis</span>
+            <span *ngIf="email.errors?.['email']">Format invalide</span>
+          </div>
+        </div>
+
+        <div class="form-group-premium">
+          <label>Mot de passe</label>
+          <div class="input-container-pro">
+            <i class="bi bi-lock"></i>
+            <input type="password" name="password" [(ngModel)]="user.motDePasse" #password="ngModel"
+              placeholder="••••••••" required minlength="6" class="input-pro">
+          </div>
+          <div *ngIf="password.invalid && password.touched" class="pro-error">
+            <i class="bi bi-exclamation-circle"></i>
+            <span *ngIf="password.errors?.['required']">Le mot de passe est requis</span>
+            <span *ngIf="password.errors?.['minlength']">Minimum 6 caractères</span>
+          </div>
+        </div>
+
+        <div class="form-group-premium">
+          <label>Rôle</label>
+          <div class="input-container-pro select-container">
+            <i class="bi bi-person-badge"></i>
+            <select name="role" [(ngModel)]="user.role" required class="input-pro select-pro">
+              <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div *ngIf="error" class="alert-premium-error fade-in">
+          <i class="bi bi-x-circle-fill"></i>
+          <span>{{ error }}</span>
+        </div>
+
+        <button type="submit" class="btn-login-gradient mt-3" [disabled]="!registerForm.form.valid">
+          <span>S'inscrire</span>
+          <i class="bi bi-person-plus"></i>
+        </button>
+
+        <div class="register-footer">
+          <p>Vous avez déjà un compte ?</p>
+          <button type="button" (click)="goToLogin()" class="btn-link-pro">Se connecter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notification Overlay (Pop-up) -->
+  <div *ngIf="success" class="notification-overlay animate-fade-in">
+    <div class="notification-popup">
+      <div class="icon-circle">
+        <i class="bi bi-person-check-fill"></i>
+      </div>
+      <h2>Inscription Réussie !</h2>
+      <p class="desc">Votre compte a été créé avec succès.</p>
+
+      <div class="warning-box">
+        <i class="bi bi-clock-history"></i>
+        <span><strong>Action requise :</strong> Vous devez attendre l'approbation d'un Administrateur pour que votre
+          compte soit activé.</span>
+      </div>
+
+      <button type="button" (click)="goToLogin()" class="btn-login-gradient mt-4">
+        <span>J'ai compris, retour à la connexion</span>
+      </button>
+    </div>
+  </div>
+</div>

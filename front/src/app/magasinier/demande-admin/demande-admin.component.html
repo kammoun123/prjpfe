@@ -1,0 +1,60 @@
+<div class="demande-admin-layout">
+  <!-- Centered Form Card -->
+  <div class="form-card">
+    <h2>Demande à l'Administrateur</h2>
+    
+    <div class="form-group">
+      <label>PIÈCE</label>
+      <div class="select-wrapper">
+         <select [(ngModel)]="selectedPieceId" class="form-control">
+           <option [ngValue]="null" disabled selected>Sélectionner une pièce</option>
+           <option *ngFor="let p of pieces()" [ngValue]="p.idProduit">{{ p.designation }}</option>
+         </select>
+         <i class="bi bi-chevron-down select-icon"></i>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 32px;">
+      <label>QUANTITÉ SOUHAITÉE</label>
+      <input type="number" [(ngModel)]="quantity" class="form-control" placeholder="0" min="1">
+    </div>
+
+    <button class="btn-submit" (click)='submit()' [disabled]="sending() || !selectedPieceId || quantity <= 0">
+      <i class="bi bi-send-fill" *ngIf="!sending()"></i>
+      <span class="loader" *ngIf="sending()"></span>
+      {{ sending() ? 'Envoi en cours...' : 'Envoyer Demande' }}
+    </button>
+  </div>
+
+  <!-- History Table -->
+  <div class="history-card">
+    <h3>Historique des Demandes</h3>
+    <div class="table-responsive">
+      <table class="h-table">
+        <thead>
+          <tr>
+            <th>DATE</th>
+            <th>PIÈCE</th>
+            <th class="text-center">QUANTITÉ</th>
+            <th class="text-center">STATUT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of historique()">
+            <td class="date-text">{{ d.date | date:'MMM d, yyyy' }}</td>
+            <td>{{ d.piece }}</td>
+            <td class="text-center">
+               <span class="qty-badge">{{ d.quantite }}</span>
+            </td>
+            <td class="text-center">
+               <span class="status-pill">{{ d.statut }}</span>
+            </td>
+          </tr>
+          <tr *ngIf="historique().length === 0">
+            <td colspan="4" class="empty-state">Aucune demande envoyée pour le moment.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
