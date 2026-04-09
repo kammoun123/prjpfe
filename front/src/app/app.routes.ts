@@ -41,6 +41,7 @@ export const routes: Routes = [
             { path: 'mouvements', component: MouvementManagementComponent },
             { path: 'users', component: UserManagementComponent },
             { path: 'demandes', component: AdminDemandesComponent },
+            { path: 'audit', component: AuditRapportComponent },
             { path: 'profile', component: ProfileComponent }
         ]
     },

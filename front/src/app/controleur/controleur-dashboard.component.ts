@@ -264,6 +264,22 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
     if (!this.isViewing) {
       const now = new Date();
       const isConforme = this.piecesReport.every(p => p.ecart === 0);
+      
+      // Persist to database as an Inventaire record
+      const newInv: Partial<Inventaire> = {
+        dateDebut: now.toISOString(),
+        dateFin: now.toISOString(),
+        statut: 'Validé'
+      };
+
+      this.inventaireService.addInventaire(newInv as Inventaire).subscribe((savedInv) => {
+        const id = savedInv.idInventaire || savedInv.id;
+        const msg = `Nouveau rapport d'audit détaillé #${id} envoyé par ${this.profil?.nom || 'Contrôleur'}.`;
+        this.broadcastNotification(msg, isConforme ? 'success' : 'warning');
+        this.loadInventaires(); // Refresh local list
+      });
+
+      // Also keep local history for immediate feedback
       const newRapport: RapportAudit = {
         id: now.getTime().toString(),
         titre: `Audit du ${now.toLocaleDateString()}`,
@@ -272,9 +288,7 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
         data: [...this.piecesReport]
       };
       this.rapports.unshift(newRapport);
-      if (isPlatformBrowser(this.platformId)) {
-        localStorage.setItem('controleur_rapports', JSON.stringify(this.rapports));
-      }
+      this.saveRapports();
     }
     this.showReportModal = false;
   }
@@ -319,29 +333,60 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
   }
 
   envoyerAAdmin() {
-    this.notificationService.createNotification({
-      produitId: null as any,
-      message: `Nouveau rapport d'audit envoyé par ${this.profil?.nom || 'Contrôleur'}.`,
-      typeNotification: 'info',
-      dateCreation: new Date().toISOString(),
-      statut: 'NON_LUE',
-      roleCible: 'ADMIN'
-    }).subscribe(() => {
-      this.toastService.show("Rapport envoyé à l'administration !", "success");
-    });
+    const msg = `Rapport d'audit de stock envoyé par ${this.profil?.nom || 'Contrôleur'}.`;
+    this.broadcastNotification(msg, 'AUDIT_REPORT');
+    this.toastService.show("Rapport envoyé à l'administration et au magasinier !", "success");
   }
 
   envoyerRapportGeneral() {
     const msg = `Rapport Général: ${this.totalStockUnits} unités en stock, ${this.alertCount} alertes actives.`;
-    this.notificationService.createNotification({
-      produitId: null as any,
-      message: msg,
-      typeNotification: this.alertCount > 0 ? 'warning' : 'success',
-      dateCreation: new Date().toISOString(),
-      statut: 'NON_LUE',
-      roleCible: 'ADMIN'
-    }).subscribe(() => {
-      this.toastService.show("Rapport général envoyé.", "success");
+    
+    // Save to database as an Inventaire record so others can see it
+    const now = new Date();
+    const newInv: Partial<Inventaire> = {
+      dateDebut: now.toISOString(),
+      dateFin: now.toISOString(),
+      statut: 'Validé',
+      description: msg
+    };
+
+    this.inventaireService.addInventaire(newInv as Inventaire).subscribe((savedInv) => {
+      const id = savedInv.idInventaire || savedInv.id;
+      this.broadcastNotification(`${msg} (ID: #${id})`, this.alertCount > 0 ? 'warning' : 'AUDIT_REPORT');
+      this.loadInventaires(); // Refresh local list
+    });
+
+    // Add to local session history
+    const newRapport: RapportAudit = {
+      id: now.getTime().toString(),
+      titre: `Rapport Général du ${now.toLocaleDateString()}`,
+      date: now.toISOString(),
+      conforme: this.alertCount === 0,
+      data: [] 
+    };
+    this.rapports.unshift(newRapport);
+    this.saveRapports();
+
+    this.toastService.show("Rapport général généré et transmis.", "success");
+  }
+
+  private saveRapports() {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('controleur_rapports', JSON.stringify(this.rapports));
+    }
+  }
+
+  private broadcastNotification(message: string, type: string = 'AUDIT_REPORT') {
+    const roles = ['ADMIN', 'MAGASINIER'];
+    roles.forEach(role => {
+      this.notificationService.createNotification({
+        produitId: null as any,
+        message: message,
+        typeNotification: type,
+        dateCreation: new Date().toISOString(),
+        statut: 'NON_LUE',
+        roleCible: role
+      }).subscribe();
     });
   }
 

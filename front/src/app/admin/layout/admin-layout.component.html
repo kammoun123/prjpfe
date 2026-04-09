@@ -16,11 +16,12 @@
 
         <nav class="px-3 flex-grow-1">
             <div class="nav-group-label">GESTION GLOBALE</div>
-            
-            <a class="nav-item-admin" routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+
+            <a class="nav-item-admin" routerLink="/admin" routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact: true}">
                 <i class="bi bi-speedometer2"></i> Tableau de bord
             </a>
-            
+
             <a class="nav-item-admin" routerLink="/admin/products" routerLinkActive="active">
                 <i class="bi bi-box-seam-fill"></i> Produits
             </a>
@@ -30,15 +31,19 @@
             </a>
 
             <a class="nav-item-admin" routerLink="/admin/mouvements" routerLinkActive="active">
-              <i class="bi bi-arrow-down-up"></i> Mouvements
+                <i class="bi bi-arrow-down-up"></i> Mouvements
             </a>
 
             <a class="nav-item-admin" routerLink="/admin/demandes" routerLinkActive="active">
                 <i class="bi bi-clipboard-check"></i> Demandes
             </a>
 
+            <a class="nav-item-admin" [routerLink]="['/admin/audit']" routerLinkActive="active">
+                <i class="bi bi-file-earmark-bar-graph-fill"></i> Rapports d'Audit
+            </a>
+
             <div class="nav-group-label mt-4">PARAMÈTRES ET COMPTE</div>
-            
+
             <a class="nav-item-admin" routerLink="/admin/users" routerLinkActive="active">
                 <i class="bi bi-people-fill"></i> Utilisateurs
             </a>
@@ -56,7 +61,8 @@
             <div class="user-card-admin bg-light border-0">
                 <div class="d-flex align-items-center gap-3">
                     <div class="user-avatar shadow-sm overflow-hidden" style="width: 45px; height: 45px;">
-                        <img *ngIf="getUserPhoto()" [src]="getUserPhoto()" class="w-100 h-100 object-fit-cover" alt="User">
+                        <img *ngIf="getUserPhoto()" [src]="getUserPhoto()" class="w-100 h-100 object-fit-cover"
+                            alt="User">
                         <span *ngIf="!getUserPhoto()">{{ getUserInitial() }}</span>
                     </div>
                     <div class="user-info overflow-hidden">
@@ -71,50 +77,58 @@
     <!-- Main Content Wrapper -->
     <div class="main-wrapper-admin">
         <!-- Topbar Admin (Optional but looks premium) -->
-        <header class="topbar-admin sticky-top bg-white border-bottom px-4 d-flex align-items-center justify-content-between">
+        <header
+            class="topbar-admin sticky-top bg-white border-bottom px-4 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-3">
-               <h3 class="mb-0 fs-5 fw-bold text-dark">Console d'administration</h3>
+                <h3 class="mb-0 fs-5 fw-bold text-dark">Console d'administration</h3>
             </div>
 
             <div class="topbar-actions d-flex align-items-center gap-3">
                 <!-- Notifications Bell -->
                 <div class="position-relative">
-                    <button class="btn btn-light rounded-circle shadow-sm position-relative p-2" 
-                            style="width: 40px; height: 40px;"
-                            (click)="toggleNotifications()">
+                    <button class="btn btn-light rounded-circle shadow-sm position-relative p-2"
+                        style="width: 40px; height: 40px;" (click)="toggleNotifications()">
                         <i class="bi bi-bell-fill fs-5 text-secondary"></i>
-                        <span *ngIf="notificationService.unreadCount() > 0" 
-                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                              style="font-size: 0.65rem;">
+                        <span *ngIf="notificationService.unreadCount() > 0"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            style="font-size: 0.65rem;">
                             {{ notificationService.unreadCount() }}
                         </span>
                     </button>
 
                     <!-- Notifications Dropdown -->
                     <div *ngIf="showNotifications" class="notifications-dropdown shadow-lg animate-fade-in">
-                        <div class="d-flex align-items-center justify-content-between p-3 border-bottom bg-light rounded-top">
+                        <div
+                            class="d-flex align-items-center justify-content-between p-3 border-bottom bg-light rounded-top">
                             <h6 class="mb-0 fw-bold">Notifications</h6>
-                            <button class="btn btn-link btn-sm text-primary text-decoration-none p-0 fw-bold" 
-                                    (click)="markAllAsRead()">
+                            <button class="btn btn-link btn-sm text-primary text-decoration-none p-0 fw-bold"
+                                (click)="markAllAsRead()">
                                 Tout marquer comme lu
                             </button>
                         </div>
                         <div class="notification-list custom-scrollbar">
-                            <div *ngIf="notificationService.notifications().length === 0" class="p-4 text-center text-muted">
+                            <div *ngIf="notificationService.notifications().length === 0"
+                                class="p-4 text-center text-muted">
                                 <i class="bi bi-bell-slash fs-2 opacity-25 d-block mb-2"></i>
                                 <div class="small">Aucune notification</div>
                             </div>
-                            <div *ngFor="let n of notificationService.notifications()" 
-                                 class="notification-item p-3 border-bottom d-flex gap-3"
-                                 [class.unread]="n.statut === 'NON_LUE'"
-                                 (click)="markAsRead(n.idNotification!, $event)">
+                            <div *ngFor="let n of notificationService.notifications()"
+                                class="notification-item p-3 border-bottom d-flex gap-3"
+                                [class.unread]="n.statut === 'NON_LUE'" (click)="markAsRead(n.idNotification!, $event)">
                                 <div class="notif-icon-circle shadow-sm">
                                     <i class="bi" [ngClass]="getNotificationIcon(n.typeNotification)"></i>
                                 </div>
                                 <div class="flex-grow-1 overflow-hidden">
                                     <div class="fw-bold small mb-1 text-dark">{{ n.titre || n.typeNotification }}</div>
                                     <div class="smaller text-muted text-truncate">{{ n.message }}</div>
-                                    <div class="notif-time mt-1">{{ n.dateCreation | date:'shortTime' }}</div>
+                                    <div class="d-flex align-items-center justify-content-between mt-1">
+                                        <div class="notif-time">{{ n.dateCreation | date:'shortTime' }}</div>
+                                        <button *ngIf="isAuditNotification(n)"
+                                            class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold"
+                                            style="font-size: 0.7rem;" (click)="goToReport(n.idNotification!, $event)">
+                                            Voir Rapport
+                                        </button>
+                                    </div>
                                 </div>
                                 <div *ngIf="n.statut === 'NON_LUE'" class="unread-dot"></div>
                             </div>

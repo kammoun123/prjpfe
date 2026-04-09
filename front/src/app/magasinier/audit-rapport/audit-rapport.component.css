@@ -80,6 +80,13 @@
 .s-label { font-size: 0.65rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; }
 .s-val { font-size: 0.95rem; font-weight: 800; color: #1e293b; }
 
+.report-description-box {
+  background: #f0f9ff; border: 1px solid #e0f2fe; border-radius: 12px;
+  padding: 16px; margin-bottom: 24px;
+}
+.desc-label { font-size: 0.8rem; font-weight: 800; color: #0369a1; margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px; }
+.desc-text { font-size: 0.9rem; color: #0c4a6e; margin: 0; line-height: 1.5; font-weight: 500; }
+
 .lignes-title { font-size: 0.95rem; font-weight: 800; color: #475569; margin: 0 0 16px 0; padding-bottom: 12px; border-bottom: 2px solid #f1f5f9; }
 
 .lignes-table-container { border: 1px solid #f1f5f9; border-radius: 12px; overflow: hidden; }

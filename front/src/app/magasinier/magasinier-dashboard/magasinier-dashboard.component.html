@@ -134,7 +134,7 @@
               <td>{{ $any(d).technicien?.prenom || 'Tech' }}</td>
               <td>
                 <span class="badge" [ngClass]="getStatusBadgeClass(d.statut)">
-                  {{ (d.statut === 'EN_ATTENTE' || d.statut === 'PENDING') ? 'Attente' : 'Traité' }}
+                  {{ getStatusBadgeClass(d.statut) === 'wait' ? 'Attente' : 'Traité' }}
                 </span>
               </td>
             </tr>

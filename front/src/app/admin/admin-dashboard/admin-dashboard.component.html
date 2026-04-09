@@ -144,7 +144,7 @@
                             [ngClass]="m.typeMouvement === 'ENTREE' ? 'bi-arrow-down-short' : 'bi-arrow-up-short'"></i>
                     </div>
                     <div class="act-content">
-                        <span class="act-piece">Pièce #{{ m.produitId }} &mdash; {{ m.motif || 'Aucun motif' }}</span>
+                        <span class="act-piece">{{ m.produit?.designation || ('Pièce #' + m.produitId) }} &mdash; {{ m.motif || 'Aucun motif' }}</span>
                         <span class="act-type" [ngClass]="m.typeMouvement === 'ENTREE' ? 'type-in' : 'type-out'">
                             {{ m.typeMouvement === 'ENTREE' ? 'Entrée' : 'Sortie' }} · {{ m.quantite }} unités
                         </span>

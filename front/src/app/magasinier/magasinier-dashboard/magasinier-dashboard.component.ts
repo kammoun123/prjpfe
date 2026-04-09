@@ -51,7 +51,10 @@ export class MagasinierDashboardComponent implements OnInit {
     this.demandeService.getDemandes().subscribe(demandes => {
       const sorted = demandes.reverse();
       this.recentDemandes.set(sorted.slice(0, 5));
-      this.pendingRequests.set(demandes.filter(d => d.statut === 'EN_ATTENTE' || d.statut === 'PENDING'));
+      this.pendingRequests.set(demandes.filter(d => {
+        const s = (d.statut || '').toUpperCase();
+        return s === 'EN_ATTENTE' || s === 'PENDING' || s === 'EN ATTENTE';
+      }));
       this.processedCount.set(demandes.length - this.pendingRequests().length);
     });
   }
@@ -62,7 +65,8 @@ export class MagasinierDashboardComponent implements OnInit {
   }
 
   getStatusBadgeClass(status: string) {
-    if (status === 'EN_ATTENTE' || status === 'PENDING') return 'wait';
+    const s = (status || '').toUpperCase();
+    if (s === 'EN_ATTENTE' || s === 'PENDING' || s === 'EN ATTENTE') return 'wait';
     return 'success';
   }
 }

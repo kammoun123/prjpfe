@@ -12,6 +12,8 @@ import com.example.gestion_piece_back.model.DemandeProduit;
 import com.example.gestion_piece_back.model.Notification;
 import com.example.gestion_piece_back.model.Utilisateur;
 import com.example.gestion_piece_back.model.Produit;
+import com.example.gestion_piece_back.model.MouvementStock;
+import com.example.gestion_piece_back.service.MouvementStockService;
 
 @Service
 public class DemandeProduitService {
@@ -29,8 +31,11 @@ public class DemandeProduitService {
     private ProduitRepository produitRepository;
 
     @Autowired
-    private EmailService emailService;
+    private MouvementStockService mouvementStockService;
 
+    @Autowired
+    private EmailService emailService;
+    
     public List<DemandeProduit> getAllDemandes() {
         return demandeProduitRepository.findAll();
     }
@@ -92,7 +97,22 @@ public class DemandeProduitService {
     public DemandeProduit updateStatus(Long id, String statut) {
         DemandeProduit demande = demandeProduitRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+        
+        String oldStatus = demande.getStatut();
         demande.setStatut(statut);
-        return demandeProduitRepository.save(demande);
+        DemandeProduit saved = demandeProduitRepository.save(demande);
+
+        // Si la demande est validée, on enregistre automatiquement un mouvement de sortie
+        if ("VALIDATED".equals(statut) && !statut.equalsIgnoreCase(oldStatus)) {
+            MouvementStock mouvement = new MouvementStock();
+            mouvement.setProduitId(demande.getProduitId());
+            mouvement.setQuantite(demande.getQuantite());
+            mouvement.setTypeMouvement("SORTIE");
+            mouvement.setMotif("Validation Demande Technicien #" + id);
+            
+            mouvementStockService.createMouvement(mouvement);
+        }
+
+        return saved;
     }
 }

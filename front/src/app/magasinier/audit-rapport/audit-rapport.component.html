@@ -75,6 +75,12 @@
             </div>
          </div>
 
+         <!-- General Report Description -->
+         <div class="report-description-box" *ngIf="$any(selectedAudit())?.description">
+            <h5 class="desc-label"><i class="bi bi-info-circle"></i> Résumé du Rapport</h5>
+            <p class="desc-text">{{ $any(selectedAudit())?.description }}</p>
+         </div>
+
          <h4 class="lignes-title">Articles Contrôlés ({{ $any(selectedAudit())?.lignes?.length || 0 }})</h4>
          <div class="lignes-table-container">
            <table class="lignes-table">

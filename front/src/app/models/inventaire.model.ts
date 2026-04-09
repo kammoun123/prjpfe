@@ -4,4 +4,5 @@ export interface Inventaire {
   dateDebut: Date | string;
   dateFin?: Date | string;
   statut: 'En cours' | 'Validé' | 'Refusé' | 'Annulé';
+  description?: string;
 }

@@ -92,7 +92,14 @@ import { Notification } from '../../models/notification.model';
                       </div>
                       <div class="ndi-content">
                          <p class="ndi-msg">{{ n.message }}</p>
-                         <span class="ndi-time">{{ n.dateCreation | date:'MMM d, HH:mm' }}</span>
+                         <div class="ndi-footer">
+                            <span class="ndi-time">{{ n.dateCreation | date:'MMM d, HH:mm' }}</span>
+                            <button *ngIf="isAuditNotification(n)" 
+                                    class="btn-notif-action" 
+                                    (click)="goToReport(n.idNotification!, $event)">
+                               Voir Rapport
+                            </button>
+                         </div>
                       </div>
                    </div>
                  </div>
@@ -259,7 +266,14 @@ import { Notification } from '../../models/notification.model';
     .ic-info { background: #3b82f6; } .ic-success { background: #22c55e; } .ic-alert { background: #ef4444; } .ic-warning { background: #f59e0b; }
     .ndi-content { flex: 1; }
     .ndi-msg { margin: 0 0 6px 0; font-size: 0.85rem; color: #1e293b; font-weight: 600; line-height: 1.4; }
+    .ndi-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
     .ndi-time { font-size: 0.7rem; color: #94a3b8; font-weight: 500; }
+    .btn-notif-action {
+       background: #eff6ff; color: #3b82f6; border: 1px solid #dbeafe;
+       font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+       cursor: pointer; transition: 0.2s;
+    }
+    .btn-notif-action:hover { background: #3b82f6; color: white; }
     
     .user-initial-circle {
       width: 34px; height: 34px; background: #3b82f6; color: white;
@@ -321,6 +335,19 @@ export class MagasinierLayoutComponent {
 
   markAllRead() {
     this.notifService.markAllAsRead().subscribe(() => this.refreshNotifs());
+  }
+
+  isAuditNotification(n: any): boolean {
+    return n.message?.toLowerCase().includes('audit') || n.typeNotification === 'AUDIT_REPORT';
+  }
+
+  goToReport(id: number, event: Event) {
+    event.stopPropagation();
+    if (id) {
+      this.notifService.markAsRead(id).subscribe(() => this.refreshNotifs());
+    }
+    this.showNotifs = false;
+    this.router.navigate(['/magasinier/audit']);
   }
 
   getNotifIcon(type: string): string {

@@ -24,6 +24,8 @@ public class Inventaire {
     private LocalDateTime dateDebut;
 
     private LocalDateTime dateFin;
+    
+    private String description;
 
     @OneToMany(mappedBy = "inventaire", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference

@@ -1,3 +1,5 @@
+import { Produit } from './produit.model';
+
 export interface MouvementStock {
     id?: number;
     produitId: number;
@@ -5,4 +7,5 @@ export interface MouvementStock {
     quantite: number;
     dateMouvement: Date;
     motif: string;
+    produit?: Produit;
 }

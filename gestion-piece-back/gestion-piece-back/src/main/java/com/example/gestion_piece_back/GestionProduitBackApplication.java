@@ -30,6 +30,40 @@ public class GestionProduitBackApplication {
 				System.out.println("Column prix_unitaire already dropped or error: " + e.getMessage());
 			}
 
+			// ============================================================
+			// NETTOYAGE PERMANENT: supprimer toujours les produits exemples
+			// ============================================================
+			try {
+				jdbcTemplate.execute(
+					"DELETE ms FROM mouvements_stock ms " +
+					"INNER JOIN produits p ON ms.produit_id = p.id_produit " +
+					"WHERE p.designation IN ('Roue dentée', 'Capteur de température')");
+			} catch (Exception e) {}
+			try {
+				jdbcTemplate.execute(
+					"UPDATE demande_produit SET produit_id = NULL WHERE produit_id IN " +
+					"(SELECT id_produit FROM produits WHERE designation IN ('Roue dentée', 'Capteur de température'))");
+			} catch (Exception e) {
+				try {
+					jdbcTemplate.execute(
+						"DELETE FROM demande_produit WHERE produit_id IN " +
+						"(SELECT id_produit FROM produits WHERE designation IN ('Roue dentée', 'Capteur de température'))");
+				} catch (Exception e2) {}
+			}
+			try {
+				jdbcTemplate.execute(
+					"DELETE FROM notifications WHERE produit_id IN " +
+					"(SELECT id_produit FROM produits WHERE designation IN ('Roue dentée', 'Capteur de température'))");
+			} catch (Exception e) {}
+			try {
+				jdbcTemplate.execute(
+					"DELETE FROM produits WHERE designation IN ('Roue dentée', 'Capteur de température')");
+				System.out.println("==> Produits exemples supprimés avec succès !");
+			} catch (Exception e) {
+				System.out.println("==> Erreur nettoyage: " + e.getMessage());
+			}
+			// ============================================================
+
 			// Only insert sample data if the database is empty
 			if (categorieRepository.count() == 0) {
 				// Sample categories
@@ -44,7 +78,7 @@ public class GestionProduitBackApplication {
 				categorieRepository.save(cat2);
 
 				// Sample produits
-				Produit p1 = new Produit();
+						Produit p1 = new Produit();
 				p1.setReference("REF001");
 				p1.setDesignation("Roue dentée");
 				p1.setQuantiteStock(100);

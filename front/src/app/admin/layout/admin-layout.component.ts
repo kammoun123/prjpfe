@@ -33,13 +33,13 @@ export class AdminLayoutComponent implements OnInit {
   markAsRead(id: number, event: Event): void {
     event.stopPropagation();
     this.notificationService.markAsRead(id).subscribe(() => {
-        this.loadNotifications();
+      this.loadNotifications();
     });
   }
 
   markAllAsRead(): void {
     this.notificationService.markAllAsRead().subscribe(() => {
-        this.loadNotifications();
+      this.loadNotifications();
     });
   }
 
@@ -60,11 +60,24 @@ export class AdminLayoutComponent implements OnInit {
 
   getNotificationIcon(type?: string): string {
     switch (type) {
-        case 'STOCK_ALERT': return 'bi-exclamation-triangle-fill text-warning';
-        case 'USER_REGISTRATION': return 'bi-person-plus-fill text-primary';
-        case 'DEMANDE_PIECE': return 'bi-clipboard-check-fill text-success';
-        default: return 'bi-info-circle-fill text-info';
+      case 'STOCK_ALERT': return 'bi-exclamation-triangle-fill text-warning';
+      case 'USER_REGISTRATION': return 'bi-person-plus-fill text-primary';
+      case 'DEMANDE_PIECE': return 'bi-clipboard-check-fill text-success';
+      case 'AUDIT_REPORT': return 'bi-file-earmark-bar-graph-fill text-info';
+      default: return 'bi-info-circle-fill text-info';
     }
+  }
+
+  isAuditNotification(n: any): boolean {
+    const msg = n.message?.toLowerCase() || '';
+    return msg.includes('rapport d\'audit') || n.typeNotification === 'AUDIT_REPORT';
+  }
+
+  goToReport(id: number, event: Event): void {
+    event.stopPropagation();
+    this.markAsRead(id, event);
+    this.showNotifications = false;
+    this.router.navigate(['/admin/audit']);
   }
 
   logout(): void {
