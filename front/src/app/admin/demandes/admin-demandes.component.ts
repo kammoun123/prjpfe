@@ -97,9 +97,18 @@ export class AdminDemandesComponent implements OnInit {
 
   getStatusClass(statut: string | undefined): string {
     if (!statut) return 'EN_ATTENTE';
-    const s = statut.toUpperCase();
-    if (s === 'VALIDATED') return 'VALIDATED';
+    const s = statut.toUpperCase().trim();
+    if (s === 'VALIDATED' || s === 'VALIDÉ' || s === 'VALIDÉE') return 'VALIDATED';
     if (s === 'REFUSED' || s === 'REFUSÉ') return 'REFUSED';
     return 'EN_ATTENTE';
+  }
+
+  formatStatut(statut: string | undefined): string {
+    if (!statut) return 'En attente';
+    const s = statut.toUpperCase().trim();
+    if (s === 'VALIDATED' || s === 'VALIDÉ' || s === 'VALIDÉE' || s === 'VALIDE') return 'VALIDE';
+    if (s === 'REFUSED' || s === 'REFUSÉ' || s === 'REFUSE') return 'REFUSÉ';
+    if (s === 'TRANSFÉRÉ_ADMIN' || s.includes('ADMIN')) return 'En attente Admin';
+    return statut;
   }
 }

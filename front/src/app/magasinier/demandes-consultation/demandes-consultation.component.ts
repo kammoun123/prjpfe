@@ -71,7 +71,7 @@ export class DemandesConsultationComponent implements OnInit {
     if (!statut) return 'En commande';
     const upper = statut.toUpperCase();
     if (upper === 'TRANSFÉRÉ_ADMIN' || upper.includes('ADMIN') || upper.includes('COMMANDE') || upper.includes('TRANSFÉRÉ')) return 'En commande';
-    if (upper.includes('VALID') || upper.includes('APPROV')) return 'Validée';
+    if (upper.includes('VALID') || upper.includes('APPROV')) return 'VALIDE';
     if (upper.includes('REFUS') || upper.includes('REJET')) return 'Rejetée';
     return statut;
   }

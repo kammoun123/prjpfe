@@ -32,7 +32,7 @@
             <td>{{ (item.dateFin || item.dateDebut) | date:'dd/MM/yyyy' }}</td>
             <td class="text-center">
               <span class="badge-status" [ngClass]="getStatusClass(item.statut)">
-                {{ ($any(item).statut === 'Validé' || $any(item).statut === 'VALIDATED' || $any(item).statut === 'VALIDÉE') ? 'VALIDÉ' : 'REFUSÉ' }}
+                {{ ($any(item).statut === 'Validé' || $any(item).statut === 'VALIDE' || $any(item).statut === 'VALIDATED' || $any(item).statut === 'VALIDÉE') ? 'VALIDE' : 'REFUSÉ' }}
               </span>
             </td>
             <td class="text-end">
@@ -70,7 +70,7 @@
             <div class="summary-box">
               <span class="s-label">STATUT FINAL</span>
               <span class="s-val badge-status" [ngClass]="getStatusClass($any(selectedAudit())?.statut)">
-                 {{ ($any(selectedAudit())?.statut === 'Validé' || $any(selectedAudit())?.statut === 'VALIDATED' || $any(selectedAudit())?.statut === 'VALIDÉE') ? 'VALIDÉ' : 'REFUSÉ' }}
+                 {{ ($any(selectedAudit())?.statut === 'Validé' || $any(selectedAudit())?.statut === 'VALIDE' || $any(selectedAudit())?.statut === 'VALIDATED' || $any(selectedAudit())?.statut === 'VALIDÉE') ? 'VALIDE' : 'REFUSÉ' }}
               </span>
             </div>
          </div>

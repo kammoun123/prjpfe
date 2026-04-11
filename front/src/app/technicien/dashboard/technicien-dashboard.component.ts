@@ -109,7 +109,10 @@ export class TechnicienDashboardComponent implements OnInit {
             const s = (d.statut || '').toLowerCase();
             return s.includes('attente') || s.includes('commande') || s.includes('en cours');
         }).length;
-        this.statsValidated = this.demandes.filter(d => d.statut === 'Validée').length;
+        this.statsValidated = this.demandes.filter(d => {
+            const s = (d.statut || '').toUpperCase().trim();
+            return s === 'VALIDÉE' || s === 'VALIDATED' || s === 'VALIDE' || s === 'VALIDÉ';
+        }).length;
         this.statsSuccessRate = this.statsTotal > 0 ? Math.round((this.statsValidated / this.statsTotal) * 100) : 0;
     }
 
@@ -171,5 +174,14 @@ export class TechnicienDashboardComponent implements OnInit {
                 this.toastService.show('Erreur lors de la suppression', 'error');
             }
         });
+    }
+
+    formatStatut(statut: string | undefined): string {
+        if (!statut) return 'En attente';
+        const s = statut.toUpperCase().trim();
+        if (s === 'VALIDATED' || s === 'VALIDÉ' || s === 'VALIDÉE' || s === 'VALIDE') return 'VALIDE';
+        if (s === 'REFUSED' || s === 'REFUSÉ' || s === 'REFUSE' || s === 'REJETÉE') return 'REJETÉE';
+        if (s.includes('ATTENTE') || s.includes('COMMANDE') || s.includes('EN COURS')) return 'En attente';
+        return statut;
     }
 }
