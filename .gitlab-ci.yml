@@ -2,51 +2,46 @@ stages:
   - build
   - docker
   - scan
-  - deploy
 
 variables:
   BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend
   FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend
   DB_IMAGE: $CI_REGISTRY_IMAGE/db
 
-# Build backend
 backend_build:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
   script:
-    - cd gestion-piece-back
+    - cd backend
     - mvn clean package -DskipTests
   artifacts:
     paths:
-      - gestion-piece-back/target/*.jar
+      - backend/target/*.jar
 
-# Build frontend
 frontend_build:
   stage: build
   image: node:18
   script:
-    - cd front
+    - cd frontend
     - npm install
     - npm run build
   artifacts:
     paths:
-      - front/dist/
+      - frontend/dist/
 
-# Docker build & push
 docker_build:
   stage: docker
   image: docker:latest
   services:
     - docker:dind
   script:
-    - docker build -t $BACKEND_IMAGE ./gestion-piece-back
-    - docker build -t $FRONTEND_IMAGE ./front
+    - docker build -t $BACKEND_IMAGE ./backend
+    - docker build -t $FRONTEND_IMAGE ./frontend
     - docker build -t $DB_IMAGE ./database
     - docker push $BACKEND_IMAGE
     - docker push $FRONTEND_IMAGE
     - docker push $DB_IMAGE
 
-# Security scan with Trivy
 scan:
   stage: scan
   image: aquasec/trivy
@@ -54,21 +49,3 @@ scan:
     - trivy image --severity HIGH,CRITICAL --exit-code 1 $BACKEND_IMAGE
     - trivy image --severity HIGH,CRITICAL --exit-code 1 $FRONTEND_IMAGE
     - trivy image --severity HIGH,CRITICAL --exit-code 1 $DB_IMAGE
-
-# Deploy to VM
-deploy:
-  stage: deploy
-  before_script:
-    - 'which ssh-agent || (apt-get update -y && apt-get install openssh-client -y)'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-  script:
-    - ssh -o StrictHostKeyChecking=no $VM_USER@$VM_IP "
-        docker pull $BACKEND_IMAGE &&
-        docker pull $FRONTEND_IMAGE &&
-        docker pull $DB_IMAGE &&
-        docker-compose down || true &&
-        docker-compose up -d
-      "
-  only:
-    - main
