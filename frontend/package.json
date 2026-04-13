@@ -1,0 +1,7 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "mkdir -p dist && echo '<!DOCTYPE html><html><head><title>Mon App</title></head><body><h1>Frontend is running!</h1><p>Backend API: <a href=\"http://localhost:8080\">http://localhost:8080</a></p></body></html>' > dist/index.html"
+  }
+}
