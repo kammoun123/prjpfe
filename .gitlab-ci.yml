@@ -8,9 +8,6 @@ variables:
   FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend
   DB_IMAGE: $CI_REGISTRY_IMAGE/db
 
-before_script:
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
 backend_build:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
@@ -37,6 +34,8 @@ docker_build:
   image: docker:latest
   services:
     - docker:dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker build -t $BACKEND_IMAGE ./backend
     - docker build -t $FRONTEND_IMAGE ./frontend
