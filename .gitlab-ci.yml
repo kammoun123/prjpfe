@@ -4,9 +4,9 @@ stages:
   - scan
 
 variables:
-  BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend
-  FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend
-  DB_IMAGE: $CI_REGISTRY_IMAGE/db
+  BACKEND_IMAGE: $DOCKER_USER/backend
+  FRONTEND_IMAGE: $DOCKER_USER/frontend
+  DB_IMAGE: $DOCKER_USER/db
 
 backend_build:
   stage: build
@@ -35,7 +35,7 @@ docker_build:
   services:
     - docker:dind
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
   script:
     - docker build -t $BACKEND_IMAGE ./backend
     - docker build -t $FRONTEND_IMAGE ./frontend
