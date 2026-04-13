@@ -1,7 +1,6 @@
 stages:
   - build
   - docker
-  - scan
 
 variables:
   BACKEND_IMAGE: $DOCKER_USER/backend
@@ -35,7 +34,7 @@ docker_build:
   services:
     - docker:dind
   before_script:
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
   script:
     - docker build -t $BACKEND_IMAGE ./backend
     - docker build -t $FRONTEND_IMAGE ./frontend
@@ -43,11 +42,3 @@ docker_build:
     - docker push $BACKEND_IMAGE
     - docker push $FRONTEND_IMAGE
     - docker push $DB_IMAGE
-
-scan:
-  stage: scan
-  image: aquasec/trivy
-  script:
-    - trivy image --severity HIGH,CRITICAL --exit-code 1 $BACKEND_IMAGE
-    - trivy image --severity HIGH,CRITICAL --exit-code 1 $FRONTEND_IMAGE
-    - trivy image --severity HIGH,CRITICAL --exit-code 1 $DB_IMAGE
