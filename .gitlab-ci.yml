@@ -3,6 +3,8 @@ stages:
   - docker
   - scan
 
+cache: {}
+
 backend_build:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
