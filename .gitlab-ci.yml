@@ -41,7 +41,7 @@ docker_build:
 
 scan:
   stage: scan
-  image: aquasec/trivy
+  image: aquasec/trivy:0.49.1
   script:
     - trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKER_USER/backend
     - trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKER_USER/frontend
