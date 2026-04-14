@@ -1,5 +1,6 @@
 stages:
   - build
+  - docker
 
 backend_build:
   stage: build
@@ -21,3 +22,18 @@ frontend_build:
   artifacts:
     paths:
       - frontend/dist/
+
+docker_build:
+  stage: docker
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+  script:
+    - docker build -t $DOCKER_USER/backend ./backend
+    - docker build -t $DOCKER_USER/frontend ./frontend
+    - docker build -t $DOCKER_USER/db ./database
+    - docker push $DOCKER_USER/backend
+    - docker push $DOCKER_USER/frontend
+    - docker push $DOCKER_USER/db
