@@ -37,9 +37,10 @@ docker_build:
     - docker push $DOCKER_USER/backend
     - docker push $DOCKER_USER/frontend
     - docker push $DOCKER_USER/db
-scan_v2:
+security_scan:
   stage: scan
-  image: alpine:latest
+  image: aquasec/trivy:0.49.1
   script:
-    - echo "Trivy scan will be added later"
-    - echo "Pipeline passed"
+    - trivy image --severity HIGH,CRITICAL $DOCKER_USER/backend || true
+    - trivy image --severity HIGH,CRITICAL $DOCKER_USER/frontend || true
+    - trivy image --severity HIGH,CRITICAL $DOCKER_USER/db || true
