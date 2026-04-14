@@ -1,11 +1,5 @@
 stages:
   - build
-  - docker
-
-variables:
-  BACKEND_IMAGE: $DOCKER_USER/backend
-  FRONTEND_IMAGE: $DOCKER_USER/frontend
-  DB_IMAGE: $DOCKER_USER/db
 
 backend_build:
   stage: build
@@ -13,32 +7,3 @@ backend_build:
   script:
     - cd backend
     - mvn clean package -DskipTests
-  artifacts:
-    paths:
-      - backend/target/*.jar
-
-frontend_build:
-  stage: build
-  image: node:18
-  script:
-    - cd frontend
-    - npm install
-    - npm run build || echo "No build script"
-  artifacts:
-    paths:
-      - frontend/dist/
-
-docker_build:
-  stage: docker
-  image: docker:latest
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-  script:
-    - docker build -t $BACKEND_IMAGE ./backend
-    - docker build -t $FRONTEND_IMAGE ./frontend
-    - docker build -t $DB_IMAGE ./database
-    - docker push $BACKEND_IMAGE
-    - docker push $FRONTEND_IMAGE
-    - docker push $DB_IMAGE
