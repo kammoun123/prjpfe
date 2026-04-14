@@ -51,30 +51,20 @@ scan:
     - docker run --rm aquasec/trivy:0.58.2 trivy image --severity HIGH,CRITICAL $DOCKER_USER/backend || true
     - docker run --rm aquasec/trivy:0.58.2 trivy image --severity HIGH,CRITICAL $DOCKER_USER/frontend || true
     - docker run --rm aquasec/trivy:0.58.2 trivy image --severity HIGH,CRITICAL $DOCKER_USER/db || true
-
 deploy:
   stage: deploy
   image: alpine:latest
   before_script:
-    - apk add --no-cache openssh-client docker-cli
+    - apk add --no-cache openssh-client
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
   script:
+    - echo "VM_USER: $VM_USER"
+    - echo "VM_IP: $VM_IP"
     - echo "Testing SSH connection..."
-    - ssh -o StrictHostKeyChecking=no $VM_USER@$VM_IP "echo 'SSH works!'"
-    - echo "Deploying application..."
-    - ssh -o StrictHostKeyChecking=no $VM_USER@$VM_IP "
-        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD &&
-        docker pull $DOCKER_USER/backend &&
-        docker pull $DOCKER_USER/frontend &&
-        docker pull $DOCKER_USER/db &&
-        docker network create app-network 2>/dev/null || true &&
-        docker rm -f backend frontend db 2>/dev/null || true &&
-        docker run -d --name db --network app-network -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=mydb -p 3307:3307 $DOCKER_USER/db &&
-        docker run -d --name backend --network app-network -e SPRING_DATASOURCE_URL=jdbc:mysql://db:3307/mydb -e SPRING_DATASOURCE_USERNAME=root -e SPRING_DATASOURCE_PASSWORD=root -p 8080:8080 $DOCKER_USER/backend &&
-        docker run -d --name frontend --network app-network -p 4200:80 $DOCKER_USER/frontend
-      "
+    - ssh -v -o StrictHostKeyChecking=no $VM_USER@$VM_IP "echo 'SSH works!'"
   only:
     - main
+
