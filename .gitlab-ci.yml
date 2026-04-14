@@ -44,4 +44,3 @@ scan:
     - trivy image --severity HIGH,CRITICAL $DOCKER_USER/backend
     - trivy image --severity HIGH,CRITICAL $DOCKER_USER/frontend
     - trivy image --severity HIGH,CRITICAL $DOCKER_USER/db
-
