@@ -1,6 +1,7 @@
 stages:
   - build
   - docker
+  - scan
 
 backend_build:
   stage: build
@@ -37,3 +38,11 @@ docker_build:
     - docker push $DOCKER_USER/backend
     - docker push $DOCKER_USER/frontend
     - docker push $DOCKER_USER/db
+
+scan:
+  stage: scan
+  image: aquasec/trivy
+  script:
+    - trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKER_USER/backend
+    - trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKER_USER/frontend
+    - trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKER_USER/db
