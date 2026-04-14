@@ -29,7 +29,7 @@ docker_build:
   services:
     - docker:dind
   before_script:
-    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - docker login -u "$DOCKER_USER" -p "$DOCKER_PASSWORD"
   script:
     - docker build -t $DOCKER_USER/backend ./backend
     - docker build -t $DOCKER_USER/frontend ./frontend
