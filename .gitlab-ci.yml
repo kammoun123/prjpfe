@@ -1,9 +1,8 @@
+
 stages:
   - build
   - docker
   - scan
-
-cache: {}
 
 backend_build:
   stage: build
