@@ -2,6 +2,7 @@ stages:
   - build
   - docker
   - scan
+
 backend_build:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
@@ -37,10 +38,12 @@ docker_build:
     - docker push $DOCKER_USER/backend
     - docker push $DOCKER_USER/frontend
     - docker push $DOCKER_USER/db
-security_scan:
+
+scan:
   stage: scan
-  image: aquasec/trivy:0.49.1
+  image: aquasec/trivy:0.58.2
   script:
+    - trivy --version
     - trivy image --severity HIGH,CRITICAL $DOCKER_USER/backend || true
     - trivy image --severity HIGH,CRITICAL $DOCKER_USER/frontend || true
     - trivy image --severity HIGH,CRITICAL $DOCKER_USER/db || true
