@@ -39,7 +39,7 @@ docker_build:
     - docker push $DOCKER_USER/backend
     - docker push $DOCKER_USER/frontend
     - docker push $DOCKER_USER/db
-
+    
 scan:
   stage: scan
   image: aquasec/trivy:0.49.1
