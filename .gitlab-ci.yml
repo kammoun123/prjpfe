@@ -41,9 +41,12 @@ docker_build:
 
 scan:
   stage: scan
-  image: aquasec/trivy:0.58.2
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$DOCKER_USER" -p "$DOCKER_PASSWORD"
   script:
-    - trivy --version
-    - trivy image --severity HIGH,CRITICAL $DOCKER_USER/backend || true
-    - trivy image --severity HIGH,CRITICAL $DOCKER_USER/frontend || true
-    - trivy image --severity HIGH,CRITICAL $DOCKER_USER/db || true
+    - docker run --rm aquasec/trivy:0.58.2 trivy image --severity HIGH,CRITICAL $DOCKER_USER/backend || true
+    - docker run --rm aquasec/trivy:0.58.2 trivy image --severity HIGH,CRITICAL $DOCKER_USER/frontend || true
+    - docker run --rm aquasec/trivy:0.58.2 trivy image --severity HIGH,CRITICAL $DOCKER_USER/db || true
