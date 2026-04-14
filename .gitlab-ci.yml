@@ -7,3 +7,17 @@ backend_build:
   script:
     - cd backend
     - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - backend/target/*.jar
+
+frontend_build:
+  stage: build
+  image: node:18
+  script:
+    - cd frontend
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist/
