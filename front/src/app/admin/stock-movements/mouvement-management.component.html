@@ -107,11 +107,48 @@
         <div class="card-header-main">
             <div class="header-titles">
                 <h2>Historique des Opérations</h2>
-                <span class="badge-count">{{ mouvements.length }} mouvements enregistrés</span>
+                <span class="badge-count">{{ filteredMouvements.length }} mouvements affichés</span>
             </div>
             <div class="filter-tools">
-                <button class="btn-tool"><i class="bi bi-filter"></i> Filtrer</button>
-                <button class="btn-tool"><i class="bi bi-printer"></i> Imprimer</button>
+                <button class="btn-tool" (click)="showFilters = !showFilters" [class.active]="showFilters">
+                    <i class="bi bi-filter"></i> 
+                    {{ showFilters ? 'Masquer' : 'Filtrer' }}
+                </button>
+                <button class="btn-tool" (click)="initialiserPage()"><i class="bi bi-arrow-clockwise"></i> Actualiser</button>
+            </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="filter-bar animate-slide-down">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>Flux</label>
+                    <select [(ngModel)]="filterType">
+                        <option value="ALL">Tous les flux</option>
+                        <option value="ENTREE">Entrées (+)</option>
+                        <option value="SORTIE">Sorties (-)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Du (Début)</label>
+                    <input type="date" [(ngModel)]="startDate">
+                </div>
+                <div class="filter-group">
+                    <label>Au (Fin)</label>
+                    <input type="date" [(ngModel)]="endDate">
+                </div>
+                <div class="filter-group">
+                    <label>Produit</label>
+                    <div class="search-input-wrapper">
+                        <i class="bi bi-search"></i>
+                        <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher...">
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn-reset" (click)="filterType='ALL'; startDate=''; endDate=''; searchTerm=''" title="Réinitialiser">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -127,7 +164,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let m of mouvements; let i = index" 
+                    <tr *ngFor="let m of filteredMouvements; let i = index" 
                         class="table-row-animate" 
                         [style.animation-delay]="i * 0.05 + 's'">
                         <td>
@@ -159,12 +196,12 @@
                             </button>
                         </td>
                     </tr>
-                    <tr *ngIf="mouvements.length === 0 && !loading">
+                    <tr *ngIf="filteredMouvements.length === 0 && !loading">
                         <td colspan="5">
                             <div class="empty-state">
                                 <img src="https://img.icons8.com/bubbles/200/empty-box.png" alt="Empty list">
-                                <h3>Aucun historique trouvé</h3>
-                                <p>Commencez à enregistrer vos mouvements pour voir l'historique ici.</p>
+                                <h3>Aucun résultat</h3>
+                                <p>Ajustez vos filtres pour trouver ce que vous cherchez.</p>
                             </div>
                         </td>
                     </tr>

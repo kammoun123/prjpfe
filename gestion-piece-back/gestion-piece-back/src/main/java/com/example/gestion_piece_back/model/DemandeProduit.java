@@ -30,6 +30,9 @@ public class DemandeProduit {
     @Column(name = "motif")
     private String motif;
 
+    @Column(name = "date_livraison_prevue")
+    private java.time.LocalDate dateLivraisonPrevue;
+
     @Column(name = "technicien_id")
     private Long technicienId;
 

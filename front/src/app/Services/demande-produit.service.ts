@@ -27,4 +27,12 @@ export class DemandeProduitService {
   updateStatutDemande(id: number, statut: string): Observable<DemandeProduit> {
     return this.http.patch<DemandeProduit>(`${this.demandesUrl}/${id}/statut`, { statut });
   }
+
+  orderFromSupplier(idDemande: number, idFournisseur: number, dateLivraison?: string): Observable<DemandeProduit> {
+    let url = `${this.apiUrl}/${idDemande}/order/${idFournisseur}`;
+    if (dateLivraison) {
+      url += `?dateLivraison=${dateLivraison}`;
+    }
+    return this.http.post<DemandeProduit>(url, {});
+  }
 }

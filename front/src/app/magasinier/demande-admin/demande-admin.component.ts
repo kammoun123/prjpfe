@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PieceService } from '../../Services/piece.service';
@@ -29,6 +29,23 @@ export class DemandeAdminComponent implements OnInit {
   
   historique = signal<any[]>([]);
 
+  // Filtering Signals
+  searchPiece = signal('');
+  searchDate = signal('');
+
+  // Computed Filtered List
+  filteredHistory = computed(() => {
+    const list = this.historique();
+    const pieceFilter = this.searchPiece().toLowerCase().trim();
+    const dateFilter = this.searchDate();
+
+    return list.filter(d => {
+      const matchesPiece = d.piece.toLowerCase().includes(pieceFilter);
+      const matchesDate = !dateFilter || (d.date && d.date.toString().includes(dateFilter));
+      return matchesPiece && matchesDate;
+    });
+  });
+
   ngOnInit() {
     this.loadPieces();
     this.loadHistory();
@@ -49,6 +66,14 @@ export class DemandeAdminComponent implements OnInit {
         quantite: d.quantite,
         statut: d.statut
       }));
+
+      // Sort by date descending (newest first)
+      mapped.sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : 0;
+        const dateB = b.date ? new Date(b.date).getTime() : 0;
+        return dateB - dateA;
+      });
+
       this.historique.set(mapped);
     });
   }

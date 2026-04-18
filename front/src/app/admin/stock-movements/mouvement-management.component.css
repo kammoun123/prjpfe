@@ -228,3 +228,119 @@
     .form-grid-pro { grid-template-columns: 1fr 1fr; }
     .form-actions-pro { grid-column: span 2; }
 }
+
+/* NEW FILTER BAR STYLES */
+.filter-bar {
+    padding: 20px 30px;
+    background: rgba(248, 250, 260, 0.5);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.5fr auto;
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.filter-group select, 
+.filter-group input[type="date"],
+.filter-group input[type="text"] {
+    padding: 10px 15px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    transition: 0.2s;
+}
+
+.filter-group select:focus, 
+.filter-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-wrapper i {
+    position: absolute;
+    left: 15px;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    padding-left: 40px !important;
+}
+
+.btn-reset {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--danger);
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.btn-reset:hover {
+    background: #fff1f2;
+    border-color: #fecaca;
+    transform: scale(1.05);
+}
+
+.btn-tool.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary-dark);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.animate-slide-down {
+    animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1000px) {
+    .filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .filter-actions {
+        grid-column: span 2;
+        justify-content: flex-end;
+        display: flex;
+    }
+}

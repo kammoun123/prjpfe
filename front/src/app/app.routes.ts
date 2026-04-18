@@ -24,6 +24,7 @@ import { ProfileComponent as MagasinierProfile } from './technicien/profile/prof
 
 import { AdminLayoutComponent } from './admin/layout/admin-layout.component';
 import { AdminDemandesComponent } from './admin/demandes/admin-demandes.component';
+import { FournisseurManagementComponent } from './admin/fournisseurs/fournisseur-management.component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
@@ -41,6 +42,7 @@ export const routes: Routes = [
             { path: 'mouvements', component: MouvementManagementComponent },
             { path: 'users', component: UserManagementComponent },
             { path: 'demandes', component: AdminDemandesComponent },
+            { path: 'fournisseurs', component: FournisseurManagementComponent },
             { path: 'audit', component: AuditRapportComponent },
             { path: 'profile', component: ProfileComponent }
         ]

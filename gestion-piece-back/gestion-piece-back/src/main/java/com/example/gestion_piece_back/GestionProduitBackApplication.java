@@ -4,18 +4,16 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import com.example.gestion_piece_back.model.*;
-import com.example.gestion_piece_back.repository.*;
+import com.example.gestion_piece_back.model.Utilisateur;
+import com.example.gestion_piece_back.repository.UtilisateurRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import java.time.LocalDateTime;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 @SpringBootApplication
 public class GestionProduitBackApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(GestionProduitBackApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(GestionProduitBackApplication.class, args);
+    }
 
 	@Bean
 	CommandLineRunner initDatabase(CategorieRepository categorieRepository, ProduitRepository produitRepository,
@@ -124,4 +122,5 @@ public class GestionProduitBackApplication {
 			System.out.println("Users seeding complete!");
 		};
 	}
+
 }

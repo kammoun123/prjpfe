@@ -28,7 +28,20 @@
 
   <!-- History Table -->
   <div class="history-card">
-    <h3>Historique des Demandes</h3>
+    <div class="history-header">
+      <h3>Historique des Demandes</h3>
+      <div class="filters-container">
+        <div class="filter-group">
+          <i class="bi bi-search"></i>
+          <input type="text" [(ngModel)]="searchPiece" placeholder="Filtrer par pièce..." class="filter-control">
+        </div>
+        <div class="filter-group">
+          <i class="bi bi-calendar-event"></i>
+          <input type="date" [(ngModel)]="searchDate" class="filter-control">
+        </div>
+      </div>
+    </div>
+
     <div class="table-responsive">
       <table class="h-table">
         <thead>
@@ -40,18 +53,18 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let d of historique()">
+          <tr *ngFor="let d of filteredHistory()">
             <td class="date-text">{{ d.date | date:'MMM d, yyyy' }}</td>
             <td>{{ d.piece }}</td>
             <td class="text-center">
                <span class="qty-badge">{{ d.quantite }}</span>
             </td>
             <td class="text-center">
-               <span class="status-pill">{{ d.statut }}</span>
+               <span class="status-pill" [ngClass]="d.statut?.toLowerCase()">{{ d.statut }}</span>
             </td>
           </tr>
-          <tr *ngIf="historique().length === 0">
-            <td colspan="4" class="empty-state">Aucune demande envoyée pour le moment.</td>
+          <tr *ngIf="filteredHistory().length === 0">
+            <td colspan="4" class="empty-state">Aucune demande trouvée.</td>
           </tr>
         </tbody>
       </table>
