@@ -1,0 +1,71 @@
+stages:
+  - build
+  - docker
+  - scan
+  - deploy
+
+backend_build:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - cd backend
+    - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - backend/target/*.jar
+
+frontend_build:
+  stage: build
+  image: node:18
+  script:
+    - cd frontend
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist/
+
+docker_build:
+  stage: docker
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$DOCKER_USER" -p "$DOCKER_PASSWORD"
+  script:
+    - docker build -t $DOCKER_USER/backend ./backend
+    - docker build -t $DOCKER_USER/frontend ./frontend
+    - docker build -t $DOCKER_USER/db ./database
+    - docker push $DOCKER_USER/backend
+    - docker push $DOCKER_USER/frontend
+    - docker push $DOCKER_USER/db
+
+scan:
+  stage: scan
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$DOCKER_USER" -p "$DOCKER_PASSWORD"
+  script:
+    - docker run --rm aquasec/trivy:0.58.2 trivy image --severity HIGH,CRITICAL $DOCKER_USER/backend || true
+    - docker run --rm aquasec/trivy:0.58.2 trivy image --severity HIGH,CRITICAL $DOCKER_USER/frontend || true
+    - docker run --rm aquasec/trivy:0.58.2 trivy image --severity HIGH,CRITICAL $DOCKER_USER/db || true
+deploy:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$DOCKER_USER" -p "$DOCKER_PASSWORD"
+  script:
+    - docker pull $DOCKER_USER/backend
+    - docker pull $DOCKER_USER/frontend
+    - docker pull $DOCKER_USER/db
+    - docker network create app-network 2>/dev/null || true
+    - docker rm -f backend frontend db 2>/dev/null || true
+    - docker run -d --name db --network app-network -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=mydb -p 3307:3307 $DOCKER_USER/db
+    - docker run -d --name backend --network app-network -e SPRING_DATASOURCE_URL=jdbc:mysql://db:3307/mydb -e SPRING_DATASOURCE_USERNAME=root -e SPRING_DATASOURCE_PASSWORD=root -p 8080:8080 $DOCKER_USER/backend
+    - docker run -d --name frontend --network app-network -p 4200:80 $DOCKER_USER/frontend
+  only:
+    - main
