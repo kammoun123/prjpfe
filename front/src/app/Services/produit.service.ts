@@ -8,35 +8,35 @@ import { environment } from '../../environments/environment';
     providedIn: 'root'
 })
 export class ProduitService {
-    private apiUrl = `${environment.apiUrl}/produits`;
+    private produitsUrl = `${environment.apiUrl}/produits`;
 
     constructor(private http: HttpClient) { }
 
     getPieces(): Observable<Produit[]> {
-        return this.http.get<Produit[]>(this.apiUrl);
+        return this.http.get<Produit[]>(this.produitsUrl);
     }
 
     createProduit(produit: Produit): Observable<Produit> {
-        return this.http.post<Produit>(this.apiUrl, produit);
+        return this.http.post<Produit>(this.produitsUrl, produit);
     }
 
     updateProduit(id: number, produit: Produit): Observable<Produit> {
-        return this.http.put<Produit>(`${this.apiUrl}/${id}`, produit);
+        return this.http.put<Produit>(`${this.produitsUrl}/${id}`, produit);
     }
 
     deleteProduit(id: number): Observable<void> {
-        return this.http.delete<void>(`${this.apiUrl}/${id}`);
+        return this.http.delete<void>(`${this.produitsUrl}/${id}`);
     }
 
     uploadPhoto(id: number, file: File): Observable<{ photoUrl: string }> {
         const formData = new FormData();
         formData.append('file', file);
-        return this.http.post<{ photoUrl: string }>(`${this.apiUrl}/${id}/photo`, formData);
+        return this.http.post<{ photoUrl: string }>(`${this.produitsUrl}/${id}/photo`, formData);
     }
 
     uploadFiche(id: number, file: File): Observable<{ ficheTechniqueUrl: string }> {
         const formData = new FormData();
         formData.append('file', file);
-        return this.http.post<{ ficheTechniqueUrl: string }>(`${this.apiUrl}/${id}/fiche`, formData);
+        return this.http.post<{ ficheTechniqueUrl: string }>(`${this.produitsUrl}/${id}/fiche`, formData);
     }
 }

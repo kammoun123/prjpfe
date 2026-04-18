@@ -8,23 +8,23 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class InventaireService {
-  private apiUrl = `${environment.apiUrl}/inventaires`;
+  private inventairesUrl = `${environment.apiUrl}/inventaires`;
 
   constructor(private http: HttpClient) { }
 
   getInventaires(): Observable<Inventaire[]> {
-    return this.http.get<Inventaire[]>(this.apiUrl);
+    return this.http.get<Inventaire[]>(this.inventairesUrl);
   }
 
   addInventaire(inv: Inventaire): Observable<Inventaire> {
-    return this.http.post<Inventaire>(this.apiUrl, inv);
+    return this.http.post<Inventaire>(this.inventairesUrl, inv);
   }
 
   updateInventaire(id: number | string, changes: Partial<Inventaire>): Observable<Inventaire> {
-    return this.http.put<Inventaire>(`${this.apiUrl}/${id}`, changes);
+    return this.http.put<Inventaire>(`${this.inventairesUrl}/${id}`, changes);
   }
 
   deleteInventaire(id: number | string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.inventairesUrl}/${id}`);
   }
 }

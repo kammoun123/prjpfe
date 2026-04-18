@@ -17,18 +17,20 @@ export interface Profil extends Utilisateur {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/auth`;
+  private authUrl = `${environment.apiUrl}/auth`;
+  private usersUrl = `${environment.apiUrl}/users`;
+
   private platformId = inject(PLATFORM_ID);
   private currentUserSubject = new BehaviorSubject<Utilisateur | null>(this.getUserFromStorage());
 
   constructor(private http: HttpClient) { }
 
   register(user: Utilisateur): Observable<Utilisateur> {
-    return this.http.post<Utilisateur>(`${this.apiUrl}/register`, user);
+    return this.http.post<Utilisateur>(`${this.authUrl}/register`, user);
   }
 
   login(credentials: { email: string, motDePasse: string }): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
+    return this.http.post<AuthResponse>(`${this.authUrl}/login`, credentials).pipe(
       tap(response => {
         if (isPlatformBrowser(this.platformId)) {
           localStorage.setItem('token', response.token);
@@ -83,27 +85,27 @@ export class AuthService {
 
   // User Management for Admin
   getUsers(): Observable<Utilisateur[]> {
-    return this.http.get<Utilisateur[]>(`${environment.apiUrl}/users`);
+    return this.http.get<Utilisateur[]>(this.usersUrl);
   }
 
   updateUserStatus(id: number, status: string): Observable<Utilisateur> {
-    return this.http.patch<Utilisateur>(`${environment.apiUrl}/users/${id}/status`, { status });
+    return this.http.patch<Utilisateur>(`${this.usersUrl}/${id}/status`, { status });
   }
 
   updateUser(id: number, user: Utilisateur): Observable<Utilisateur> {
-    return this.http.put<Utilisateur>(`${environment.apiUrl}/users/${id}`, user);
+    return this.http.put<Utilisateur>(`${this.usersUrl}/${id}`, user);
   }
 
   deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${environment.apiUrl}/users/${id}`);
+    return this.http.delete<void>(`${this.usersUrl}/${id}`);
   }
 
   // Profile methods
   getProfil(id: string): Observable<Profil> {
-    return this.http.get<Profil>(`${environment.apiUrl}/users/${id}`);
+    return this.http.get<Profil>(`${this.usersUrl}/${id}`);
   }
 
   updateProfil(id: string, profil: Partial<Profil>): Observable<Profil> {
-    return this.http.put<Profil>(`${environment.apiUrl}/users/${id}`, profil);
+    return this.http.put<Profil>(`${this.usersUrl}/${id}`, profil);
   }
 }

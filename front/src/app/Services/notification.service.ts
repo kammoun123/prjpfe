@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
     providedIn: 'root'
 })
 export class NotificationService {
-    private apiUrl = `${environment.apiUrl}/notifications`;
+    private notificationsUrl = `${environment.apiUrl}/notifications`;
 
     // Global Notification State
     notifications = signal<Notification[]>([]);
@@ -18,7 +18,7 @@ export class NotificationService {
     constructor(private http: HttpClient) { }
 
     fetchNotificationsForRole(role: string): Observable<Notification[]> {
-        return this.http.get<Notification[]>(this.apiUrl).pipe(
+        return this.http.get<Notification[]>(this.notificationsUrl).pipe(
             map(notifs => notifs.filter(n => n.roleCible && n.roleCible.toUpperCase() === role.toUpperCase())),
             tap(filtered => {
                 // Sort by newest first natively
@@ -29,11 +29,11 @@ export class NotificationService {
     }
 
     getAllNotifications(): Observable<Notification[]> {
-        return this.http.get<Notification[]>(this.apiUrl);
+        return this.http.get<Notification[]>(this.notificationsUrl);
     }
 
     getNotifications(role: string): Observable<Notification[]> {
-        return this.http.get<Notification[]>(this.apiUrl).pipe(
+        return this.http.get<Notification[]>(this.notificationsUrl).pipe(
             map(notifications => notifications.filter(n => 
                 n.roleCible && n.roleCible.toUpperCase() === role.toUpperCase()
             ))
@@ -41,18 +41,18 @@ export class NotificationService {
     }
 
     markAsRead(id: number): Observable<void> {
-        return this.http.put<void>(`${this.apiUrl}/${id}/read`, {});
+        return this.http.put<void>(`${this.notificationsUrl}/${id}/read`, {});
     }
 
     markAllAsRead(): Observable<void> {
-        return this.http.put<void>(`${this.apiUrl}/read-all`, {});
+        return this.http.put<void>(`${this.notificationsUrl}/read-all`, {});
     }
 
     createNotification(notification: Partial<Notification>): Observable<Notification> {
-        return this.http.post<Notification>(this.apiUrl, notification);
+        return this.http.post<Notification>(this.notificationsUrl, notification);
     }
 
     deleteNotification(id: number): Observable<void> {
-        return this.http.delete<void>(`${this.apiUrl}/${id}`);
+        return this.http.delete<void>(`${this.notificationsUrl}/${id}`);
     }
 }

@@ -8,23 +8,23 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class DemandeProduitService {
-  private apiUrl = `${environment.apiUrl}/demandes`;
+  private demandesUrl = `${environment.apiUrl}/demandes`;
 
   constructor(private http: HttpClient) { }
 
   getDemandes(): Observable<DemandeProduit[]> {
-    return this.http.get<DemandeProduit[]>(this.apiUrl);
+    return this.http.get<DemandeProduit[]>(this.demandesUrl);
   }
 
   createDemande(demande: DemandeProduit): Observable<DemandeProduit> {
-    return this.http.post<DemandeProduit>(this.apiUrl, demande);
+    return this.http.post<DemandeProduit>(this.demandesUrl, demande);
   }
 
   deleteDemande(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.demandesUrl}/${id}`);
   }
 
   updateStatutDemande(id: number, statut: string): Observable<DemandeProduit> {
-    return this.http.patch<DemandeProduit>(`${this.apiUrl}/${id}/statut`, { statut });
+    return this.http.patch<DemandeProduit>(`${this.demandesUrl}/${id}/statut`, { statut });
   }
 }

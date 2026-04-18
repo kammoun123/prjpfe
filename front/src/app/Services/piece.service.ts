@@ -8,15 +8,15 @@ import { environment } from '../../environments/environment';
     providedIn: 'root'
 })
 export class PieceService {
-    private apiUrl = `${environment.apiUrl}/produits`;
+    private piecesUrl = `${environment.apiUrl}/produits`;
 
     constructor(private http: HttpClient) { }
 
     getPieces(): Observable<Piece[]> {
-        return this.http.get<Piece[]>(this.apiUrl);
+        return this.http.get<Piece[]>(this.piecesUrl);
     }
 
     updatePiece(id: number, data: any): Observable<Piece> {
-        return this.http.patch<Piece>(`${this.apiUrl}/${id}`, data);
+        return this.http.patch<Piece>(`${this.piecesUrl}/${id}`, data);
     }
 }

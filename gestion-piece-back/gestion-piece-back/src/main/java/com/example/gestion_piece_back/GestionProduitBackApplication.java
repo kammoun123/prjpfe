@@ -22,7 +22,8 @@ public class GestionProduitBackApplication {
 			DemandeProduitRepository demandeProduitRepository, UtilisateurRepository utilisateurRepository,
 			PasswordEncoder passwordEncoder, JdbcTemplate jdbcTemplate) {
 		return args -> {
-			// Manually drop the column if it still exists (Hibernate update doesn't delete it)
+			// Manually drop the column if it still exists (Hibernate update doesn't delete
+			// it)
 			try {
 				jdbcTemplate.execute("ALTER TABLE produits DROP COLUMN prix_unitaire");
 				System.out.println("Column prix_unitaire dropped successfully!");
@@ -30,39 +31,7 @@ public class GestionProduitBackApplication {
 				System.out.println("Column prix_unitaire already dropped or error: " + e.getMessage());
 			}
 
-			// ============================================================
-			// NETTOYAGE PERMANENT: supprimer toujours les produits exemples
-			// ============================================================
-			try {
-				jdbcTemplate.execute(
-					"DELETE ms FROM mouvements_stock ms " +
-					"INNER JOIN produits p ON ms.produit_id = p.id_produit " +
-					"WHERE p.designation IN ('Roue dentée', 'Capteur de température')");
-			} catch (Exception e) {}
-			try {
-				jdbcTemplate.execute(
-					"UPDATE demande_produit SET produit_id = NULL WHERE produit_id IN " +
-					"(SELECT id_produit FROM produits WHERE designation IN ('Roue dentée', 'Capteur de température'))");
-			} catch (Exception e) {
-				try {
-					jdbcTemplate.execute(
-						"DELETE FROM demande_produit WHERE produit_id IN " +
-						"(SELECT id_produit FROM produits WHERE designation IN ('Roue dentée', 'Capteur de température'))");
-				} catch (Exception e2) {}
-			}
-			try {
-				jdbcTemplate.execute(
-					"DELETE FROM notifications WHERE produit_id IN " +
-					"(SELECT id_produit FROM produits WHERE designation IN ('Roue dentée', 'Capteur de température'))");
-			} catch (Exception e) {}
-			try {
-				jdbcTemplate.execute(
-					"DELETE FROM produits WHERE designation IN ('Roue dentée', 'Capteur de température')");
-				System.out.println("==> Produits exemples supprimés avec succès !");
-			} catch (Exception e) {
-				System.out.println("==> Erreur nettoyage: " + e.getMessage());
-			}
-			// ============================================================
+			// (Code de nettoyage supprimé car il effaçait les produits à chaque redémarrage !)
 
 			// Only insert sample data if the database is empty
 			if (categorieRepository.count() == 0) {
@@ -78,7 +47,7 @@ public class GestionProduitBackApplication {
 				categorieRepository.save(cat2);
 
 				// Sample produits
-						Produit p1 = new Produit();
+				Produit p1 = new Produit();
 				p1.setReference("REF001");
 				p1.setDesignation("Roue dentée");
 				p1.setQuantiteStock(100);
@@ -126,7 +95,33 @@ public class GestionProduitBackApplication {
 				utilisateurRepository.save(admin);
 			});
 
-			System.out.println("Admin activated!");
+			// Ajout d'un compte Technicien de test (aa@gmail.com)
+			if (utilisateurRepository.findByEmail("aa@gmail.com").isEmpty()) {
+				Utilisateur tech = new Utilisateur();
+				tech.setEmail("aa@gmail.com");
+				tech.setNom("Test");
+				tech.setPrenom("Technicien");
+				tech.setRole("TECHNICIEN");
+				tech.setStatut("ACTIVE");
+				tech.setMotDePasse(passwordEncoder.encode("123456"));
+				utilisateurRepository.save(tech);
+				System.out.println("Test user aa@gmail.com created!");
+			}
+
+			// Ajout d'un compte Magasinier de test (magasinier@gmail.com)
+			if (utilisateurRepository.findByEmail("magasinier@gmail.com").isEmpty()) {
+				Utilisateur mag = new Utilisateur();
+				mag.setEmail("magasinier@gmail.com");
+				mag.setNom("Test");
+				mag.setPrenom("Magasinier");
+				mag.setRole("MAGASINIER");
+				mag.setStatut("ACTIVE");
+				mag.setMotDePasse(passwordEncoder.encode("123456"));
+				utilisateurRepository.save(mag);
+				System.out.println("Test user magasinier@gmail.com created!");
+			}
+
+			System.out.println("Users seeding complete!");
 		};
 	}
 }

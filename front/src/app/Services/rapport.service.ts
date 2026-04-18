@@ -25,15 +25,15 @@ export interface Rapport {
   providedIn: 'root'
 })
 export class RapportService {
-  private apiUrl = `${environment.apiUrl}/inventaires`;
+  private rapportsUrl = `${environment.apiUrl}/inventaires`;
 
   constructor(private http: HttpClient) {}
 
   getRapports(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+    return this.http.get<any[]>(this.rapportsUrl);
   }
 
   getRapportById(id: number | string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+    return this.http.get<any>(`${this.rapportsUrl}/${id}`);
   }
 }

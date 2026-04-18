@@ -8,20 +8,20 @@ import { environment } from '../../environments/environment';
     providedIn: 'root'
 })
 export class MouvementStockService {
-    private apiUrl = `${environment.apiUrl}/mouvements`;
+    private mouvementsUrl = `${environment.apiUrl}/mouvements`;
 
     constructor(private http: HttpClient) { }
 
     getAllMouvements(): Observable<MouvementStock[]> {
-        return this.http.get<MouvementStock[]>(this.apiUrl);
+        return this.http.get<MouvementStock[]>(this.mouvementsUrl);
     }
 
     createMouvement(mouvement: any): Observable<any> {
-        return this.http.post<any>(this.apiUrl, mouvement);
+        return this.http.post<any>(this.mouvementsUrl, mouvement);
     }
 
     deleteMouvement(id: number): Observable<any> {
-        return this.http.delete<any>(`${this.apiUrl}/${id}`);
+        return this.http.delete<any>(`${this.mouvementsUrl}/${id}`);
     }
 }
 

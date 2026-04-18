@@ -8,19 +8,19 @@ import { environment } from '../../environments/environment';
     providedIn: 'root'
 })
 export class CategorieService {
-    private apiUrl = `${environment.apiUrl}/categories`;
+    private categoriesUrl = `${environment.apiUrl}/categories`;
 
     constructor(private http: HttpClient) { }
 
     getCategories(): Observable<Categorie[]> {
-        return this.http.get<Categorie[]>(this.apiUrl);
+        return this.http.get<Categorie[]>(this.categoriesUrl);
     }
 
     createCategorie(categorie: Categorie): Observable<Categorie> {
-        return this.http.post<Categorie>(this.apiUrl, categorie);
+        return this.http.post<Categorie>(this.categoriesUrl, categorie);
     }
 
     deleteCategorie(id: number): Observable<void> {
-        return this.http.delete<void>(`${this.apiUrl}/${id}`);
+        return this.http.delete<void>(`${this.categoriesUrl}/${id}`);
     }
 }
