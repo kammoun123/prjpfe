@@ -24,12 +24,19 @@ export class DemandesConsultationComponent implements OnInit {
   pieces = signal<Produit[]>([]);
   activeTab = signal<'attente' | 'historique'>('attente');
 
+  // Filtering signals
+  startDate = signal<string>('');
+  endDate = signal<string>('');
+  searchTerm = signal<string>('');
+
   ngOnInit() {
     this.loadData();
   }
 
   loadData() {
-    this.demandeService.getDemandes().subscribe(data => this.demandes.set(data));
+    this.demandeService.getDemandes().subscribe(data => {
+      this.demandes.set(data);
+    });
     this.pieceService.getPieces().subscribe(data => this.pieces.set(data));
   }
 
@@ -38,11 +45,39 @@ export class DemandesConsultationComponent implements OnInit {
   }
 
   filteredDemandes() {
+    let filtered = this.demandes();
+
+    // 1. Tab Filter (Status)
     if (this.activeTab() === 'attente') {
-      return this.demandes().filter(d => d.statut === 'EN_ATTENTE' || d.statut === 'PENDING' || d.statut === 'En attente' || d.statut === 'EN ATTENTE');
+      filtered = filtered.filter(d => 
+        ['EN_ATTENTE', 'PENDING', 'En attente', 'EN ATTENTE'].includes(d.statut?.toUpperCase() || '')
+      );
     } else {
-      return this.demandes().filter(d => d.statut !== 'EN_ATTENTE' && d.statut !== 'PENDING' && d.statut !== 'En attente' && d.statut !== 'EN ATTENTE');
+      filtered = filtered.filter(d => 
+        !['EN_ATTENTE', 'PENDING', 'En attente', 'EN ATTENTE'].includes(d.statut?.toUpperCase() || '')
+      );
     }
+
+    // 2. Date Filter
+    if (this.startDate()) {
+      filtered = filtered.filter(d => d.dateDemande && new Date(d.dateDemande).toISOString().split('T')[0] >= this.startDate());
+    }
+    if (this.endDate()) {
+      filtered = filtered.filter(d => d.dateDemande && new Date(d.dateDemande).toISOString().split('T')[0] <= this.endDate());
+    }
+
+    // 3. Search Filter
+    if (this.searchTerm()) {
+      const search = this.searchTerm().toLowerCase();
+      filtered = filtered.filter(d => this.getPieceName(d.idProduit).toLowerCase().includes(search));
+    }
+
+    // Always sort filtered list by date descending (Newest First)
+    return filtered.sort((a, b) => {
+      const dateA = a.dateDemande ? new Date(a.dateDemande).getTime() : 0;
+      const dateB = b.dateDemande ? new Date(b.dateDemande).getTime() : 0;
+      return dateB - dateA;
+    });
   }
 
   getPieceName(id: number | undefined): string {
@@ -80,7 +115,6 @@ export class DemandesConsultationComponent implements OnInit {
     const id = demande.idDemande || demande.id;
     this.demandeService.updateStatutDemande(id, statut).subscribe({
       next: () => {
-        // Envoi d'une notification à la suite du changement de statut
         let role = 'TECHNICIEN';
         let msg = `Votre demande pour la pièce a été ${statut}.`;
         let type = 'info';
@@ -106,7 +140,6 @@ export class DemandesConsultationComponent implements OnInit {
            roleCible: role
         }).subscribe();
 
-        // Afficher également un Toast de réussite locale
         if (statut === 'VALIDATED') {
             this.toastService.show('Demande validée avec succès !', 'success');
         } else if (statut === 'Refusé') {
@@ -125,7 +158,6 @@ export class DemandesConsultationComponent implements OnInit {
   }
 
   transfererAdmin(demande: any) {
-    // Statut explicite pour l'Admin
     this.validerDemande(demande, 'TRANSFÉRÉ_ADMIN');
   }
 }

@@ -18,12 +18,6 @@ export class LoginComponent implements OnInit {
   constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit() {
-    if (this.authService.isLoggedIn()) {
-      const user = this.authService.getCurrentUser();
-      if (user) {
-        this.redirectBasedOnRole(user.role);
-      }
-    }
   }
 
   login() {

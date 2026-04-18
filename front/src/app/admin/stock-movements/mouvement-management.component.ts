@@ -25,6 +25,13 @@ export class MouvementManagementComponent implements OnInit {
         motif: 'Action Admin'
     };
 
+    // Filter properties
+    showFilters = true;
+    filterType = 'ALL';
+    startDate = '';
+    endDate = '';
+    searchTerm = '';
+
     loading = false;
 
     constructor(
@@ -37,9 +44,10 @@ export class MouvementManagementComponent implements OnInit {
     }
 
     get stats() {
-        const totalMovements = this.mouvements.length;
-        const totalEntries = this.mouvements.filter(m => m.typeMouvement === 'ENTREE').reduce((acc, m) => acc + (m.quantite ?? 0), 0);
-        const totalExits = this.mouvements.filter(m => m.typeMouvement === 'SORTIE').reduce((acc, m) => acc + (m.quantite ?? 0), 0);
+        const source = this.filteredMouvements;
+        const totalMovements = source.length;
+        const totalEntries = source.filter(m => m.typeMouvement === 'ENTREE').reduce((acc, m) => acc + (m.quantite ?? 0), 0);
+        const totalExits = source.filter(m => m.typeMouvement === 'SORTIE').reduce((acc, m) => acc + (m.quantite ?? 0), 0);
         
         return {
             total: totalMovements,
@@ -47,6 +55,21 @@ export class MouvementManagementComponent implements OnInit {
             exits: totalExits,
             lastUpdate: new Date().toLocaleDateString()
         };
+    }
+
+    get filteredMouvements() {
+        return this.mouvements.filter(m => {
+            const matchesType = this.filterType === 'ALL' || m.typeMouvement === this.filterType;
+            
+            const mDate = new Date(m.dateMouvement).toISOString().split('T')[0];
+            const matchesStart = !this.startDate || mDate >= this.startDate;
+            const matchesEnd = !this.endDate || mDate <= this.endDate;
+            
+            const pieceName = this.getNomPiece(m.produitId).toLowerCase();
+            const matchesSearch = !this.searchTerm || pieceName.includes(this.searchTerm.toLowerCase());
+            
+            return matchesType && matchesStart && matchesEnd && matchesSearch;
+        });
     }
 
     initialiserPage() {

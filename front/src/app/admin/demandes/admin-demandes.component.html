@@ -75,13 +75,17 @@
             </td>
             <td class="text-end">
               <div class="action-btns" *ngIf="getStatusClass(d.statut) === 'EN_ATTENTE'">
-                <button class="btn-action approve" (click)="updateStatus(d, 'VALIDATED')" title="Approuver">
+                <button class="btn-action approve" (click)="updateStatus(d, 'VALIDATED')" title="Approuver (Interne)">
                   <i class="bi bi-check-lg"></i>
+                </button>
+                <button class="btn-action order" (click)="openOrderModal(d)" title="Commander chez un fournisseur">
+                  <i class="bi bi-truck"></i>
                 </button>
                 <button class="btn-action reject" (click)="updateStatus(d, 'REFUSED')" title="Refuser">
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
+
               <div class="action-btns" *ngIf="getStatusClass(d.statut) !== 'EN_ATTENTE'">
                 <button class="btn-action-view" disabled>
                    <i class="bi bi-dash-circle"></i>
@@ -114,5 +118,86 @@
         <span class="label">Approuvées</span>
         <span class="value text-success">{{ validatedCount() }}</span>
      </div>
+  </div>
+
+  <!-- ORDER MODAL (FOURNISSEUR) -->
+  <div class="modal-overlay" *ngIf="showOrderModal()" (click)="closeOrderModal()">
+    <div class="modal-premium animate-zoom" (click)="$event.stopPropagation()">
+      <div class="modal-hdr" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
+        <div class="modal-hdr-left">
+          <div class="modal-icon-wrap" style="background: rgba(255,255,255,0.2);">
+            <i class="bi bi-truck text-white"></i>
+          </div>
+          <div>
+            <h2 class="modal-hdr-title text-white">Commander chez un Fournisseur</h2>
+            <p class="modal-hdr-sub text-white-50">Transférer cette demande à un partenaire externe</p>
+          </div>
+        </div>
+        <button class="modal-close-btn text-white" (click)="closeOrderModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body-new p-4">
+        <!-- Order Summary -->
+        <div class="order-summary-box mb-4 p-3 rounded" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+          <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+            <span class="text-muted small fw-bold">PRODUIT</span>
+            <span class="fw-bold text-dark">{{ selectedDemandeForOrder()?.produit?.designation || 'Inconnu' }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+            <span class="text-muted small fw-bold">RÉFÉRENCE</span>
+            <span class="text-dark">{{ selectedDemandeForOrder()?.produit?.reference || 'N/A' }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+            <span class="text-muted small fw-bold">QUANTITÉ REQUISE</span>
+            <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ selectedDemandeForOrder()?.quantite }}</span>
+          </div>
+          <div class="d-flex flex-column pt-1">
+            <span class="text-muted small fw-bold mb-1">MOTIF / NOTE IMPORTANTE</span>
+            <span class="text-dark fst-italic">{{ selectedDemandeForOrder()?.motif || 'Aucun motif fourni' }}</span>
+          </div>
+        </div>
+
+        <div class="section-label mb-3"><span class="section-num">1</span> Paramètres de la Commande</div>
+        
+        <div class="field-group mb-4">
+          <label class="field-label">Sélectionnez un Fournisseur Actif <span class="text-danger">*</span></label>
+          <div class="field-input-wrap">
+            <i class="field-icon bi bi-building"></i>
+            <select class="field-input with-icon" [ngModel]="selectedFournisseurId()" (ngModelChange)="selectedFournisseurId.set($event)">
+              <option [ngValue]="null" disabled>-- Choisir un fournisseur --</option>
+              <option *ngFor="let f of fournisseurs()" [ngValue]="f.idFournisseur">
+                {{ f.nom }} ({{ f.email }})
+              </option>
+            </select>
+          </div>
+          <div class="form-text text-muted small mt-1">
+            Un email officiel de commande sera envoyé à l'adresse de ce fournisseur.
+          </div>
+        </div>
+
+        <div class="field-group mb-4">
+          <label class="field-label">Date de Livraison Prévue <span class="text-muted fw-normal">(Optionnel)</span></label>
+          <div class="field-input-wrap">
+            <i class="field-icon bi bi-calendar-event"></i>
+            <input type="date" class="field-input with-icon" [ngModel]="selectedDateLivraison()" (ngModelChange)="selectedDateLivraison.set($event)">
+          </div>
+        </div>
+
+        <div class="modal-footer-new mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn-cancel-new" (click)="closeOrderModal()" [disabled]="orderLoading()">
+            Annuler
+          </button>
+          <button type="button" class="btn-submit-new d-flex align-items-center gap-2" 
+                  [disabled]="!selectedFournisseurId() || orderLoading()" 
+                 (click)="submitOrder()" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
+            <span *ngIf="!orderLoading()"><i class="bi bi-send-fill"></i> Envoyer la Commande</span>
+            <span *ngIf="orderLoading()" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span *ngIf="orderLoading()">Envoi en cours...</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

@@ -53,7 +53,24 @@ public class ProduitService {
         return produitRepository.save(produit);
     }
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     public void deleteProduit(Long id) {
+        try {
+            jdbcTemplate.update("DELETE FROM mouvements_stock WHERE produit_id = ?", id);
+            jdbcTemplate.update("DELETE FROM notifications WHERE produit_id = ?", id);
+            try {
+                jdbcTemplate.update("DELETE FROM lignes_inventaire WHERE produit_id = ?", id);
+            } catch (Exception e) {} // Ignorer si la table n'existe pas ou autre nom
+            try {
+                jdbcTemplate.update("DELETE FROM ligne_inventaire WHERE produit_id = ?", id);
+            } catch (Exception e) {}
+
+            jdbcTemplate.update("UPDATE demandes SET produit_id = NULL WHERE produit_id = ?", id);
+        } catch (Exception e) {
+            System.err.println("Database cleanup error before product deletion: " + e.getMessage());
+        }
         produitRepository.deleteById(id);
     }
 

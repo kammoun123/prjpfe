@@ -14,6 +14,8 @@ import com.example.gestion_piece_back.model.Utilisateur;
 import com.example.gestion_piece_back.model.Produit;
 import com.example.gestion_piece_back.model.MouvementStock;
 import com.example.gestion_piece_back.service.MouvementStockService;
+import com.example.gestion_piece_back.repository.FournisseurRepository;
+import com.example.gestion_piece_back.model.Fournisseur;
 
 @Service
 public class DemandeProduitService {
@@ -35,6 +37,9 @@ public class DemandeProduitService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private FournisseurRepository fournisseurRepository;
     
     public List<DemandeProduit> getAllDemandes() {
         return demandeProduitRepository.findAll();
@@ -112,7 +117,39 @@ public class DemandeProduitService {
             
             mouvementStockService.createMouvement(mouvement);
         }
-
         return saved;
+    }
+
+    public DemandeProduit commanderChezFournisseur(Long idDemande, Long idFournisseur, java.time.LocalDate dateLivraison) {
+        DemandeProduit demande = demandeProduitRepository.findById(idDemande)
+                .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+
+        Fournisseur fournisseur = fournisseurRepository.findById(idFournisseur)
+                .orElseThrow(() -> new RuntimeException("Fournisseur non trouvé"));
+
+        String produitDesignation = "Inconnu";
+        if (demande.getProduitId() != null) {
+            Produit produit = produitRepository.findById(demande.getProduitId()).orElse(null);
+            if (produit != null) {
+                produitDesignation = produit.getDesignation() + " (Réf: " + produit.getReference() + ")";
+            }
+        }
+
+        // Save delivery date
+        if(dateLivraison != null) {
+            demande.setDateLivraisonPrevue(dateLivraison);
+        }
+
+        emailService.sendOrderEmail(
+            fournisseur.getEmail(), 
+            fournisseur.getNom(), 
+            produitDesignation, 
+            demande.getQuantite(), 
+            demande.getMotif(),
+            dateLivraison
+        );
+
+        demande.setStatut("COMMANDE");
+        return demandeProduitRepository.save(demande);
     }
 }

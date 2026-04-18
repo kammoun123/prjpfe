@@ -35,4 +35,12 @@ public class DemandeProduitController {
         String statut = body.get("statut");
         return demandeProduitService.updateStatus(id, statut);
     }
+
+    @PostMapping("/{id}/order/{idFournisseur}")
+    public DemandeProduit sendOrderToSupplier(
+            @PathVariable Long id, 
+            @PathVariable Long idFournisseur,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate dateLivraison) {
+        return demandeProduitService.commanderChezFournisseur(id, idFournisseur, dateLivraison);
+    }
 }
