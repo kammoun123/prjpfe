@@ -418,10 +418,12 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
         ecart: 0
       }));
 
-      this.inventaireService.updateInventaire(id, { lignes: lignes } as any).subscribe(() => {
-        this.broadcastNotification(`${msg} (ID: #${id})`, this.alertCount > 0 ? 'warning' : 'AUDIT_REPORT');
-        this.loadInventaires(); // Refresh local list
-      });
+      if (id) {
+        this.inventaireService.updateInventaire(id, { lignes: lignes } as any).subscribe(() => {
+          this.broadcastNotification(`${msg} (ID: #${id})`, this.alertCount > 0 ? 'warning' : 'AUDIT_REPORT');
+          this.loadInventaires(); // Refresh local list
+        });
+      }
     });
 
     // Add to local session history
