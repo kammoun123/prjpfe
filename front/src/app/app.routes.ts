@@ -25,6 +25,7 @@ import { ProfileComponent as MagasinierProfile } from './technicien/profile/prof
 import { AdminLayoutComponent } from './admin/layout/admin-layout.component';
 import { AdminDemandesComponent } from './admin/demandes/admin-demandes.component';
 import { FournisseurManagementComponent } from './admin/fournisseurs/fournisseur-management.component';
+import { ControleurLayoutComponent } from './controleur/layout/controleur-layout.component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
@@ -62,9 +63,15 @@ export const routes: Routes = [
 
     {
         path: 'controleur',
-        component: ControleurDashboardComponent,
+        component: ControleurLayoutComponent,
         canActivate: [authGuard],
-        data: { role: 'CONTROLEUR' }
+        data: { role: 'CONTROLEUR' },
+        children: [
+            { path: '', component: ControleurDashboardComponent },
+            { path: 'inventories', component: ControleurDashboardComponent },
+            { path: 'reports', component: ControleurDashboardComponent },
+            { path: 'profile', component: ProfileComponent }
+        ]
     },
     {
         path: 'magasinier',

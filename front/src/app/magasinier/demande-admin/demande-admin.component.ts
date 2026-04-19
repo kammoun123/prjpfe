@@ -23,6 +23,7 @@ export class DemandeAdminComponent implements OnInit {
   
   pieces = signal<Produit[]>([]);
   sending = signal(false);
+  showFilters = signal(false);
   
   selectedPieceId: number | null = null;
   quantity: number = 0;

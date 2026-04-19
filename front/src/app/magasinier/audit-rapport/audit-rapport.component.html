@@ -1,120 +1,236 @@
-<div class="audit-page-container">
-  <!-- Section Titles -->
-  <header class="section-title-wrapper">
-    <h1>Rapports d'Audit</h1>
-    <p>Historique et rapports des inventaires physiques réalisés.</p>
+<div class="admin-container animate-fade-in">
+  <!-- ═══ CLEAN HEADER ═══ -->
+  <header class="hero-header">
+      <div class="hero-content">
+          <div class="hero-badge">
+              <i class="bi bi-shield-check"></i> Espace Magasinier
+          </div>
+          <h1>Rapports d'Audit</h1>
+          <p>Consultation de l'historique des inventaires physiques</p>
+      </div>
+      <div class="hero-date">
+          <i class="bi bi-calendar3"></i>
+          {{ today | date:'EEEE d MMMM yyyy' }}
+      </div>
   </header>
 
-  <!-- Main Audit Card -->
-  <div class="audit-main-card">
-    <div class="card-top-header">
-       <div class="title-with-icon">
-          <i class="bi bi-clock-history"></i>
-          <h3>Historique des Audits</h3>
-       </div>
+  <!-- ═══ MINIMAL STATS GRID ═══ -->
+  <section class="stats-section">
+      <div class="stats-grid">
+
+          <div class="stat-card">
+              <div class="stat-icon-wrap blue">
+                  <i class="bi bi-journal-check"></i>
+              </div>
+              <div class="stat-body">
+                  <span class="stat-label">Total Audits</span>
+                  <div class="stat-value">{{ totalAudits() }}</div>
+                  <span class="stat-sublabel">tous les rapports</span>
+              </div>
+          </div>
+
+          <div class="stat-card">
+              <div class="stat-icon-wrap green">
+                  <i class="bi bi-check-circle"></i>
+              </div>
+              <div class="stat-body">
+                  <span class="stat-label">Validés</span>
+                  <div class="stat-value">{{ validatedAudits() }}</div>
+                  <span class="stat-sublabel">rapports confirmés</span>
+              </div>
+          </div>
+
+          <div class="stat-card">
+              <div class="stat-icon-wrap red">
+                  <i class="bi bi-x-circle"></i>
+              </div>
+              <div class="stat-body">
+                  <span class="stat-label">Refusés</span>
+                  <div class="stat-value">{{ rejectedAudits() }}</div>
+                  <span class="stat-sublabel">anomalies ou rejets</span>
+              </div>
+          </div>
+
+      </div>
+  </section>
+
+  <!-- MAIN AUDIT CARD -->
+  <section class="main-card glass-premium">
+    <div class="card-header-main">
+      <div class="header-titles">
+        <h2>Historique des Opérations</h2>
+        <span class="badge-count">{{ filteredInventaires().length }} rapports trouvés</span>
+      </div>
+      <div class="filter-tools">
+        <button class="btn-tool" (click)="showFilters.set(!showFilters())" [class.active]="showFilters()">
+          <i class="bi bi-filter"></i> 
+          {{ showFilters() ? 'Masquer' : 'Filtrer' }}
+        </button>
+        <button class="btn-tool" (click)="loadInventaires()"><i class="bi bi-arrow-clockwise"></i> Actualiser</button>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar animate-slide-down" *ngIf="showFilters()">
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label>Recherche par ID / Description</label>
+          <div class="search-input-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" placeholder="Entrez un ID ou mot-clé...">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>Filtrer par Date</label>
+          <input type="date" [ngModel]="searchDate()" (ngModelChange)="searchDate.set($event)">
+        </div>
+        <div class="filter-actions">
+          <button class="btn-reset" (click)="searchTerm.set(''); searchDate.set('')" title="Réinitialiser">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="table-responsive">
-      <table class="audit-list-table">
+      <table class="premium-table">
         <thead>
           <tr>
             <th>ID AUDIT</th>
-            <th>DATE DÉBUT</th>
-            <th>DATE FIN</th>
+            <th>PÉRIODE D'INVENTAIRE</th>
             <th class="text-center">STATUT</th>
-            <th class="text-end">ACTION</th>
+            <th class="text-end">ACTIONS</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of filteredInventaires()">
-            <td><span class="id-audit-text">#{{ item.idInventaire || item.id || '---' }}</span></td>
-            <td>{{ item.dateDebut | date:'dd/MM/yyyy' }}</td>
-            <td>{{ (item.dateFin || item.dateDebut) | date:'dd/MM/yyyy' }}</td>
+          <tr *ngFor="let item of filteredInventaires(); let i = index" 
+              class="table-row-animate" 
+              [style.animation-delay]="i * 0.05 + 's'">
+            <td>
+              <div class="id-wrapper">
+                <span class="id-hash">#</span>
+                <span class="id-val">{{ item.idInventaire || item.id }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="date-range-pro">
+                <div class="date-item">
+                  <span class="d-label">Début:</span>
+                  <span class="d-val">{{ item.dateDebut | date:'dd MMM yyyy' }}</span>
+                </div>
+                <div class="date-item">
+                  <span class="d-label">Fin:</span>
+                  <span class="d-val">{{ (item.dateFin || item.dateDebut) | date:'dd MMM yyyy' }}</span>
+                </div>
+              </div>
+            </td>
             <td class="text-center">
-              <span class="badge-status" [ngClass]="getStatusClass(item.statut)">
-                {{ ($any(item).statut === 'Validé' || $any(item).statut === 'VALIDE' || $any(item).statut === 'VALIDATED' || $any(item).statut === 'VALIDÉE') ? 'VALIDE' : 'REFUSÉ' }}
+              <span class="badge-status-pro" [ngClass]="getStatusClass(item.statut)">
+                <i class="bi" [ngClass]="isStatutValide(item.statut) ? 'bi-patch-check-fill' : 'bi-x-octagon-fill'"></i>
+                {{ getStatutLabel(item.statut) }}
               </span>
             </td>
             <td class="text-end">
-              <button class="btn-view-report" (click)="voirRapport(item)">
-                <i class="bi bi-eye"></i> Voir Rapport
+              <button class="btn-action-view" (click)="voirRapport(item)">
+                <i class="bi bi-file-earmark-text"></i>
+                Voir Rapport
               </button>
             </td>
           </tr>
           <tr *ngIf="filteredInventaires().length === 0">
-            <td colspan="5" class="empty-row">Aucun inventaire disponible.</td>
+            <td colspan="4">
+              <div class="empty-state-pro">
+                <i class="bi bi-clipboard-x"></i>
+                <h3>Aucun rapport trouvé</h3>
+                <p>Essayez de modifier vos critères de recherche.</p>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
-  </div>
+  </section>
 </div>
 
-<!-- Modale Voir Rapport -->
-<div class="modal-overlay" *ngIf="showModal()" (click)="closeModal()">
-   <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-         <div class="m-title">
-           <h3>Détails du Rapport d'Audit</h3>
-           <span class="m-id">#{{ $any(selectedAudit())?.idInventaire || $any(selectedAudit())?.id }}</span>
-         </div>
-         <button class="close-btn" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+<!-- PREMIUM REPORT MODAL -->
+<div class="modal-backdrop animate-fade-in" *ngIf="showModal()" (click)="closeModal()">
+  <div class="modal-card-pro glass-premium animate-zoom-in" (click)="$event.stopPropagation()">
+    <div class="modal-header-pro">
+      <div class="m-titles">
+        <span class="m-badge">RAPPORT D'AUDIT</span>
+        <h3>Détails de l'Inventaire Physique</h3>
+        <p class="m-subtitle">Référence: <span class="fw-bold">#{{ selectedAudit()?.idInventaire || selectedAudit()?.id }}</span></p>
       </div>
-      
-      <div class="modal-body">
-         <div class="audit-summary-boxes">
-            <div class="summary-box">
-              <span class="s-label">DATE D'EXÉCUTION</span>
-              <span class="s-val">{{ $any(selectedAudit())?.dateDebut | date:'dd/MM/yyyy à HH:mm' }}</span>
-            </div>
-            <div class="summary-box">
-              <span class="s-label">STATUT FINAL</span>
-              <span class="s-val badge-status" [ngClass]="getStatusClass($any(selectedAudit())?.statut)">
-                 {{ ($any(selectedAudit())?.statut === 'Validé' || $any(selectedAudit())?.statut === 'VALIDE' || $any(selectedAudit())?.statut === 'VALIDATED' || $any(selectedAudit())?.statut === 'VALIDÉE') ? 'VALIDE' : 'REFUSÉ' }}
-              </span>
-            </div>
-         </div>
+      <button class="btn-close-circle" (click)="closeModal()"><i class="bi bi-x"></i></button>
+    </div>
 
-         <!-- General Report Description -->
-         <div class="report-description-box" *ngIf="$any(selectedAudit())?.description">
-            <h5 class="desc-label"><i class="bi bi-info-circle"></i> Résumé du Rapport</h5>
-            <p class="desc-text">{{ $any(selectedAudit())?.description }}</p>
-         </div>
+    <div class="modal-body-pro">
+      <div class="audit-info-grid">
+        <div class="info-card">
+          <i class="bi bi-calendar-check color-primary"></i>
+          <div class="info-content">
+            <span class="i-label">Exécuté le</span>
+            <span class="i-val">{{ selectedAudit()?.dateDebut | date:'dd MMMM yyyy à HH:mm' }}</span>
+          </div>
+        </div>
+        <div class="info-card">
+          <i class="bi bi-person-check color-success"></i>
+          <div class="info-content">
+            <span class="i-label">Statut du Rapport</span>
+            <span class="badge-status-pro" [ngClass]="getStatusClass(selectedAudit()?.statut)">
+              {{ getStatutLabel(selectedAudit()?.statut) }}
+            </span>
+          </div>
+        </div>
+      </div>
 
-         <h4 class="lignes-title">Articles Contrôlés ({{ $any(selectedAudit())?.lignes?.length || 0 }})</h4>
-         <div class="lignes-table-container">
-           <table class="lignes-table">
-             <thead>
-               <tr>
-                 <th>PRODUIT / PIÈCE</th>
-                 <th class="text-center">QTÉ THÉORIQUE</th>
-                 <th class="text-center">QTÉ RÉELLE</th>
-                 <th class="text-center">ÉCART</th>
-               </tr>
-             </thead>
-             <tbody>
-               <tr *ngFor="let l of $any(selectedAudit())?.lignes">
-                 <td class="fw-bold">{{ $any(l).produit?.designation || $any(l).piece?.designation || 'Article Inconnu' }}</td>
-                 <td class="text-center text-gray">{{ $any(l).quantiteTheorique }}</td>
-                 <td class="text-center fw-bold">{{ $any(l).quantitePhysique }}</td>
-                 <td class="text-center">
-                    <span class="ecart-badge" 
-                          [ngClass]="{'ecart-ok': $any(l).ecart === 0, 'ecart-bad': $any(l).ecart !== 0}">
-                       {{ $any(l).ecart > 0 ? '+' : '' }}{{ $any(l).ecart }}
-                    </span>
-                 </td>
-               </tr>
-               <tr *ngIf="!$any(selectedAudit())?.lignes || $any(selectedAudit())?.lignes?.length === 0">
-                 <td colspan="4" class="empty-row-small">Aucune ligne d'inventaire disponible pour ce rapport.</td>
-               </tr>
-             </tbody>
-           </table>
-         </div>
+      <div class="report-narrative" *ngIf="selectedAudit()?.description">
+        <h5 class="section-sub"><i class="bi bi-chat-left-text"></i> Résumé de l'Audit</h5>
+        <p>{{ selectedAudit()?.description }}</p>
       </div>
-      
-      <div class="modal-footer">
-         <button class="btn-print" (click)="printReport()"><i class="bi bi-printer"></i> Imprimer le Rapport</button>
-         <button class="btn-close-modal" (click)="closeModal()">Fermer</button>
+
+      <div class="articles-section">
+        <div class="section-header-row">
+          <h5 class="section-sub"><i class="bi bi-box-seam"></i> Articles Contrôlés</h5>
+          <span class="articles-count">{{ selectedAudit()?.lignes?.length || 0 }} références</span>
+        </div>
+        
+        <div class="lignes-scroll-area">
+          <table class="lignes-table-premium">
+            <thead>
+              <tr>
+                <th>PIÈCE / DÉSIGNATION</th>
+                <th class="text-center">THÉORIQUE</th>
+                <th class="text-center">RÉELLE</th>
+                <th class="text-center">ÉCART</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let l of selectedAudit()?.lignes">
+                <td>
+                  <span class="l-piece-name">{{ l.produit?.designation || l.piece?.designation || 'Article Inconnu' }}</span>
+                </td>
+                <td class="text-center"><span class="l-qty-muted">{{ l.quantiteTheorique ?? l.quantite_theorique ?? l.produit?.quantiteStock }}</span></td>
+                <td class="text-center"><span class="l-qty-bold">{{ l.quantiteReelle ?? l.quantite_reelle ?? l.quantitePhysique ?? l.quantite_physique ?? ((l.quantiteTheorique ?? l.quantite_theorique ?? l.produit?.quantiteStock ?? 0) + (l.ecart ?? 0)) }}</span></td>
+                <td class="text-center">
+                  <div class="ecart-indicator" [class.ecart-error]="l.ecart !== 0" [class.ecart-success]="l.ecart === 0">
+                    <i class="bi" [ngClass]="l.ecart === 0 ? 'bi-check-circle' : 'bi-exclamation-triangle'"></i>
+                    {{ l.ecart > 0 ? '+' : '' }}{{ l.ecart }}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-   </div>
+    </div>
+
+    <div class="modal-footer-pro">
+      <button class="btn-secondary-pro" (click)="closeModal()">Fermer</button>
+      <button class="btn-primary-pro" (click)="printReport()">
+        <i class="bi bi-printer"></i>
+        Imprimer le Rapport
+      </button>
+    </div>
+  </div>
 </div>

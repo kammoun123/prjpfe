@@ -26,6 +26,7 @@ export class DemandePieceComponent implements OnInit {
     loading = false;
     panier: { produitId: number; quantite: number; designation: string }[] = [];
     backendUrl = environment.apiUrl.replace('/api', '');
+    today = new Date();
 
     constructor(
         private pieceService: PieceService,

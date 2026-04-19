@@ -56,7 +56,7 @@
         <tbody>
           <tr *ngFor="let d of filteredDemandes()">
             <td class="date-col">{{ d.dateDemande | date:'MMM d, yyyy' }}</td>
-            <td class="piece-col">{{ getPieceName($any(d).idProduit) || $any(d).produit?.designation || 'Pièce Inconnue' }}</td>
+            <td class="piece-col">{{ getPieceName(d.produitId) || d.produit?.designation || 'Pièce Inconnue' }}</td>
             <td class="text-center">
                <span class="qty-badge">{{ $any(d).quantiteDemandee || $any(d).quantite }}</span>
             </td>

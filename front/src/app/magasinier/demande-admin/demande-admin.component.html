@@ -1,73 +1,156 @@
-<div class="demande-admin-layout">
-  <!-- Centered Form Card -->
-  <div class="form-card">
-    <h2>Demande à l'Administrateur</h2>
-    
-    <div class="form-group">
-      <label>PIÈCE</label>
-      <div class="select-wrapper">
-         <select [(ngModel)]="selectedPieceId" class="form-control">
-           <option [ngValue]="null" disabled selected>Sélectionner une pièce</option>
-           <option *ngFor="let p of pieces()" [ngValue]="p.idProduit">{{ p.designation }}</option>
-         </select>
-         <i class="bi bi-chevron-down select-icon"></i>
+<div class="admin-container animate-fade-in">
+  <!-- DASHBOARD HEADER -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <h1 class="premium-title">Demande à l'Administrateur</h1>
+      <nav class="breadcrumb">
+        <span>Magasinier</span> <i class="bi bi-chevron-right"></i>
+        <span class="active">Demande Admin</span>
+      </nav>
+    </div>
+    <div class="header-right">
+      <div class="activity-badge glass-premium">
+        <i class="bi bi-shield-check"></i>
+        Status Magasinier
+      </div>
+    </div>
+  </header>
+
+  <!-- QUICK ENTRY FORM -->
+  <section class="quick-entry-card glass-premium mb-4 centered-form">
+    <div class="card-header-pro">
+      <i class="bi bi-megaphone-fill"></i>
+      <h2>Nouvelle Demande</h2>
+    </div>
+    <form (ngSubmit)="submit()" class="quick-form-pro">
+      <div class="form-grid-pro single-column">
+        <div class="form-group-pro">
+          <label>Sélectionner la Pièce</label>
+          <div class="input-icon-group">
+            <i class="bi bi-box-seam"></i>
+            <select [(ngModel)]="selectedPieceId" name="piece" required>
+              <option [ngValue]="null" disabled selected>Sélectionner une pièce...</option>
+              <option *ngFor="let p of pieces()" [ngValue]="p.idProduit">{{ p.designation }} (Ref: {{ p.reference }})</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group-pro">
+          <label>Quantité Souhaitée</label>
+          <div class="qty-input-pro">
+            <button type="button" (click)="quantity = quantity > 0 ? quantity - 1 : 0">
+              <i class="bi bi-dash"></i>
+            </button>
+            <input type="number" [(ngModel)]="quantity" name="qty" required placeholder="0">
+            <button type="button" (click)="quantity = quantity + 1">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-actions-pro mt-4">
+          <button type="submit" class="btn-submit-pro" [disabled]="sending() || !selectedPieceId || quantity <= 0">
+            <i class="bi bi-send-fill" *ngIf="!sending()"></i>
+            <span class="loader" *ngIf="sending()"></span>
+            <span>{{ sending() ? 'Envoi...' : 'Envoyer la Demande' }}</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <!-- HISTORY SECTION -->
+  <section class="main-card glass-premium mt-5">
+    <div class="card-header-main">
+      <div class="header-titles">
+        <h2>Historique des Demandes</h2>
+        <span class="badge-count">{{ filteredHistory().length }} opérations trouvées</span>
+      </div>
+      <div class="filter-tools">
+        <button class="btn-tool" (click)="showFilters.set(!showFilters())" [class.active]="showFilters()">
+          <i class="bi bi-filter"></i> 
+          {{ showFilters() ? 'Masquer' : 'Filtrer' }}
+        </button>
+        <button class="btn-tool" (click)="loadHistory()"><i class="bi bi-arrow-clockwise"></i></button>
       </div>
     </div>
 
-    <div class="form-group" style="margin-bottom: 32px;">
-      <label>QUANTITÉ SOUHAITÉE</label>
-      <input type="number" [(ngModel)]="quantity" class="form-control" placeholder="0" min="1">
-    </div>
-
-    <button class="btn-submit" (click)='submit()' [disabled]="sending() || !selectedPieceId || quantity <= 0">
-      <i class="bi bi-send-fill" *ngIf="!sending()"></i>
-      <span class="loader" *ngIf="sending()"></span>
-      {{ sending() ? 'Envoi en cours...' : 'Envoyer Demande' }}
-    </button>
-  </div>
-
-  <!-- History Table -->
-  <div class="history-card">
-    <div class="history-header">
-      <h3>Historique des Demandes</h3>
-      <div class="filters-container">
-        <div class="filter-group">
-          <i class="bi bi-search"></i>
-          <input type="text" [(ngModel)]="searchPiece" placeholder="Filtrer par pièce..." class="filter-control">
+    <!-- FILTER BAR -->
+    <div class="filter-bar animate-slide-down" *ngIf="showFilters()">
+      <div class="filter-grid-pro">
+        <div class="filter-group-pro">
+          <label>Recherche par Pièce</label>
+          <div class="search-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="text" [ngModel]="searchPiece()" (ngModelChange)="searchPiece.set($event)" placeholder="Nom de la pièce...">
+          </div>
         </div>
-        <div class="filter-group">
-          <i class="bi bi-calendar-event"></i>
-          <input type="date" [(ngModel)]="searchDate" class="filter-control">
+        <div class="filter-group-pro">
+          <label>Date de Demande</label>
+          <div class="date-wrapper">
+            <i class="bi bi-calendar3"></i>
+            <input type="date" [ngModel]="searchDate()" (ngModelChange)="searchDate.set($event)">
+          </div>
+        </div>
+        <div class="filter-actions-pro">
+          <button class="btn-reset-pro" (click)="searchPiece.set(''); searchDate.set('')" title="Réinitialiser">
+            <i class="bi bi-x-lg"></i>
+          </button>
         </div>
       </div>
     </div>
 
     <div class="table-responsive">
-      <table class="h-table">
+      <table class="premium-table">
         <thead>
           <tr>
-            <th>DATE</th>
-            <th>PIÈCE</th>
+            <th>HORODATAGE</th>
+            <th>PIÈCE SÉLECTIONNÉE</th>
             <th class="text-center">QUANTITÉ</th>
-            <th class="text-center">STATUT</th>
+            <th class="text-center">STATUT ACTUEL</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let d of filteredHistory()">
-            <td class="date-text">{{ d.date | date:'MMM d, yyyy' }}</td>
-            <td>{{ d.piece }}</td>
-            <td class="text-center">
-               <span class="qty-badge">{{ d.quantite }}</span>
+          <tr *ngFor="let d of filteredHistory(); let i = index" 
+              class="table-row-animate" 
+              [style.animation-delay]="i * 0.05 + 's'">
+            <td>
+              <div class="timestamp">
+                <span class="date">{{ d.date | date:'dd MMM yyyy' }}</span>
+                <span class="time">{{ d.date | date:'HH:mm' }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="product-info-cell">
+                <span class="product-name">{{ d.piece }}</span>
+              </div>
             </td>
             <td class="text-center">
-               <span class="status-pill" [ngClass]="d.statut?.toLowerCase()">{{ d.statut }}</span>
+              <span class="qty-pill">{{ d.quantite }}</span>
+            </td>
+            <td class="text-center">
+              <span class="badge-status-pro" [class]="d.statut?.toLowerCase()">
+                <i class="bi" [ngClass]="{
+                  'bi-hourglass-split': d.statut === 'EN_ATTENTE',
+                  'bi-check-circle-fill': d.statut === 'VALIDATED' || d.statut === 'APPROVED',
+                  'bi-x-circle-fill': d.statut === 'REJECTED',
+                  'bi-send-check': d.statut === 'TRANSFÉRÉ_ADMIN'
+                }"></i>
+                {{ d.statut }}
+              </span>
             </td>
           </tr>
           <tr *ngIf="filteredHistory().length === 0">
-            <td colspan="4" class="empty-state">Aucune demande trouvée.</td>
+            <td colspan="4">
+              <div class="empty-state">
+                <img src="https://img.icons8.com/bubbles/200/empty-box.png" alt="Empty list">
+                <h3>Aucun résultat</h3>
+                <p>Ajustez vos filtres pour voir vos demandes.</p>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
-  </div>
+  </section>
 </div>

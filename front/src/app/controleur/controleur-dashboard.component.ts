@@ -8,6 +8,7 @@ import { Produit } from '../models/produit.model';
 import { NotificationService } from '../Services/notification.service';
 import { AuthService } from '../Services/auth.service';
 import { ToastService } from '../Services/toast.service';
+import { ActivatedRoute } from '@angular/router';
 
 declare var jspdf: any;
 
@@ -41,6 +42,7 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
+  private route = inject(ActivatedRoute);
 
   // Tabs
   currentTab: 'dashboard' | 'inventories' | 'reports' = 'dashboard';
@@ -65,6 +67,7 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
   notifications = this.notificationService.notifications;
   unreadCount = this.notificationService.unreadCount;
   showNotifDropdown = false;
+  today = new Date();
   private pollingId: any;
 
   // Stats
@@ -82,6 +85,13 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadInitialData();
+    
+    // Sync tab with URL
+    const path = window.location.pathname;
+    if (path.includes('inventories')) this.currentTab = 'inventories';
+    else if (path.includes('reports')) this.currentTab = 'reports';
+    else this.currentTab = 'dashboard';
+
     // Poll notifications every 10s outside Angular zone to prevent UI lag
     this.ngZone.runOutsideAngular(() => {
       this.pollingId = setInterval(() => {
@@ -265,14 +275,27 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
       const now = new Date();
       const isConforme = this.piecesReport.every(p => p.ecart === 0);
       
-      // Persist to database as an Inventaire record
-      const newInv: Partial<Inventaire> = {
+      // Persist to database as an Inventaire record with lines
+      const newInv: any = {
         dateDebut: now.toISOString(),
         dateFin: now.toISOString(),
-        statut: 'Validé'
+        statut: 'Validé',
+        description: `Audit clôturé par ${this.profil?.nom || 'Contrôleur'}`,
+        lignes: this.piecesReport.map(p => ({
+          produit: { idProduit: p.idProduit }, // Clean object: ONLY ID to avoid Jackson errors
+          idProduit: p.idProduit,
+          id_produit: p.idProduit,
+          quantiteTheorique: p.quantiteStock,
+          quantite_theorique: p.quantiteStock,
+          quantiteReelle: p.quantiteReelle,
+          quantite_reelle: p.quantiteReelle,
+          quantitePhysique: p.quantiteReelle,
+          quantite_physique: p.quantiteReelle,
+          ecart: p.ecart
+        }))
       };
 
-      this.inventaireService.addInventaire(newInv as Inventaire).subscribe((savedInv) => {
+      this.inventaireService.addInventaire(newInv).subscribe((savedInv) => {
         const id = savedInv.idInventaire || savedInv.id;
         const msg = `Nouveau rapport d'audit détaillé #${id} envoyé par ${this.profil?.nom || 'Contrôleur'}.`;
         this.broadcastNotification(msg, isConforme ? 'success' : 'warning');
@@ -333,9 +356,36 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
   }
 
   envoyerAAdmin() {
-    const msg = `Rapport d'audit de stock envoyé par ${this.profil?.nom || 'Contrôleur'}.`;
-    this.broadcastNotification(msg, 'AUDIT_REPORT');
-    this.toastService.show("Rapport envoyé à l'administration et au magasinier !", "success");
+    // Before sending notification, we must save this audit in the database as a "Validé" inventory
+    // so the admin can actually see the rows.
+    const now = new Date();
+    const newInv: any = {
+      dateDebut: now.toISOString(),
+      dateFin: now.toISOString(),
+      statut: 'Validé',
+      description: `Audit détaillé soumis par ${this.profil?.nom || 'Contrôleur'}`,
+      lignes: this.piecesReport.map(p => ({
+        produit: { idProduit: p.idProduit }, // Clean: ID ONLY to prevent Jackson deserialization failure
+        idProduit: p.idProduit,
+        id_produit: p.idProduit,
+        quantiteTheorique: p.quantiteStock,
+        quantite_theorique: p.quantiteStock,
+        quantiteReelle: p.quantiteReelle,
+        quantite_reelle: p.quantiteReelle,
+        quantitePhysique: p.quantiteReelle,
+        quantite_physique: p.quantiteReelle,
+        ecart: p.ecart
+      }))
+    };
+
+    this.inventaireService.addInventaire(newInv).subscribe((saved) => {
+      const id = saved.idInventaire || saved.id;
+      const msg = `Nouveau Rapport d'audit (#${id}) envoyé par ${this.profil?.nom || 'Contrôleur'}.`;
+      this.broadcastNotification(msg, 'AUDIT_REPORT');
+      this.toastService.show("Rapport envoyé à l'administration !", "success");
+      this.loadInventaires();
+      this.showReportModal = false;
+    });
   }
 
   envoyerRapportGeneral() {
@@ -351,9 +401,27 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
     };
 
     this.inventaireService.addInventaire(newInv as Inventaire).subscribe((savedInv) => {
+      // Also add lines for the general report to ensure Admin sees the detailed state
+      // Actually, if we want detailed lines, we should send them now.
       const id = savedInv.idInventaire || savedInv.id;
-      this.broadcastNotification(`${msg} (ID: #${id})`, this.alertCount > 0 ? 'warning' : 'AUDIT_REPORT');
-      this.loadInventaires(); // Refresh local list
+      
+      // Update the inventory with lines from piecesReport
+      const lignes = this.pieces.map(p => ({
+        produit: { idProduit: p.idProduit },
+        id_produit: p.idProduit,
+        quantiteTheorique: p.quantiteStock,
+        quantite_theorique: p.quantiteStock,
+        quantiteReelle: p.quantiteStock,
+        quantite_reelle: p.quantiteStock,
+        quantitePhysique: p.quantiteStock,
+        quantite_physique: p.quantiteStock,
+        ecart: 0
+      }));
+
+      this.inventaireService.updateInventaire(id, { lignes: lignes } as any).subscribe(() => {
+        this.broadcastNotification(`${msg} (ID: #${id})`, this.alertCount > 0 ? 'warning' : 'AUDIT_REPORT');
+        this.loadInventaires(); // Refresh local list
+      });
     });
 
     // Add to local session history

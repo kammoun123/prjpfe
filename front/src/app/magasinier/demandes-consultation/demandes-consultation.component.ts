@@ -4,13 +4,14 @@ import { DemandeProduitService } from '../../Services/demande-produit.service';
 import { PieceService } from '../../Services/piece.service';
 import { NotificationService } from '../../Services/notification.service';
 import { ToastService } from '../../Services/toast.service';
-import { DemandeProduit } from '../../models/demande-produit.model';
+import { FormsModule } from '@angular/forms';
 import { Produit } from '../../models/produit.model';
+import { DemandeProduit } from '../../models/demande-produit.model';
 
 @Component({
   selector: 'app-demandes-consultation',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './demandes-consultation.component.html',
   styleUrl: './demandes-consultation.component.css'
 })
@@ -69,7 +70,7 @@ export class DemandesConsultationComponent implements OnInit {
     // 3. Search Filter
     if (this.searchTerm()) {
       const search = this.searchTerm().toLowerCase();
-      filtered = filtered.filter(d => this.getPieceName(d.idProduit).toLowerCase().includes(search));
+      filtered = filtered.filter(d => this.getPieceName(d.produitId).toLowerCase().includes(search));
     }
 
     // Always sort filtered list by date descending (Newest First)
@@ -127,12 +128,12 @@ export class DemandesConsultationComponent implements OnInit {
            type = 'alerte';
         } else if (statut === 'En Commande' || statut === 'TRANSFÉRÉ_ADMIN') {
            role = 'ADMIN'; 
-           msg = `Le Magasinier a transféré une demande pour : ${this.getPieceName(demande.idProduit)}.`;
+           msg = `Le Magasinier a transféré une demande pour : ${this.getPieceName(demande.produitId)}.`;
            type = 'warning';
         }
 
         this.notifService.createNotification({
-           produitId: demande.produitId || demande.idProduit || null,
+           produitId: demande.produitId || null,
            message: msg,
            typeNotification: type,
            dateCreation: new Date().toISOString(),

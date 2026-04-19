@@ -22,12 +22,14 @@ export class ConsultationStockComponent implements OnInit {
   criticalCount = signal(0);
   backendUrl = environment.apiUrl.replace('/api', '');
   
-  searchTerm = '';
-  filterStatus: 'all' | 'critical' | 'normal' = 'all';
+  // Filtering signals
+  searchTerm = signal('');
+  filterStatus = signal<'all' | 'critical' | 'normal'>('all');
+  showFilters = signal(false);
   
-  showModal = false;
-  selectedPiece: Produit | null = null;
-  newQuantity = 0;
+  showModal = signal(false);
+  selectedPiece = signal<Produit | null>(null);
+  newQuantity = signal(0);
 
   ngOnInit() { this.loadPieces(); }
 
@@ -45,24 +47,25 @@ export class ConsultationStockComponent implements OnInit {
   }
 
   setFilter(status: 'all' | 'critical' | 'normal') {
-    this.filterStatus = status;
+    this.filterStatus.set(status);
     this.filterPieces();
   }
 
   filterPieces() {
     let result = this.allPieces;
+    const search = this.searchTerm().toLowerCase().trim();
+    const status = this.filterStatus();
     
-    if (this.searchTerm) {
-      const search = this.searchTerm.toLowerCase();
+    if (search) {
       result = result.filter(p => 
         p.reference.toLowerCase().includes(search) || 
         p.designation.toLowerCase().includes(search)
       );
     }
     
-    if (this.filterStatus === 'critical') {
+    if (status === 'critical') {
       result = result.filter(p => p.quantiteStock <= (p.seuilAlerte || 5));
-    } else if (this.filterStatus === 'normal') {
+    } else if (status === 'normal') {
       result = result.filter(p => p.quantiteStock > (p.seuilAlerte || 5));
     }
     
@@ -76,22 +79,23 @@ export class ConsultationStockComponent implements OnInit {
   }
 
   getStatusBadgeClass(p: Produit) {
-    if (p.quantiteStock === 0) return 'pill-error';
-    if (p.quantiteStock <= (p.seuilAlerte || 5)) return 'pill-warning';
-    return 'pill-success';
+    if (p.quantiteStock === 0) return 's-rupture';
+    if (p.quantiteStock <= (p.seuilAlerte || 5)) return 's-critical';
+    return 's-stable';
   }
 
   openAdjustModal(p: Produit) {
-    this.selectedPiece = p;
-    this.newQuantity = p.quantiteStock;
-    this.showModal = true;
+    this.selectedPiece.set(p);
+    this.newQuantity.set(p.quantiteStock);
+    this.showModal.set(true);
   }
 
-  closeModal() { this.showModal = false; }
+  closeModal() { this.showModal.set(false); }
 
   saveAdjustment() {
-    if (this.selectedPiece && this.selectedPiece.idProduit) {
-      this.pieceService.updatePiece(this.selectedPiece.idProduit, { quantiteStock: this.newQuantity }).subscribe(() => {
+    const piece = this.selectedPiece();
+    if (piece && piece.idProduit) {
+      this.pieceService.updatePiece(piece.idProduit, { quantiteStock: this.newQuantity() }).subscribe(() => {
         this.loadPieces();
         this.closeModal();
       });
