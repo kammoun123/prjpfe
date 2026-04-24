@@ -1,0 +1,70 @@
+
+services:
+
+  # ===== BASE DE DONNÉES =====
+  gestion-db:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: gestion-db
+    image: gestion-db:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: piece
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - gestion-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===== BACKEND =====
+  gestion-backend:
+    build:
+      context: ./gestion-piece-back/gestion-piece-back
+      dockerfile: Dockerfile
+    container_name: gestion-backend
+    image: gestion-backend:latest
+    restart: always
+    ports:
+      - "8883:8883"
+    depends_on:
+      gestion-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://gestion-db:3306/piece?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpass
+    networks:
+      - gestion-network
+
+  # ===== FRONTEND =====
+  gestion-frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: gestion-frontend
+    image: gestion-frontend:latest
+    restart: always
+    ports:
+      - "4200:80"
+    depends_on:
+      - gestion-backend
+    networks:
+      - gestion-network
+
+# ===== RÉSEAU =====
+networks:
+  gestion-network:
+    driver: bridge
+
+# ===== VOLUMES =====
+volumes:
+  db_data:
+    driver: local
