@@ -36,6 +36,7 @@ public class Utilisateur {
     private String ville;
     private String gouvernorat;
     private String telephone;
+    private String departement;
 
     @Column(columnDefinition = "LONGTEXT")
     private String photo;

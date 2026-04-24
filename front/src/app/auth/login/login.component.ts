@@ -27,12 +27,13 @@ export class LoginComponent implements OnInit {
         this.redirectBasedOnRole(role);
       },
       error: (err) => {
+        console.error('Erreur de connexion détaillée:', err);
         if (err.status === 401) {
           this.error = 'Email ou mot de passe incorrect';
         } else if (err.status === 403) {
-          this.error = 'Votre compte n\'a pas encore été accepté par l\'administrateur.';
+          this.error = 'Votre compte n\'a pas encore été accepté par l\'administrateur ou est inactif.';
         } else {
-          this.error = 'Erreur de connexion.';
+          this.error = 'Erreur de connexion au serveur.';
         }
       }
     });

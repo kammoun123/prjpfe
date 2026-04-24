@@ -76,7 +76,14 @@ export class AuthService {
   private getUserFromStorage(): Utilisateur | null {
     if (isPlatformBrowser(this.platformId)) {
       const user = localStorage.getItem('currentUser');
-      return user ? JSON.parse(user) : null;
+      if (user && user !== 'undefined' && user !== 'null') {
+        try {
+          return JSON.parse(user);
+        } catch (e) {
+          console.error('Error parsing user from storage', e);
+          localStorage.removeItem('currentUser');
+        }
+      }
     }
     return null;
   }

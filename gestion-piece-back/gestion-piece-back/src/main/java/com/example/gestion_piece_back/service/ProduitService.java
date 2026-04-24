@@ -18,6 +18,9 @@ public class ProduitService {
     @Autowired
     private ProduitRepository produitRepository;
 
+    @Autowired
+    private com.example.gestion_piece_back.repository.CategorieRepository categorieRepository;
+
     private final String uploadDir = "uploads/produits/";
 
     public List<Produit> getAllProduits() {
@@ -31,11 +34,34 @@ public class ProduitService {
     }
 
     public Produit createProduit(Produit produit) {
+        // Génération automatique de la référence si elle n'est pas fournie
+        if (produit.getReference() == null || produit.getReference().trim().isEmpty()) {
+            if (produit.getIdCategorie() != null) {
+                com.example.gestion_piece_back.model.Categorie cat = categorieRepository.findById(produit.getIdCategorie()).orElse(null);
+                if (cat != null) {
+                    String prefix = cat.getNomCategorie().substring(0, Math.min(3, cat.getNomCategorie().length())).toUpperCase();
+                    long count = produitRepository.countByReferenceStartingWith(prefix);
+                    produit.setReference(prefix + "-" + String.format("%04d", count + 1));
+                }
+            }
+        }
+
+        if (produitRepository.findByReference(produit.getReference()).isPresent()) {
+            throw new RuntimeException("Un produit avec la référence " + produit.getReference() + " existe déjà.");
+        }
         return produitRepository.save(produit);
     }
 
     public Produit updateProduit(Long id, Produit details) {
         Produit produit = getProduitById(id);
+        
+        // Vérifier si la nouvelle référence est déjà utilisée par un AUTRE produit
+        if (details.getReference() != null && !details.getReference().equals(produit.getReference())) {
+            if (produitRepository.findByReference(details.getReference()).isPresent()) {
+                throw new RuntimeException("La référence " + details.getReference() + " est déjà utilisée par un autre produit.");
+            }
+        }
+        
         produit.setReference(details.getReference());
         produit.setDesignation(details.getDesignation());
         if (details.getFicheTechniqueUrl() != null) {

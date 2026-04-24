@@ -12,7 +12,7 @@ public class Produit {
     @Column(name = "id")
     private Long idProduit;
 
-    @Column(name = "reference")
+    @Column(name = "reference", unique = true)
     private String reference;
 
     @Column(name = "designation")
