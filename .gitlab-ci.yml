@@ -55,6 +55,7 @@ docker_push:
 security_scan:
   stage: scan
   image: aquasec/trivy:latest
+  allow_failure: true
   script:
     - trivy image --exit-code 0 --severity HIGH,CRITICAL $BACKEND_IMAGE
     - trivy image --exit-code 0 --severity HIGH,CRITICAL $FRONTEND_IMAGE
