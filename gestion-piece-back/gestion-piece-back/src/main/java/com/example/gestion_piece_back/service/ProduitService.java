@@ -37,9 +37,11 @@ public class ProduitService {
         // Génération automatique de la référence si elle n'est pas fournie
         if (produit.getReference() == null || produit.getReference().trim().isEmpty()) {
             if (produit.getIdCategorie() != null) {
-                com.example.gestion_piece_back.model.Categorie cat = categorieRepository.findById(produit.getIdCategorie()).orElse(null);
+                com.example.gestion_piece_back.model.Categorie cat = categorieRepository
+                        .findById(produit.getIdCategorie()).orElse(null);
                 if (cat != null) {
-                    String prefix = cat.getNomCategorie().substring(0, Math.min(3, cat.getNomCategorie().length())).toUpperCase();
+                    String prefix = cat.getNomCategorie().substring(0, Math.min(3, cat.getNomCategorie().length()))
+                            .toUpperCase();
                     long count = produitRepository.countByReferenceStartingWith(prefix);
                     produit.setReference(prefix + "-" + String.format("%04d", count + 1));
                 }
@@ -54,14 +56,15 @@ public class ProduitService {
 
     public Produit updateProduit(Long id, Produit details) {
         Produit produit = getProduitById(id);
-        
+
         // Vérifier si la nouvelle référence est déjà utilisée par un AUTRE produit
         if (details.getReference() != null && !details.getReference().equals(produit.getReference())) {
             if (produitRepository.findByReference(details.getReference()).isPresent()) {
-                throw new RuntimeException("La référence " + details.getReference() + " est déjà utilisée par un autre produit.");
+                throw new RuntimeException(
+                        "La référence " + details.getReference() + " est déjà utilisée par un autre produit.");
             }
         }
-        
+
         produit.setReference(details.getReference());
         produit.setDesignation(details.getDesignation());
         if (details.getFicheTechniqueUrl() != null) {
@@ -88,10 +91,12 @@ public class ProduitService {
             jdbcTemplate.update("DELETE FROM notifications WHERE produit_id = ?", id);
             try {
                 jdbcTemplate.update("DELETE FROM lignes_inventaire WHERE produit_id = ?", id);
-            } catch (Exception e) {} // Ignorer si la table n'existe pas ou autre nom
+            } catch (Exception e) {
+            } // Ignorer si la table n'existe pas ou autre nom
             try {
                 jdbcTemplate.update("DELETE FROM ligne_inventaire WHERE produit_id = ?", id);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
 
             jdbcTemplate.update("UPDATE demandes SET produit_id = NULL WHERE produit_id = ?", id);
         } catch (Exception e) {
@@ -105,7 +110,8 @@ public class ProduitService {
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
-        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename().replace(" ", "_") : "photo";
+        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename().replace(" ", "_")
+                : "photo";
         String filename = UUID.randomUUID() + "_" + originalFilename;
         Path filePath = uploadPath.resolve(filename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
@@ -117,7 +123,8 @@ public class ProduitService {
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
-        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename().replace(" ", "_") : "document.pdf";
+        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename().replace(" ", "_")
+                : "document.pdf";
         String filename = UUID.randomUUID() + "_" + originalFilename;
         Path filePath = uploadPath.resolve(filename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
