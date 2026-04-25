@@ -59,6 +59,67 @@ services:
     networks:
       - gestion-network
 
+  # ===== SONARQUBE =====
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonar-db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - gestion-network
+    depends_on:
+      - sonar-db
+
+  # ===== SONARQUBE DATABASE =====
+  sonar-db:
+    image: postgres:15-alpine
+    container_name: sonar-db
+    restart: always
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - sonar_db_data:/var/lib/postgresql/data
+    networks:
+      - gestion-network
+
+  # ===== PROMETHEUS =====
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - gestion-network
+
+  # ===== GRAFANA =====
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - gestion-network
+
 # ===== RÉSEAU =====
 networks:
   gestion-network:
@@ -67,4 +128,7 @@ networks:
 # ===== VOLUMES =====
 volumes:
   db_data:
-    driver: local
+  sonarqube_data:
+  sonarqube_logs:
+  sonar_db_data:
+  grafana_data:
