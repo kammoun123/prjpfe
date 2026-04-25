@@ -62,19 +62,19 @@ security_scan:
     - trivy image --exit-code 0 --severity HIGH,CRITICAL $BACKEND_IMAGE
     - trivy image --exit-code 0 --severity HIGH,CRITICAL $FRONTEND_IMAGE
     - trivy image --exit-code 0 --severity HIGH,CRITICAL $DB_IMAGE
+
 deploy:
   stage: deploy
- tags:
+  tags:
     - vm-runner
- when: manual
-  
+  when: manual
   script:
- - docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+    - docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
     - docker pull $BACKEND_IMAGE
     - docker pull $FRONTEND_IMAGE
     - docker pull $DB_IMAGE
-- cd /home/azerty/prjpfe
+    - cd /home/azerty/prjpfe
     - docker-compose down
-    - docker-compose up -d --remove-orphans
+    - docker-compose up -d
   only:
     - main
