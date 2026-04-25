@@ -67,7 +67,6 @@ deploy:
   stage: deploy
   tags:
     - vm-runner
-  when: manual
   script:
     - docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
     - docker pull $BACKEND_IMAGE
