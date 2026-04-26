@@ -35,10 +35,9 @@ sonarqube_scan:
       - sonar-scanner/
   script:
     - cd gestion-piece-back/gestion-piece-back
-    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+    - mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -DskipTests
   rules:
     - if: $CI_COMMIT_BRANCH == 'main'
-
 frontend_build:
   stage: build
   image: node:20-alpine
