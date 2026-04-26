@@ -83,6 +83,8 @@ security_scan:
 
 deploy:
   stage: deploy
+  tags:
+    - vm-runner
   script:
     - docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
     - docker pull $BACKEND_IMAGE
