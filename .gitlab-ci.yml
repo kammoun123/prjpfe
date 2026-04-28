@@ -10,7 +10,6 @@ variables:
   BACKEND_IMAGE: kammounhamdi/gestion-backend
   FRONTEND_IMAGE: kammounhamdi/gestion-frontend
   DB_IMAGE: kammounhamdi/gestion-db
-
 default:
   tags:
     - vm-runner
@@ -61,11 +60,14 @@ docker_push:
 
 security_scan:
   stage: scan
+  image: aquasec/trivy:latest
+  variables:
+    TRIVY_SKIP_DB_UPDATE: "true"
   allow_failure: true
   script:
-    - docker run --rm aquasec/trivy:latest image --exit-code 0 --severity HIGH,CRITICAL $BACKEND_IMAGE
-    - docker run --rm aquasec/trivy:latest image --exit-code 0 --severity HIGH,CRITICAL $FRONTEND_IMAGE
-    - docker run --rm aquasec/trivy:latest image --exit-code 0 --severity HIGH,CRITICAL $DB_IMAGE
+    - trivy image --exit-code 1 --severity HIGH,CRITICAL $BACKEND_IMAGE
+    - trivy image --exit-code 1 --severity HIGH,CRITICAL $FRONTEND_IMAGE
+    - trivy image --exit-code 1 --severity HIGH,CRITICAL $DB_IMAGE
 
 deploy:
   stage: deploy
