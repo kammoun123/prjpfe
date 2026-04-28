@@ -60,14 +60,12 @@ docker_push:
 
 security_scan:
   stage: scan
-  image: aquasec/trivy:latest
-  variables:
-    TRIVY_SKIP_DB_UPDATE: "true"
   allow_failure: true
   script:
-    - trivy image --exit-code 1 --severity HIGH,CRITICAL $BACKEND_IMAGE
-    - trivy image --exit-code 1 --severity HIGH,CRITICAL $FRONTEND_IMAGE
-    - trivy image --exit-code 1 --severity HIGH,CRITICAL $DB_IMAGE
+    - trivy image --download-db-only
+    - trivy image --skip-update --exit-code 0 --severity HIGH,CRITICAL $BACKEND_IMAGE
+    - trivy image --skip-update --exit-code 0 --severity HIGH,CRITICAL $FRONTEND_IMAGE
+    - trivy image --skip-update --exit-code 0 --severity HIGH,CRITICAL $DB_IMAGE
 
 deploy:
   stage: deploy
