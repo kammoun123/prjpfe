@@ -36,11 +36,13 @@ sonarqube_scan:
   allow_failure: true
   script:
     - cd gestion-piece-back/gestion-piece-back
+    - mvn compile -DskipTests
     - mvn sonar:sonar
       -DskipTests
       -Dsonar.projectKey=gestion-piece
       -Dsonar.host.url=http://localhost:9000
       -Dsonar.token=$SONAR_TOKEN
+      -Dsonar.java.binaries=target/classes
 
 docker_build:
   stage: docker
