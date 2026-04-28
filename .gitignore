@@ -3,3 +3,6 @@
 Removed
 Running
 Started
+.pom.xml.swp
+*.save
+**/.scannerwork/
