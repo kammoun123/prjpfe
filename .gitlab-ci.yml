@@ -1,5 +1,6 @@
 stages:
   - build
+  - sonar
   - docker
   - push
   - scan
@@ -29,6 +30,17 @@ frontend_build:
     - cd front
     - npm install --legacy-peer-deps
     - npm run build --configuration=production
+
+sonarqube_scan:
+  stage: sonar
+  allow_failure: true
+  script:
+    - cd gestion-piece-back/gestion-piece-back
+    - mvn sonar:sonar
+      -DskipTests
+      -Dsonar.projectKey=gestion-piece
+      -Dsonar.host.url=http://localhost:9000
+      -Dsonar.token=$SONAR_TOKEN
 
 docker_build:
   stage: docker
