@@ -27,7 +27,7 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>17</java.version>
                 <sonar.projectKey>gestion-piece</sonar.projectKey>
 <sonar.projectName>gestion-piece</sonar.projectName>
 <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
