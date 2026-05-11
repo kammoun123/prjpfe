@@ -61,7 +61,7 @@ export class AdminDemandesComponent implements OnInit {
     this.demandeService.getDemandes().subscribe({
       next: (data) => {
         // Sort by newest first
-        this.demandes.set(data.reverse());
+        this.demandes.set(data.toReversed());
       },
       error: (err) => {
         console.error('Erreur chargement demandes', err);

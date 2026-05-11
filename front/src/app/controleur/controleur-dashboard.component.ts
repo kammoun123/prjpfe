@@ -147,7 +147,7 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
 
   loadInventaires() {
     this.inventaireService.getInventaires().subscribe(data => {
-      this.inventaires = data.reverse();
+      this.inventaires = data.toReversed();
       this.updateScheduling();
     });
   }

@@ -64,7 +64,7 @@ export class AdminDashboardComponent implements OnInit {
         this.mouvementService.getAllMouvements().subscribe({
             next: (mvs: MouvementStock[]) => {
                 this.stats.recentMovements = mvs.length;
-                this.recentMovements = [...mvs].reverse().slice(0, 6);
+                this.recentMovements = mvs.toReversed().slice(0, 6);
                 this.loading = false;
             },
             error: () => {

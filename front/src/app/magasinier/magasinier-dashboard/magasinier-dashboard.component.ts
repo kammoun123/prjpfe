@@ -49,7 +49,7 @@ export class MagasinierDashboardComponent implements OnInit {
     });
 
     this.demandeService.getDemandes().subscribe(demandes => {
-      const sorted = demandes.reverse();
+      const sorted = demandes.toReversed();
       this.recentDemandes.set(sorted.slice(0, 5));
       this.pendingRequests.set(demandes.filter(d => {
         const s = (d.statut || '').toUpperCase();
