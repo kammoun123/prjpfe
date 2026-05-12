@@ -60,7 +60,7 @@ export class DemandeAdminComponent implements OnInit {
 
   loadHistory() {
     this.demandeService.getDemandes().subscribe(data => {
-      const mapped = data.map(d => ({
+      let mapped = data.map(d => ({
         id: d.id,
         date: d.dateDemande,
         piece: d.produit ? d.produit.designation : 'Pièce Inconnue',
@@ -69,7 +69,7 @@ export class DemandeAdminComponent implements OnInit {
       }));
 
       // Sort by date descending (newest first)
-      mapped = mapped.toSorted((a, b) => {
+      mapped = ([...mapped]).sort((a, b) => {
         const dateA = a.date ? new Date(a.date).getTime() : 0;
         const dateB = b.date ? new Date(b.date).getTime() : 0;
         return dateB - dateA;

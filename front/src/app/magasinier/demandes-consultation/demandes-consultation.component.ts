@@ -74,7 +74,7 @@ export class DemandesConsultationComponent implements OnInit {
     }
 
     // Always sort filtered list by date descending (Newest First)
-    return filtered.toSorted((a, b) => {
+    return ([...filtered]).sort((a, b) => {
       const dateA = a.dateDemande ? new Date(a.dateDemande).getTime() : 0;
       const dateB = b.dateDemande ? new Date(b.dateDemande).getTime() : 0;
       return dateB - dateA;

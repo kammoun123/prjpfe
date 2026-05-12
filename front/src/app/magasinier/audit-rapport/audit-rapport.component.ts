@@ -33,7 +33,7 @@ export class AuditRapportComponent implements OnInit {
 
   loadInventaires() {
     this.inventaireService.getInventaires().subscribe(data => {
-      this.inventaires.set(data.toSorted((a,b) => {
+      this.inventaires.set(([...data]).sort((a,b) => {
         const dateA = a.dateDebut ? new Date(a.dateDebut).getTime() : 0;
         const dateB = b.dateDebut ? new Date(b.dateDebut).getTime() : 0;
         return dateB - dateA; // Newest first

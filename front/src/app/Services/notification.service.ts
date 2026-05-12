@@ -22,7 +22,7 @@ export class NotificationService {
             map(notifs => notifs.filter(n => n.roleCible && n.roleCible.toUpperCase() === role.toUpperCase())),
             tap(filtered => {
                 // Sort by newest first natively
-                filtered = filtered.toSorted((a, b) => new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime());
+                filtered = ([...filtered]).sort((a, b) => new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime());
                 this.notifications.set(filtered);
             })
         );

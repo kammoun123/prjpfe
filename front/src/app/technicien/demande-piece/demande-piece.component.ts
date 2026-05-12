@@ -118,7 +118,7 @@ export class DemandePieceComponent implements OnInit {
 
         this.loading = true;
         const formValue = this.demandeForm.value;
-        const requests = [];
+        const requests: any[] = [];
 
         for (const item of this.panier) {
             const demande: DemandeProduit = {
