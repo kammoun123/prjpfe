@@ -118,7 +118,7 @@ export class DemandePieceComponent implements OnInit {
 
         this.loading = true;
         const formValue = this.demandeForm.value;
-        const requests: any[] = [];
+        const requests = [];
 
         for (const item of this.panier) {
             const demande: DemandeProduit = {
@@ -133,7 +133,7 @@ export class DemandePieceComponent implements OnInit {
         }
 
         import('rxjs').then(({ forkJoin }) => {
-            forkJoin(requests).subscribe({
+            forkJoin([...requests]).subscribe({
                 next: () => {
                     this.loading = false;
 
