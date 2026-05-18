@@ -74,6 +74,8 @@ export class FournisseurManagementComponent implements OnInit {
   }
 
   saveFournisseur(): void {
+    this.success = '';
+    this.error = '';
     this.loading = true;
     const obs = this.formMode === 'add' 
       ? this.fournisseurService.createFournisseur(this.currentFournisseur)

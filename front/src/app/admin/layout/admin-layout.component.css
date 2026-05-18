@@ -77,9 +77,9 @@
 }
 
 .nav-item-admin.active {
-    background: #0f172a;
+    background: var(--primary-color);
     color: white;
-    box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.25);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.2);
 }
 
 .nav-item-admin i {

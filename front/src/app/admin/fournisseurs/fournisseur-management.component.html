@@ -148,16 +148,20 @@
                 </button>
             </div>
 
-            <form (ngSubmit)="saveFournisseur()" class="modal-body-new p-4">
+            <form #fForm="ngForm" (ngSubmit)="fForm.form.valid && saveFournisseur()" class="modal-body-new p-4">
                 <div class="section-label mb-4"><span class="section-num">1</span> Informations de base</div>
                 
                 <div class="row g-4 overflow-hidden">
                     <div class="col-md-12">
                         <div class="field-group">
                             <label class="field-label">Nom de la société / Fournisseur <span class="req">*</span></label>
-                            <div class="field-input-wrap">
+                            <div class="field-input-wrap" [class.field-error]="nom.invalid && (nom.dirty || nom.touched)">
                                 <i class="field-icon bi bi-building"></i>
-                                <input class="field-input with-icon" type="text" [(ngModel)]="currentFournisseur.nom" name="nom" required placeholder="Ex: Pièces Auto SARL">
+                                <input class="field-input with-icon" type="text" [(ngModel)]="currentFournisseur.nom" name="nom" #nom="ngModel" required minlength="2" placeholder="Ex: Pièces Auto SARL">
+                            </div>
+                            <div class="field-error-msg" *ngIf="nom.invalid && (nom.dirty || nom.touched)">
+                                <span *ngIf="nom.errors?.['required']">Le nom du fournisseur est obligatoire.</span>
+                                <span *ngIf="nom.errors?.['minlength']">Au moins 2 caractères requis.</span>
                             </div>
                         </div>
                     </div>
@@ -165,9 +169,13 @@
                     <div class="col-md-6">
                         <div class="field-group">
                             <label class="field-label">Adresse Email <span class="req">*</span></label>
-                            <div class="field-input-wrap">
+                            <div class="field-input-wrap" [class.field-error]="email.invalid && (email.dirty || email.touched)">
                                 <i class="field-icon bi bi-envelope-at"></i>
-                                <input class="field-input with-icon" type="email" [(ngModel)]="currentFournisseur.email" name="email" required placeholder="contact@fournisseur.com">
+                                <input class="field-input with-icon" type="email" [(ngModel)]="currentFournisseur.email" name="email" #email="ngModel" required email placeholder="contact@fournisseur.com">
+                            </div>
+                            <div class="field-error-msg" *ngIf="email.invalid && (email.dirty || email.touched)">
+                                <span *ngIf="email.errors?.['required']">L'email est obligatoire.</span>
+                                <span *ngIf="email.errors?.['email']">Veuillez entrer une adresse email valide.</span>
                             </div>
                         </div>
                     </div>
@@ -175,9 +183,13 @@
                     <div class="col-md-6">
                         <div class="field-group">
                             <label class="field-label">Téléphone <span class="req">*</span></label>
-                            <div class="field-input-wrap">
+                            <div class="field-input-wrap" [class.field-error]="tel.invalid && (tel.dirty || tel.touched)">
                                 <i class="field-icon bi bi-telephone"></i>
-                                <input class="field-input with-icon" type="text" [(ngModel)]="currentFournisseur.telephone" name="tel" required placeholder="+216 ...">
+                                <input class="field-input with-icon" type="text" [(ngModel)]="currentFournisseur.telephone" name="tel" #tel="ngModel" required pattern="^[0-9+ \-]{8,15}$" placeholder="+216 ...">
+                            </div>
+                            <div class="field-error-msg" *ngIf="tel.invalid && (tel.dirty || tel.touched)">
+                                <span *ngIf="tel.errors?.['required']">Le téléphone est obligatoire.</span>
+                                <span *ngIf="tel.errors?.['pattern']">Format invalide (8-15 chiffres/caractères autorisés).</span>
                             </div>
                         </div>
                     </div>
@@ -207,7 +219,7 @@
                     <button type="button" class="btn-cancel-new" (click)="closeForm()">
                         <i class="bi bi-x"></i> Annuler
                     </button>
-                    <button type="submit" class="btn-submit-new" [disabled]="loading">
+                    <button type="submit" class="btn-submit-new" [disabled]="loading || fForm.invalid">
                         <span *ngIf="!loading"><i class="bi" [class.bi-check-circle-fill]="formMode === 'add'" [class.bi-save-fill]="formMode === 'edit'"></i>
                             {{ formMode === 'add' ? 'Créer le partenaire' : 'Mettre à jour' }}
                         </span>

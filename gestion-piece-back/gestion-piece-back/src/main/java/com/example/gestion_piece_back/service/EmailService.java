@@ -113,4 +113,92 @@ public class EmailService {
             System.err.println("Erreur email: " + e.getMessage());
         }
     }
+
+    public void sendPasswordResetEmail(String toEmail, String token) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("RÉINITIALISATION DE MOT DE PASSE - G-PIÈCES");
+
+            // Base URL should ideally be from a config file
+            String resetUrl = "http://localhost:4200/reset-password?token=" + token;
+
+            String htmlContent = "<html>"
+                    + "<body style='font-family: \"Segoe UI\", Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 40px;'>"
+                    + "<div style='max-width: 550px; margin: auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e1e4e8;'>"
+                    + "<div style='text-align: center; margin-bottom: 30px;'>"
+                    + "<div style='display: inline-block; background: #6366f1; color: white; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 24px;'>G-P</div>"
+                    + "</div>"
+                    + "<h2 style='color: #1f2937; text-align: center; font-size: 24px; margin-bottom: 20px;'>Réinitialisation de mot de passe</h2>"
+                    + "<p style='color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;'>"
+                    + "Vous avez demandé la réinitialisation de votre mot de passe pour votre compte <strong>G-PIÈCES</strong>."
+                    + "</p>"
+                    + "<div style='text-align: center; margin: 35px 0;'>"
+                    + "<a href='" + resetUrl + "' style='background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); transition: all 0.3s ease; display: inline-block;'>Réinitialiser mon mot de passe</a>"
+                    + "</div>"
+                    + "<p style='color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;'>"
+                    + "Si vous n'avez pas effectué cette demande, vous pouvez ignorer cet email en toute sécurité. Ce lien expirera dans 1 heure."
+                    + "</p>"
+                    + "<hr style='border: 0; border-top: 1px solid #f3f4f6; margin: 30px 0;'>"
+                    + "<p style='margin-top: 20px; font-size: 12px; color: #9ca3af; text-align: center;'>"
+                    + "Ceci est un message automatique, merci de ne pas y répondre.<br>&copy; 2026 G-PIÈCES Ecosystem"
+                    + "</p>"
+                    + "</div>"
+                    + "</body>"
+                    + "</html>";
+
+            helper.setText(htmlContent, true);
+            javaMailSender.send(message);
+        } catch (MessagingException e) {
+            System.err.println("Erreur lors de l'envoi de l'email de réinitialisation: " + e.getMessage());
+            throw new RuntimeException("Échec de l'envoi de l'email de récupération.");
+        }
+    }
+
+    public void sendNewUserRegistrationEmailToAdmin(String adminEmail, com.example.gestion_piece_back.model.Utilisateur newUser) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(adminEmail);
+            helper.setSubject("NOUVELLE INSCRIPTION - ACTION REQUISE");
+
+            String htmlContent = "<html>"
+                    + "<body style='font-family: \"Segoe UI\", Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; padding: 40px;'>"
+                    + "<div style='max-width: 600px; margin: auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;'>"
+                    + "<div style='text-align: center; margin-bottom: 30px;'>"
+                    + "<div style='display: inline-block; background: #4f46e5; color: white; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 24px;'>G-P</div>"
+                    + "</div>"
+                    + "<h2 style='color: #1e293b; text-align: center; font-size: 22px; margin-bottom: 20px;'>Nouvelle Inscription Utilisateur</h2>"
+                    + "<p style='color: #64748b; font-size: 16px; line-height: 1.6; text-align: center;'>"
+                    + "Un nouvel utilisateur vient de s'inscrire sur la plateforme <strong>G-PIÈCES</strong> et attend votre validation."
+                    + "</p>"
+                    + "<div style='background-color: #f1f5f9; padding: 25px; border-radius: 12px; margin: 30px 0;'>"
+                    + "<h3 style='margin-top: 0; color: #475569; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;'>Détails de l'utilisateur</h3>"
+                    + "<table style='width: 100%; border-collapse: collapse;'>"
+                    + "<tr><td style='padding: 8px 0; color: #64748b; width: 40%;'>Nom complet :</td><td style='padding: 8px 0; color: #1e293b; font-weight: 600;'>" + newUser.getPrenom() + " " + newUser.getNom() + "</td></tr>"
+                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Email :</td><td style='padding: 8px 0; color: #1e293b; font-weight: 600;'>" + newUser.getEmail() + "</td></tr>"
+                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Rôle demandé :</td><td style='padding: 8px 0; color: #1e293b;'><span style='background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;'>" + newUser.getRole() + "</span></td></tr>"
+                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Téléphone :</td><td style='padding: 8px 0; color: #1e293b;'>" + (newUser.getTelephone() != null ? newUser.getTelephone() : "Non renseigné") + "</td></tr>"
+                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Localisation :</td><td style='padding: 8px 0; color: #1e293b;'>" + (newUser.getVille() != null ? newUser.getVille() : "-") + ", " + (newUser.getGouvernorat() != null ? newUser.getGouvernorat() : "-") + "</td></tr>"
+                    + "</table>"
+                    + "</div>"
+                    + "<div style='text-align: center; margin-top: 30px;'>"
+                    + "<a href='http://localhost:4200/admin/users' style='background: #4f46e5; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;'>Accéder à la gestion des utilisateurs</a>"
+                    + "</div>"
+                    + "<p style='margin-top: 40px; font-size: 12px; color: #94a3b8; text-align: center;'>"
+                    + "Ce message vous est envoyé car vous êtes administrateur du système G-PIÈCES.<br>&copy; 2026 G-PIÈCES"
+                    + "</p>"
+                    + "</div>"
+                    + "</body>"
+                    + "</html>";
+
+            helper.setText(htmlContent, true);
+            javaMailSender.send(message);
+        } catch (MessagingException e) {
+            System.err.println("Erreur lors de l'envoi de l'email de notification d'inscription à l'admin: " + e.getMessage());
+        }
+    }
 }

@@ -20,7 +20,7 @@ export class DemandesConsultationComponent implements OnInit {
   private pieceService = inject(PieceService);
   private notifService = inject(NotificationService);
   private toastService = inject(ToastService);
-  
+
   demandes = signal<DemandeProduit[]>([]);
   pieces = signal<Produit[]>([]);
   activeTab = signal<'attente' | 'historique'>('attente');
@@ -50,11 +50,11 @@ export class DemandesConsultationComponent implements OnInit {
 
     // 1. Tab Filter (Status)
     if (this.activeTab() === 'attente') {
-      filtered = filtered.filter(d => 
+      filtered = filtered.filter(d =>
         ['EN_ATTENTE', 'PENDING', 'En attente', 'EN ATTENTE'].includes(d.statut?.toUpperCase() || '')
       );
     } else {
-      filtered = filtered.filter(d => 
+      filtered = filtered.filter(d =>
         !['EN_ATTENTE', 'PENDING', 'En attente', 'EN ATTENTE'].includes(d.statut?.toUpperCase() || '')
       );
     }
@@ -121,39 +121,39 @@ export class DemandesConsultationComponent implements OnInit {
         let type = 'info';
 
         if (statut === 'VALIDATED') {
-           msg = 'Votre demande de pièce a été validée par le Magasinier.';
-           type = 'success';
+          msg = 'Votre demande de pièce a été validée par le Magasinier.';
+          type = 'success';
         } else if (statut === 'Refusé') {
-           msg = 'Votre demande de pièce a été rejetée.';
-           type = 'alerte';
+          msg = 'Votre demande de pièce a été rejetée.';
+          type = 'alerte';
         } else if (statut === 'En Commande' || statut === 'TRANSFÉRÉ_ADMIN') {
-           role = 'ADMIN'; 
-           msg = `Le Magasinier a transféré une demande pour : ${this.getPieceName(demande.produitId)}.`;
-           type = 'warning';
+          role = 'ADMIN';
+          msg = `Le Magasinier a transféré une demande pour : ${this.getPieceName(demande.produitId)}.`;
+          type = 'warning';
         }
 
         this.notifService.createNotification({
-           produitId: demande.produitId || null,
-           message: msg,
-           typeNotification: type,
-           dateCreation: new Date().toISOString(),
-           statut: 'NON_LUE',
-           roleCible: role
+          produitId: demande.produitId || null,
+          message: msg,
+          typeNotification: type,
+          dateCreation: new Date().toISOString(),
+          statut: 'NON_LUE',
+          roleCible: role
         }).subscribe();
 
         if (statut === 'VALIDATED') {
-            this.toastService.show('Demande validée avec succès !', 'success');
+          this.toastService.show('Demande validée avec succès !', 'success');
         } else if (statut === 'Refusé') {
-            this.toastService.show('Demande rejetée.', 'error');
+          this.toastService.show('Demande rejetée.', 'error');
         } else if (statut === 'En Commande') {
-            this.toastService.show('Demande transférée au service des achats.', 'info');
+          this.toastService.show('Demande transférée au service des achats.', 'info');
         }
 
         this.loadData();
       },
       error: (err) => {
-         console.error('Erreur lors de la mise à jour du statut', err);
-         this.toastService.show('Une erreur est survenue.', 'error');
+        console.error('Erreur lors de la mise à jour du statut', err);
+        this.toastService.show('Une erreur est survenue.', 'error');
       }
     });
   }

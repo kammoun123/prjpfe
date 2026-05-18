@@ -40,7 +40,7 @@ public class DemandeProduitService {
 
     @Autowired
     private FournisseurRepository fournisseurRepository;
-    
+
     public List<DemandeProduit> getAllDemandes() {
         return demandeProduitRepository.findAll();
     }
@@ -102,25 +102,43 @@ public class DemandeProduitService {
     public DemandeProduit updateStatus(Long id, String statut) {
         DemandeProduit demande = demandeProduitRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
-        
+
         String oldStatus = demande.getStatut();
         demande.setStatut(statut);
         DemandeProduit saved = demandeProduitRepository.save(demande);
 
-        // Si la demande est validée, on enregistre automatiquement un mouvement de sortie
+        // Si la demande est validée, on enregistre automatiquement un mouvement de
+        // sortie
         if ("VALIDATED".equals(statut) && !statut.equalsIgnoreCase(oldStatus)) {
+            // Resolve technician name for the motif
+            String technicienNom = "Technicien #" + id;
+            if (demande.getTechnicienId() != null) {
+                Utilisateur tech = utilisateurRepository.findById(demande.getTechnicienId()).orElse(null);
+                if (tech != null) {
+                    technicienNom = tech.getPrenom() + " " + tech.getNom();
+                }
+            }
+
             MouvementStock mouvement = new MouvementStock();
             mouvement.setProduitId(demande.getProduitId());
             mouvement.setQuantite(demande.getQuantite());
             mouvement.setTypeMouvement("SORTIE");
-            mouvement.setMotif("Validation Demande Technicien #" + id);
-            
+            mouvement.setMotif("Validation Demande - " + technicienNom + " (#" + id + ")");
+
             mouvementStockService.createMouvement(mouvement);
         }
         return saved;
     }
 
-    public DemandeProduit commanderChezFournisseur(Long idDemande, Long idFournisseur, java.time.LocalDate dateLivraison) {
+    public DemandeProduit transferToAdmin(Long id) {
+        DemandeProduit demande = demandeProduitRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+        demande.setStatut("EN_ATTENTE_COMMANDE");
+        return demandeProduitRepository.save(demande);
+    }
+
+    public DemandeProduit commanderChezFournisseur(Long idDemande, Long idFournisseur,
+            java.time.LocalDate dateLivraison) {
         DemandeProduit demande = demandeProduitRepository.findById(idDemande)
                 .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
 
@@ -136,18 +154,17 @@ public class DemandeProduitService {
         }
 
         // Save delivery date
-        if(dateLivraison != null) {
+        if (dateLivraison != null) {
             demande.setDateLivraisonPrevue(dateLivraison);
         }
 
         emailService.sendOrderEmail(
-            fournisseur.getEmail(), 
-            fournisseur.getNom(), 
-            produitDesignation, 
-            demande.getQuantite(), 
-            demande.getMotif(),
-            dateLivraison
-        );
+                fournisseur.getEmail(),
+                fournisseur.getNom(),
+                produitDesignation,
+                demande.getQuantite(),
+                demande.getMotif(),
+                dateLivraison);
 
         demande.setStatut("COMMANDE");
         return demandeProduitRepository.save(demande);

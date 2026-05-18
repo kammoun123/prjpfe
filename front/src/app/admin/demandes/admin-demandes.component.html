@@ -5,68 +5,53 @@
         <i class="bi bi-clipboard-check-fill"></i>
       </div>
       <div class="header-text">
-        <h1>Gestion des Demandes</h1>
-        <p>Validez ou refusez les demandes d'achat et de réapprovisionnement.</p>
+        <h1>Gestion des Opérations</h1>
+        <p>Suivi complet : Demandes, Commandes Fournisseurs et Réceptions.</p>
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn-refresh" (click)="loadDemandes()">
+      <button class="btn-refresh" (click)="loadDemandes(); loadActiveOrders()">
         <i class="bi bi-arrow-clockwise"></i> Actualiser
       </button>
     </div>
   </header>
 
-  <!-- Filter/Tabs Section -->
+  <!-- Navigation Tabs -->
   <div class="admin-tabs">
     <button class="tab-btn" [class.active]="activeTab === 'pending'" (click)="activeTab = 'pending'">
-      En attente <span class="badge" *ngIf="pendingCount() > 0">{{ pendingCount() }}</span>
+      À Commander (Demandes) <span class="badge" *ngIf="pendingCount() > 0">{{ pendingCount() }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'orders'" (click)="activeTab = 'orders'">
+      Commandes en cours <span class="badge bg-blue" *ngIf="activeOrdersCount() > 0">{{ activeOrdersCount() }}</span>
     </button>
     <button class="tab-btn" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">
       Historique Récent
     </button>
   </div>
 
-  <!-- Main Content Card -->
+  <!-- TABLE VIEW -->
   <div class="demandes-main-card shadow-sm">
     <div class="table-responsive">
-      <table class="premium-table">
+      <!-- TABLE FOR DEMANDS (PENDING/HISTORY) -->
+      <table class="premium-table" *ngIf="activeTab !== 'orders'">
         <thead>
           <tr>
             <th>DATE</th>
-            <th>DEMANDEUR</th>
             <th>PRODUIT</th>
             <th class="text-center">QUANTITÉ</th>
-            <th>MOTIF</th>
             <th class="text-center">STATUT</th>
             <th class="text-end">ACTIONS</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let d of filteredDemandes()">
-            <td class="date-cell">
-              <span class="d-block">{{ d.dateDemande | date:'dd/MM/yyyy' }}</span>
-              <span class="text-muted smaller">{{ d.dateDemande | date:'HH:mm' }}</span>
-            </td>
-            <td class="user-cell">
-              <div class="d-flex align-items-center gap-2">
-                <div class="user-avatar-mini">{{ getInitial($any(d).technicien) }}</div>
-                <div class="user-info">
-                    <span class="fw-bold d-block">{{ $any(d).technicien?.prenom }} {{ $any(d).technicien?.nom }}</span>
-                    <span class="badge-role">{{ $any(d).technicien?.role || 'MAGASINIER' }}</span>
-                </div>
-              </div>
-            </td>
-            <td class="product-cell">
-              <span class="fw-bold">{{ d.produit?.designation || 'Produit Inconnu' }}</span>
-              <div class="text-muted smaller">REF: {{ d.produit?.reference }}</div>
+            <td>{{ d.dateDemande | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="fw-bold">{{ d.produit?.designation }}</span>
+              <div class="small text-muted">REF: {{ d.produit?.reference }}</div>
             </td>
             <td class="text-center">
               <span class="qty-badge">{{ d.quantite }}</span>
-            </td>
-            <td class="motif-cell">
-              <span class="text-truncate d-inline-block" style="max-width: 150px;" [title]="d.motif">
-                {{ d.motif || '---' }}
-              </span>
             </td>
             <td class="text-center">
               <span class="status-pill" [ngClass]="getStatusClass(d.statut)">
@@ -74,7 +59,7 @@
               </span>
             </td>
             <td class="text-end">
-              <div class="action-btns" *ngIf="getStatusClass(d.statut) === 'EN_ATTENTE'">
+              <div class="action-btns" *ngIf="d.statut !== 'VALIDATED' && d.statut !== 'TRAITEE' && d.statut !== 'REFUSED' && d.statut !== 'COMMANDEE'">
                 <button class="btn-action approve" (click)="updateStatus(d, 'VALIDATED')" title="Approuver (Interne)">
                   <i class="bi bi-check-lg"></i>
                 </button>
@@ -85,116 +70,73 @@
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
-
-              <div class="action-btns" *ngIf="getStatusClass(d.statut) !== 'EN_ATTENTE'">
-                <button class="btn-action-view" disabled>
-                   <i class="bi bi-dash-circle"></i>
-                </button>
-              </div>
             </td>
           </tr>
-          <tr *ngIf="filteredDemandes().length === 0">
-            <td colspan="7" class="empty-state">
-               <i class="bi bi-inbox opacity-25 d-block mb-3" style="font-size: 3rem;"></i>
-               <p>Aucune demande trouvée dans cette catégorie.</p>
+        </tbody>
+      </table>
+
+      <!-- TABLE FOR SUPPLIER ORDERS -->
+      <table class="premium-table" *ngIf="activeTab === 'orders'">
+        <thead>
+          <tr>
+            <th>DATE COMMANDE</th>
+            <th>FOURNISSEUR</th>
+            <th>PRODUIT</th>
+            <th class="text-center">QTY</th>
+            <th class="text-center">LIVRAISON PRÉVUE</th>
+            <th class="text-end">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of activeOrders()">
+            <td>{{ c.dateCommande | date:'dd/MM/yyyy' }}</td>
+            <td>{{ c.fournisseur?.nom }}</td>
+            <td>{{ c.produit?.designation }}</td>
+            <td class="text-center"><span class="qty-badge">{{ c.quantite }}</span></td>
+            <td class="text-center">{{ c.dateReceptionPrevue || 'Non définie' }}</td>
+            <td class="text-end">
+              <button class="btn-action-reception" *ngIf="c.statut === 'EN_COURS'" (click)="receptionner(c)">
+                <i class="bi bi-box-seam"></i> Réceptionner la livraison
+              </button>
+              <span *ngIf="c.statut === 'LIVREE'" class="text-success small fw-bold">
+                <i class="bi bi-check-circle"></i> RÉCEPTIONNÉE
+              </span>
             </td>
+          </tr>
+          <tr *ngIf="activeOrders().length === 0">
+            <td colspan="6" class="text-center py-5 text-muted">Aucune commande fournisseur active.</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Summary Stats -->
-  <div class="stats-mini-grid mt-4">
-    <div class="stat-mini-card">
-       <span class="label">Total Demandes</span>
-       <span class="value">{{ demandes().length }}</span>
-    </div>
-    <div class="stat-mini-card">
-        <span class="label">En Attente</span>
-        <span class="value text-warning">{{ pendingCount() }}</span>
-     </div>
-     <div class="stat-mini-card">
-        <span class="label">Approuvées</span>
-        <span class="value text-success">{{ validatedCount() }}</span>
-     </div>
-  </div>
-
-  <!-- ORDER MODAL (FOURNISSEUR) -->
+  <!-- ORDER MODAL -->
   <div class="modal-overlay" *ngIf="showOrderModal()" (click)="closeOrderModal()">
     <div class="modal-premium animate-zoom" (click)="$event.stopPropagation()">
-      <div class="modal-hdr" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
-        <div class="modal-hdr-left">
-          <div class="modal-icon-wrap" style="background: rgba(255,255,255,0.2);">
-            <i class="bi bi-truck text-white"></i>
-          </div>
-          <div>
-            <h2 class="modal-hdr-title text-white">Commander chez un Fournisseur</h2>
-            <p class="modal-hdr-sub text-white-50">Transférer cette demande à un partenaire externe</p>
-          </div>
-        </div>
-        <button class="modal-close-btn text-white" (click)="closeOrderModal()">
-          <i class="bi bi-x-lg"></i>
-        </button>
+      <div class="modal-hdr">
+        <h2 class="text-white">Nouvelle Commande Fournisseur</h2>
+        <button class="modal-close-btn" (click)="closeOrderModal()">×</button>
       </div>
-
       <div class="modal-body-new p-4">
-        <!-- Order Summary -->
-        <div class="order-summary-box mb-4 p-3 rounded" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
-          <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-            <span class="text-muted small fw-bold">PRODUIT</span>
-            <span class="fw-bold text-dark">{{ selectedDemandeForOrder()?.produit?.designation || 'Inconnu' }}</span>
-          </div>
-          <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-            <span class="text-muted small fw-bold">RÉFÉRENCE</span>
-            <span class="text-dark">{{ selectedDemandeForOrder()?.produit?.reference || 'N/A' }}</span>
-          </div>
-          <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-            <span class="text-muted small fw-bold">QUANTITÉ REQUISE</span>
-            <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ selectedDemandeForOrder()?.quantite }}</span>
-          </div>
-          <div class="d-flex flex-column pt-1">
-            <span class="text-muted small fw-bold mb-1">MOTIF / NOTE IMPORTANTE</span>
-            <span class="text-dark fst-italic">{{ selectedDemandeForOrder()?.motif || 'Aucun motif fourni' }}</span>
-          </div>
-        </div>
-
-        <div class="section-label mb-3"><span class="section-num">1</span> Paramètres de la Commande</div>
+        <p class="text-muted small">Produit : {{ selectedDemandeForOrder()?.produit?.designation }}</p>
         
-        <div class="field-group mb-4">
-          <label class="field-label">Sélectionnez un Fournisseur Actif <span class="text-danger">*</span></label>
-          <div class="field-input-wrap">
-            <i class="field-icon bi bi-building"></i>
-            <select class="field-input with-icon" [ngModel]="selectedFournisseurId()" (ngModelChange)="selectedFournisseurId.set($event)">
-              <option [ngValue]="null" disabled>-- Choisir un fournisseur --</option>
-              <option *ngFor="let f of fournisseurs()" [ngValue]="f.idFournisseur">
-                {{ f.nom }} ({{ f.email }})
-              </option>
-            </select>
-          </div>
-          <div class="form-text text-muted small mt-1">
-            Un email officiel de commande sera envoyé à l'adresse de ce fournisseur.
-          </div>
+        <div class="field-group mb-3">
+          <label>Sélectionner un Fournisseur</label>
+          <select class="field-input" [(ngModel)]="selectedFournisseurId">
+            <option *ngFor="let f of fournisseurs()" [value]="f.idFournisseur">{{ f.nom }}</option>
+          </select>
         </div>
 
-        <div class="field-group mb-4">
-          <label class="field-label">Date de Livraison Prévue <span class="text-muted fw-normal">(Optionnel)</span></label>
-          <div class="field-input-wrap">
-            <i class="field-icon bi bi-calendar-event"></i>
-            <input type="date" class="field-input with-icon" [ngModel]="selectedDateLivraison()" (ngModelChange)="selectedDateLivraison.set($event)">
-          </div>
+        <div class="field-group mb-3">
+          <label>Date de réception prévue</label>
+          <input type="date" class="field-input" [(ngModel)]="selectedDateLivraison">
         </div>
 
-        <div class="modal-footer-new mt-4 pt-3 border-top d-flex justify-content-end gap-2">
-          <button type="button" class="btn-cancel-new" (click)="closeOrderModal()" [disabled]="orderLoading()">
-            Annuler
-          </button>
-          <button type="button" class="btn-submit-new d-flex align-items-center gap-2" 
-                  [disabled]="!selectedFournisseurId() || orderLoading()" 
-                 (click)="submitOrder()" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
-            <span *ngIf="!orderLoading()"><i class="bi bi-send-fill"></i> Envoyer la Commande</span>
-            <span *ngIf="orderLoading()" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            <span *ngIf="orderLoading()">Envoi en cours...</span>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button class="btn-cancel-new" (click)="closeOrderModal()">Annuler</button>
+          <button class="btn-submit-new" (click)="submitOrder()" [disabled]="!selectedFournisseurId() || orderLoading()">
+            {{ orderLoading() ? 'Envoi...' : 'Passer la commande' }}
           </button>
         </div>
       </div>

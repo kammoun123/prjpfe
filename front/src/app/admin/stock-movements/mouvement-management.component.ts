@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MouvementStockService } from '../../Services/mouvement-stock.service';
 import { ProduitService } from '../../Services/produit.service';
+import { AuthService } from '../../Services/auth.service';
 import { MouvementStock } from '../../models/mouvement-stock.model';
 import { Produit } from '../../models/produit.model';
 
@@ -18,12 +19,14 @@ export class MouvementManagementComponent implements OnInit {
     produits: Produit[] = [];
 
     newMouvement: any = {
-        produitId: 0,
+        produitId: null,
         typeMouvement: 'ENTREE',
         quantite: 1,
         dateMouvement: new Date(),
-        motif: 'Action Admin'
+        motif: ''
     };
+
+    currentUserName: string = 'Admin';
 
     // Filter properties
     showFilters = true;
@@ -36,10 +39,16 @@ export class MouvementManagementComponent implements OnInit {
 
     constructor(
         private mouvementService: MouvementStockService,
-        private produitService: ProduitService
+        private produitService: ProduitService,
+        private authService: AuthService
     ) { }
 
     ngOnInit() {
+        const user = this.authService.getCurrentUser();
+        if (user) {
+            this.currentUserName = (user.prenom || '') + ' ' + (user.nom || '');
+            this.currentUserName = this.currentUserName.trim() || 'Admin';
+        }
         this.initialiserPage();
     }
 
@@ -101,6 +110,8 @@ export class MouvementManagementComponent implements OnInit {
         this.mouvementService.createMouvement(this.newMouvement).subscribe({
             next: () => {
                 this.initialiserPage();
+                this.newMouvement.motif = ''; // Reset motif
+                this.newMouvement.quantite = 1; // Reset quantity
                 alert('Mouvement enregistré !');
             },
             error: (err: any) => {

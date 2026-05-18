@@ -47,6 +47,14 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, { token, newPassword });
+  }
+
   updateSession(user: Utilisateur) {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('currentUser', JSON.stringify(user));

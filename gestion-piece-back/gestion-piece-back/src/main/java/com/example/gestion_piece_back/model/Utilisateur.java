@@ -39,4 +39,7 @@ public class Utilisateur {
 
     @Column(columnDefinition = "LONGTEXT")
     private String photo;
+
+    private String resetToken;
+    private java.time.LocalDateTime resetTokenExpiration;
 }

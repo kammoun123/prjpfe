@@ -26,6 +26,48 @@
     --radius-xl: 2rem;
     --radius-lg: 1.25rem;
     --radius-md: 0.75rem;
+
+    /* Dynamic overrides */
+    --primary-color: #2563eb;
+}
+
+/* Dark Mode Variables */
+body.dark-mode {
+    --bg: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.85);
+    --border: rgba(255, 255, 255, 0.1);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+}
+
+body.dark-mode aside {
+    background: #1e293b !important;
+}
+
+body.dark-mode .topbar-admin {
+    background: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .nav-item-admin {
+    color: #94a3b8;
+}
+
+body.dark-mode .nav-item-admin:hover, 
+body.dark-mode .nav-item-admin.active {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
+}
+
+body.dark-mode .btn-light {
+    background: #334155;
+    border-color: #475569;
+    color: white;
+}
+
+body.dark-mode .modal-premium {
+    background: #1e293b;
+    color: white;
 }
 
 body {

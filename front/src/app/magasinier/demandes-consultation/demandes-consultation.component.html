@@ -12,34 +12,37 @@
   <!-- Main Card -->
   <div class="demandes-card">
     <div class="card-header">
-       <div class="title-with-icon">
-          <i class="bi class-icon" [ngClass]="activeTab() === 'attente' ? 'bi-inbox text-warning' : 'bi-archive text-secondary'"></i>
-          <h3>{{ activeTab() === 'attente' ? 'Demandes en attente' : 'Historique des demandes' }}</h3>
-       </div>
+      <div class="title-with-icon">
+        <i class="bi class-icon"
+          [ngClass]="activeTab() === 'attente' ? 'bi-inbox text-warning' : 'bi-archive text-secondary'"></i>
+        <h3>{{ activeTab() === 'attente' ? 'Demandes en attente' : 'Historique des demandes' }}</h3>
+      </div>
     </div>
 
     <!-- NEW FILTER BAR -->
     <div class="demande-filters">
-       <div class="filter-group">
-          <label>DU (DÉBUT)</label>
-          <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)">
-       </div>
-       <div class="filter-group">
-          <label>AU (FIN)</label>
-          <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)">
-       </div>
-       <div class="filter-group-wide">
-          <label>PIÈCE / PRODUIT</label>
-          <div class="search-wrapper">
-             <i class="bi bi-search"></i>
-             <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" placeholder="Rechercher une pièce...">
-          </div>
-       </div>
-       <div class="filter-actions">
-          <button class="btn-reset" (click)="startDate.set(''); endDate.set(''); searchTerm.set('')" title="Réinitialiser">
-             <i class="bi bi-x-circle"></i>
-          </button>
-       </div>
+      <div class="filter-group">
+        <label>DU (DÉBUT)</label>
+        <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)">
+      </div>
+      <div class="filter-group">
+        <label>AU (FIN)</label>
+        <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)">
+      </div>
+      <div class="filter-group-wide">
+        <label>PIÈCE / PRODUIT</label>
+        <div class="search-wrapper">
+          <i class="bi bi-search"></i>
+          <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+            placeholder="Rechercher une pièce...">
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-reset" (click)="startDate.set(''); endDate.set(''); searchTerm.set('')"
+          title="Réinitialiser">
+          <i class="bi bi-x-circle"></i>
+        </button>
+      </div>
     </div>
 
     <div class="table-responsive">
@@ -58,12 +61,12 @@
             <td class="date-col">{{ d.dateDemande | date:'MMM d, yyyy' }}</td>
             <td class="piece-col">{{ getPieceName(d.produitId) || d.produit?.designation || 'Pièce Inconnue' }}</td>
             <td class="text-center">
-               <span class="qty-badge">{{ $any(d).quantiteDemandee || $any(d).quantite }}</span>
+              <span class="qty-badge">{{ $any(d).quantiteDemandee || $any(d).quantite }}</span>
             </td>
             <td class="text-center motif-col">
-               {{ $any(d).motif || 'Aucun motif' }}
+              {{ $any(d).motif || 'Aucun motif' }}
             </td>
-            
+
             <td class="text-center">
               <!-- Actions for Pending -->
               <div class="action-buttons" *ngIf="activeTab() === 'attente'">
@@ -92,9 +95,10 @@
             <td colspan="5">
               <div class="empty-state-wrapper">
                 <div class="check-marks">
-                   <i class="bi bi-check2"></i><i class="bi bi-check2 double-check"></i>
+                  <i class="bi bi-check2"></i><i class="bi bi-check2 double-check"></i>
                 </div>
-                <p>{{ activeTab() === 'attente' ? 'Aucune demande en attente. Tout est à jour !' : 'Aucun historique disponible.' }}</p>
+                <p>{{ activeTab() === 'attente' ? 'Aucune demande en attente. Tout est à jour !' : 'Aucun historique
+                  disponible.' }}</p>
               </div>
             </td>
           </tr>

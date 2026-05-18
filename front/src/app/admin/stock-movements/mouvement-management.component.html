@@ -92,6 +92,22 @@
                     </div>
                 </div>
 
+                <div class="form-group-pro">
+                    <label>Motif de l'opération</label>
+                    <div class="input-icon-group">
+                        <i class="bi bi-chat-left-dots"></i>
+                        <select [(ngModel)]="newMouvement.motif" name="motif" required>
+                            <option value="" disabled>Choisir un motif...</option>
+                            <option value="Réception Livraison">Réception Livraison</option>
+                            <option value="Casse / Dommage">Casse / Dommage</option>
+                            <option value="Retour Technicien">Retour Technicien</option>
+                            <option value="Maintenance Préventive">Maintenance Préventive</option>
+                            <option value="Ajustement d'Inventaire">Ajustement d'Inventaire</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="form-actions-pro">
                     <button type="submit" class="btn-submit-pro" [disabled]="!mouvForm.valid">
                         <i class="bi bi-bookmark-check-fill"></i>

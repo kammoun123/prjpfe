@@ -1,0 +1,49 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: piece-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: piece
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - pfe-network
+
+  backend:
+    build:
+      context: ./gestion-piece-back/gestion-piece-back
+      dockerfile: Dockerfile
+    container_name: gestion-piece-back
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3307/piece?createDatabaseIfNotExist=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=
+    ports:
+      - "8883:8883"
+    networks:
+      - pfe-network
+
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: pfe-front
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - pfe-network
+
+networks:
+  pfe-network:
+    driver: bridge
+
+volumes:
+  db_data:

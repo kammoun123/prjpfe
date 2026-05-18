@@ -129,6 +129,9 @@
                         </div>
 
                         <div class="card-footer-actions">
+                            <button class="btn-circle edit" (click)="openQRCode(piece)" title="Voir Code QR">
+                                <i class="bi bi-qr-code"></i>
+                            </button>
                             <button class="btn-circle edit" (click)="openEditForm(piece)" title="Modifier">
                                 <i class="bi bi-pencil-fill"></i>
                             </button>
@@ -263,4 +266,40 @@
         </div>
     </div>
 
+    <!-- QR CODE MODAL -->
+    <div class="modal-overlay" *ngIf="showQRCodeModal" (click)="closeQRCodeModal()">
+        <div class="modal-premium qr-modal" (click)="$event.stopPropagation()">
+            <div class="modal-hdr">
+                <div class="modal-hdr-left">
+                    <div class="modal-icon-wrap qr-icon">
+                        <i class="bi bi-qr-code"></i>
+                    </div>
+                    <div>
+                        <h2 class="modal-hdr-title">Code QR du Produit</h2>
+                        <p class="modal-hdr-sub">{{ selectedPieceForQR?.designation }}</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" (click)="closeQRCodeModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            
+            <div class="qr-modal-body" id="qr-print-section">
+                <div class="qr-display-container">
+                    <img *ngIf="selectedPieceForQR?.qrCode" [src]="'data:image/png;base64,' + selectedPieceForQR?.qrCode" alt="QR Code">
+                    <div class="qr-info">
+                        <span class="qr-ref">{{ selectedPieceForQR?.reference }}</span>
+                        <span class="qr-name">{{ selectedPieceForQR?.designation }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer-new">
+                <button type="button" class="btn-cancel-new" (click)="closeQRCodeModal()">Fermer</button>
+                <button type="button" class="btn-submit-new" (click)="printQR()">
+                    <i class="bi bi-printer-fill"></i> Imprimer le Label
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

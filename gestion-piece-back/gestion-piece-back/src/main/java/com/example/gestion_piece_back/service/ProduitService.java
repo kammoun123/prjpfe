@@ -11,6 +11,13 @@ import java.util.UUID;
 
 import com.example.gestion_piece_back.repository.ProduitRepository;
 import com.example.gestion_piece_back.model.Produit;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+
+import java.io.ByteArrayOutputStream;
+import java.util.Base64;
 
 @Service
 public class ProduitService {
@@ -31,6 +38,8 @@ public class ProduitService {
     }
 
     public Produit createProduit(Produit produit) {
+        String qrContent = "REF: " + produit.getReference() + " | NOM: " + produit.getDesignation() + " | STOCK: " + produit.getQuantiteStock();
+        produit.setQrCode(generateQRCodeBase64(qrContent));
         return produitRepository.save(produit);
     }
 
@@ -50,7 +59,26 @@ public class ProduitService {
         if (details.getPhotoUrl() != null) {
             produit.setPhotoUrl(details.getPhotoUrl());
         }
+
+        // Régénérer le QR code si les infos changent
+        String qrContent = "REF: " + produit.getReference() + " | NOM: " + produit.getDesignation() + " | STOCK: " + produit.getQuantiteStock();
+        produit.setQrCode(generateQRCodeBase64(qrContent));
+
         return produitRepository.save(produit);
+    }
+
+    private String generateQRCodeBase64(String text) {
+        try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 250, 250);
+            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+            byte[] pngData = pngOutputStream.toByteArray();
+            return Base64.getEncoder().encodeToString(pngData);
+        } catch (Exception e) {
+            System.err.println("QR Code Generation Error: " + e.getMessage());
+            return null;
+        }
     }
 
     @Autowired

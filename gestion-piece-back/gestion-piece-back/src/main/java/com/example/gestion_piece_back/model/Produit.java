@@ -34,6 +34,9 @@ public class Produit {
     @Column(name = "photo_url")
     private String photoUrl;
 
+    @Column(name = "qr_code", columnDefinition = "LONGTEXT")
+    private String qrCode;
+
     @ManyToOne
     @JoinColumn(name = "id_categorie", insertable = false, updatable = false)
     private Categorie categorie;

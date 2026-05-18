@@ -7,6 +7,7 @@ import { DemandeProduit } from '../../models/demande-produit.model';
 import { FournisseurService } from '../../Services/fournisseur.service';
 import { Fournisseur } from '../../models/fournisseur.model';
 import { FormsModule } from '@angular/forms';
+import { CommandeFournisseurService, Commande } from '../../Services/commande-fournisseur.service';
 
 @Component({
   selector: 'app-admin-demandes',
@@ -20,9 +21,11 @@ export class AdminDemandesComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private toastService = inject(ToastService);
   private fournisseurService = inject(FournisseurService);
+  private commandeFournisseurService = inject(CommandeFournisseurService);
 
   demandes = signal<DemandeProduit[]>([]);
-  activeTab: 'pending' | 'history' = 'pending';
+  activeOrders = signal<Commande[]>([]);
+  activeTab: 'pending' | 'orders' | 'history' = 'pending';
 
   fournisseurs = signal<Fournisseur[]>([]);
   showOrderModal = signal(false);
@@ -34,23 +37,21 @@ export class AdminDemandesComponent implements OnInit {
   pendingCount = computed(() => {
     return this.demandes().filter(d => {
       const s = (d.statut || '').toUpperCase().trim();
-      return s !== 'VALIDATED' && s !== 'REFUSED' && s !== 'REFUSÉ';
+      return s === 'EN_ATTENTE' || s === 'EN_ATTENTE_COMMANDE' || s.includes('ADMIN');
     }).length;
   });
 
-  validatedCount = computed(() =>
-    this.demandes().filter(d => (d.statut || '').toUpperCase() === 'VALIDATED').length
-  );
+  activeOrdersCount = computed(() => this.activeOrders().filter(c => c.statut === 'EN_COURS').length);
 
   ngOnInit() {
     this.loadDemandes();
     this.loadFournisseurs();
+    this.loadActiveOrders();
   }
 
   loadFournisseurs() {
     this.fournisseurService.getAllFournisseurs().subscribe({
       next: (data) => {
-        // Garder uniquement les fournisseurs actifs
         this.fournisseurs.set(data.filter(f => f.statut === 'ACTIF'));
       },
       error: (err) => console.error('Erreur chargement fournisseurs', err)
@@ -60,7 +61,6 @@ export class AdminDemandesComponent implements OnInit {
   loadDemandes() {
     this.demandeService.getDemandes().subscribe({
       next: (data) => {
-        // Sort by newest first
         this.demandes.set(data.reverse());
       },
       error: (err) => {
@@ -70,84 +70,38 @@ export class AdminDemandesComponent implements OnInit {
     });
   }
 
+  loadActiveOrders() {
+    this.commandeFournisseurService.getAllCommandes().subscribe({
+      next: (data) => this.activeOrders.set(data.reverse()),
+      error: (err) => console.error('Erreur chargement commandes', err)
+    });
+  }
+
   filteredDemandes() {
     const list = this.demandes();
     if (this.activeTab === 'pending') {
       return list.filter(d => {
         const s = (d.statut || '').toUpperCase().trim();
-        return s !== 'VALIDATED' && s !== 'REFUSED' && s !== 'REFUSÉ';
+        return s === 'EN_ATTENTE' || s === 'EN_ATTENTE_COMMANDE' || s.includes('ADMIN');
       });
-    } else {
+    } else if (this.activeTab === 'history') {
       return list.filter(d => {
         const s = (d.statut || '').toUpperCase().trim();
-        return s === 'VALIDATED' || s === 'REFUSED' || s === 'REFUSÉ';
+        return s === 'VALIDATED' || s === 'REFUSED' || s === 'TRAITEE';
       });
     }
+    return [];
   }
 
   updateStatus(demande: DemandeProduit, newStatut: string) {
     if (!demande.id) return;
-
     this.demandeService.updateStatutDemande(demande.id, newStatut).subscribe({
       next: () => {
-        this.toastService.show(`Demande ${newStatut === 'VALIDATED' ? 'approuvée' : 'refusée'} avec succès`, 'success');
-
-        // Notification back to the Magasinier (Technician in models)
-        if (demande.technicienId) {
-          this.notificationService.createNotification({
-            message: `Votre demande pour ${demande.produit?.designation || 'produit'} a été ${newStatut === 'VALIDATED' ? 'APPROUVÉE' : 'REFUSÉE'} par l'Administrateur.`,
-            typeNotification: newStatut === 'VALIDATED' ? 'SUCCESS' : 'ALERT',
-            roleCible: 'MAGASINIER',
-            dateCreation: new Date().toISOString(),
-            statut: 'NON_LUE'
-          }).subscribe();
-        }
-
+        this.toastService.show(`Demande mise à jour vers ${newStatut}`, 'success');
         this.loadDemandes();
       },
-      error: (err) => {
-        console.error('Erreur MAJ statut', err);
-        this.toastService.show('Erreur lors de la mise à jour', 'error');
-      }
+      error: (err) => this.toastService.show('Erreur de mise à jour', 'error')
     });
-  }
-
-  getInitial(user: any): string {
-    if (user && user.prenom) return user.prenom.charAt(0).toUpperCase();
-    return 'M';
-  }
-
-  getStatusClass(statut: string | undefined): string {
-    if (!statut) return 'EN_ATTENTE';
-    const s = statut.toUpperCase().trim();
-    if (s === 'VALIDATED' || s === 'VALIDÉ' || s === 'VALIDÉE') return 'VALIDATED';
-    if (s === 'REFUSED' || s === 'REFUSÉ') return 'REFUSED';
-    return 'EN_ATTENTE';
-  }
-
-  formatStatut(statut: string | undefined): string {
-    if (!statut) return 'En attente';
-    const s = statut.toUpperCase().trim();
-    if (s === 'VALIDATED' || s === 'VALIDÉ' || s === 'VALIDÉE' || s === 'VALIDE') return 'VALIDE';
-    if (s === 'REFUSED' || s === 'REFUSÉ' || s === 'REFUSE') return 'REFUSÉ';
-    if (s === 'TRANSFÉRÉ_ADMIN' || s.includes('ADMIN')) return 'En attente Admin';
-    return statut;
-  }
-
-  // --- ORDER MODAL LOGIC ---
-  openOrderModal(demande: DemandeProduit) {
-    this.selectedDemandeForOrder.set(demande);
-    this.selectedFournisseurId.set(null);
-    this.selectedDateLivraison.set('');
-    this.showOrderModal.set(true);
-  }
-
-  closeOrderModal() {
-    this.showOrderModal.set(false);
-    this.selectedDemandeForOrder.set(null);
-    this.selectedFournisseurId.set(null);
-    this.selectedDateLivraison.set('');
-    this.orderLoading.set(false);
   }
 
   submitOrder() {
@@ -161,29 +115,69 @@ export class AdminDemandesComponent implements OnInit {
     }
 
     this.orderLoading.set(true);
-    this.demandeService.orderFromSupplier(demande.id, fournisseurId, dateLivraison).subscribe({
+    this.commandeFournisseurService.creerCommande(demande.id, fournisseurId, dateLivraison).subscribe({
       next: () => {
-        this.toastService.show('Commande envoyée au fournisseur avec succès', 'success');
-        
-        // Notify the requester
-        if (demande.technicienId) {
-          this.notificationService.createNotification({
-            message: `Votre demande pour ${demande.produit?.designation} a été commandée chez un fournisseur externe.`,
-            typeNotification: 'INFO',
-            roleCible: 'MAGASINIER',
-            dateCreation: new Date().toISOString(),
-            statut: 'NON_LUE'
-          }).subscribe();
-        }
-
+        this.toastService.show('Commande fournisseur créée avec succès (Statut: COMMANDEE)', 'success');
         this.loadDemandes();
+        this.loadActiveOrders();
         this.closeOrderModal();
       },
       error: (err) => {
-        console.error('Erreur commande fournisseur', err);
-        this.toastService.show('Erreur lors de l\'envoi de la commande', 'error');
+        this.toastService.show('Erreur lors de la commande', 'error');
         this.orderLoading.set(false);
       }
     });
+  }
+
+  receptionner(commande: Commande) {
+    if (!commande.id) return;
+    this.commandeFournisseurService.receptionnerCommande(commande.id).subscribe({
+      next: () => {
+        this.toastService.show('Livraison réceptionnée ! Stock mis à jour et demande terminée.', 'success');
+        this.loadDemandes();
+        this.loadActiveOrders();
+      },
+      error: (err) => this.toastService.show('Erreur lors de la réception', 'error')
+    });
+  }
+
+  getInitial(user: any): string {
+    if (user && user.prenom) return user.prenom.charAt(0).toUpperCase();
+    return 'M';
+  }
+
+  getStatusClass(statut: string | undefined): string {
+    if (!statut) return 'EN_ATTENTE';
+    const s = statut.toUpperCase().trim();
+    if (s === 'VALIDATED' || s === 'TRAITEE') return 'VALIDATED';
+    if (s === 'REFUSED') return 'REFUSED';
+    if (s === 'COMMANDEE') return 'COMMANDE';
+    return 'EN_ATTENTE';
+  }
+
+  formatStatut(statut: string | undefined): string {
+    if (!statut) return 'En attente';
+    const s = statut.toUpperCase().trim();
+    if (s === 'VALIDATED' || s === 'VALIDE') return 'VALIDÉE (STOCK)';
+    if (s === 'TRAITEE') return 'TRAITÉE (LIVRÉE)';
+    if (s === 'REFUSED') return 'REFUSÉE';
+    if (s === 'COMMANDEE') return 'COMMANDE FOURNISSEUR';
+    if (s === 'EN_ATTENTE_COMMANDE' || s.includes('ADMIN')) return 'À COMMANDER';
+    return statut;
+  }
+
+  openOrderModal(demande: DemandeProduit) {
+    this.selectedDemandeForOrder.set(demande);
+    this.selectedFournisseurId.set(null);
+    this.selectedDateLivraison.set('');
+    this.showOrderModal.set(true);
+  }
+
+  closeOrderModal() {
+    this.showOrderModal.set(false);
+    this.selectedDemandeForOrder.set(null);
+    this.selectedFournisseurId.set(null);
+    this.selectedDateLivraison.set('');
+    this.orderLoading.set(false);
   }
 }

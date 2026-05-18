@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../Services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -27,7 +27,9 @@ export class LoginComponent implements OnInit {
         this.redirectBasedOnRole(role);
       },
       error: (err) => {
-        if (err.status === 401) {
+        if (err.error && typeof err.error === 'string') {
+          this.error = err.error;
+        } else if (err.status === 401) {
           this.error = 'Email ou mot de passe incorrect';
         } else if (err.status === 403) {
           this.error = 'Votre compte n\'a pas encore été accepté par l\'administrateur.';

@@ -26,6 +26,10 @@ export class ProductManagementComponent implements OnInit {
     success: string = '';
     error: string = '';
 
+    // QR Code
+    showQRCodeModal: boolean = false;
+    selectedPieceForQR: Produit | null = null;
+
     // Photo
     selectedFile: File | null = null;
     photoPreview: string | null = null;
@@ -250,6 +254,52 @@ export class ProductManagementComponent implements OnInit {
                 },
                 error: () => this.error = 'Erreur lors de la suppression'
             });
+        }
+    }
+
+    openQRCode(piece: Produit) {
+        this.selectedPieceForQR = piece;
+        this.showQRCodeModal = true;
+    }
+
+    closeQRCodeModal() {
+        this.showQRCodeModal = false;
+        this.selectedPieceForQR = null;
+    }
+
+    printQR() {
+        const printContent = document.getElementById('qr-print-section');
+        if (!printContent) return;
+        
+        const windowUrl = '';
+        const uniqueName = new Date();
+        const windowName = 'Print' + uniqueName.getTime();
+        const printWindow = window.open(windowUrl, windowName, 'left=500,top=500,width=900,height=900');
+        
+        if (printWindow) {
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Imprimer Code QR - ${this.selectedPieceForQR?.reference}</title>
+                        <style>
+                            body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                            .qr-container { border: 2px solid #333; padding: 20px; border-radius: 10px; text-align: center; }
+                            img { max-width: 300px; }
+                            h2 { margin-top: 20px; color: #333; }
+                            p { color: #666; font-size: 1.2rem; }
+                        </style>
+                    </head>
+                    <body onload="window.print();window.close()">
+                        <div class="qr-container">
+                            <img src="data:image/png;base64,${this.selectedPieceForQR?.qrCode}" />
+                            <h2>${this.selectedPieceForQR?.designation}</h2>
+                            <p>REF: ${this.selectedPieceForQR?.reference}</p>
+                        </div>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
         }
     }
 }

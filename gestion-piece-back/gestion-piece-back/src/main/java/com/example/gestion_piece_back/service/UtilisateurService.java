@@ -26,8 +26,9 @@ public class UtilisateurService {
         utilisateur.setStatut("PENDING"); // Les nouveaux utilisateurs sont en attente par défaut
         Utilisateur savedUser = utilisateurRepository.save(utilisateur);
 
-        // Créer une notification pour l'administrateur
+        // Créer une notification pour l'administrateur et envoyer un email
         try {
+            // Notification interne
             Notification notification = new Notification();
             notification.setTitre("Nouvelle Inscription");
             notification.setMessage("Un nouvel utilisateur [" + savedUser.getPrenom() + " " + savedUser.getNom()
@@ -36,8 +37,16 @@ public class UtilisateurService {
             notification.setRoleCible("ADMIN");
             notification.setStatut("NON_LUE");
             notificationService.saveNotification(notification);
+
+            // Notification par email à tous les admins
+            List<Utilisateur> admins = utilisateurRepository.findByRole("ADMIN");
+            for (Utilisateur admin : admins) {
+                if (admin.getEmail() != null && !admin.getEmail().isBlank()) {
+                    emailService.sendNewUserRegistrationEmailToAdmin(admin.getEmail(), savedUser);
+                }
+            }
         } catch (Exception e) {
-            System.err.println("Erreur lors de la création de la notification d'inscription : " + e.getMessage());
+            System.err.println("Erreur lors de la notification d'inscription : " + e.getMessage());
         }
 
         return savedUser;
@@ -99,5 +108,35 @@ public class UtilisateurService {
 
     public Optional<Utilisateur> findByEmail(String email) {
         return utilisateurRepository.findByEmail(email);
+    }
+
+    public void initiatePasswordReset(String email) {
+        Utilisateur user = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Aucun utilisateur trouvé avec cet email"));
+
+        if (!"ACTIVE".equalsIgnoreCase(user.getStatut())) {
+            throw new RuntimeException("Votre compte n'est pas encore activé. Veuillez contacter l'administrateur.");
+        }
+
+        String token = java.util.UUID.randomUUID().toString();
+        user.setResetToken(token);
+        user.setResetTokenExpiration(java.time.LocalDateTime.now().plusHours(1));
+        utilisateurRepository.save(user);
+
+        emailService.sendPasswordResetEmail(user.getEmail(), token);
+    }
+
+    public void completePasswordReset(String token, String newPassword) {
+        Utilisateur user = utilisateurRepository.findByResetToken(token)
+                .orElseThrow(() -> new RuntimeException("Jeton de réinitialisation invalide"));
+
+        if (user.getResetTokenExpiration().isBefore(java.time.LocalDateTime.now())) {
+            throw new RuntimeException("Le jeton de réinitialisation a expiré");
+        }
+
+        user.setMotDePasse(passwordEncoder.encode(newPassword));
+        user.setResetToken(null);
+        user.setResetTokenExpiration(null);
+        utilisateurRepository.save(user);
     }
 }

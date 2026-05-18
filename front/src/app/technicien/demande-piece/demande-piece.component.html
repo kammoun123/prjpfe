@@ -19,11 +19,12 @@
             <div class="glass-premium animate-slide-up">
                 <div class="form-body-pro">
                     <form [formGroup]="demandeForm" (ngSubmit)="onSubmit()">
-                        
+
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label class="form-label-pro">Catégorie de Pièce</label>
-                                <select class="form-select-pro" formControlName="categorie" (change)="onCategorieChange()">
+                                <select class="form-select-pro" formControlName="categorie"
+                                    (change)="onCategorieChange()">
                                     <option [ngValue]="null">Toutes les catégories</option>
                                     <option *ngFor="let cat of categories" [ngValue]="cat.idCategorie">
                                         {{ cat.nomCategorie }}
@@ -38,7 +39,8 @@
                                     <select class="form-select-pro" formControlName="piece"
                                         [class.is-invalid]="f['piece'].touched && f['piece'].invalid">
                                         <option [ngValue]="null" disabled selected>
-                                            {{ pieces.length === 0 ? 'Aucune pièce disponible' : 'Choisir une pièce...' }}
+                                            {{ pieces.length === 0 ? 'Aucune pièce disponible' : 'Choisir une pièce...'
+                                            }}
                                         </option>
                                         <option *ngFor="let piece of pieces" [ngValue]="piece">
                                             {{ piece.designation }} (Ref: {{ piece.reference }})
@@ -46,7 +48,8 @@
                                     </select>
                                 </div>
                                 <div *ngIf="f['piece'].value?.ficheTechniqueUrl" class="mt-2 animate-fade-in">
-                                    <a [href]="backendUrl + f['piece'].value.ficheTechniqueUrl" target="_blank" class="text-primary small fw-bold text-decoration-none d-flex align-items-center gap-2">
+                                    <a [href]="backendUrl + f['piece'].value.ficheTechniqueUrl" target="_blank"
+                                        class="text-primary small fw-bold text-decoration-none d-flex align-items-center gap-2">
                                         <i class="bi bi-file-earmark-pdf-fill"></i>
                                         Fiche technique disponible
                                     </a>
@@ -58,11 +61,14 @@
                             <div class="col-md-4">
                                 <label class="form-label-pro">Quantité Requise</label>
                                 <div class="input-group-pro">
-                                    <input type="number" class="form-input-pro" formControlName="quantite" placeholder="Ex: 5">
+                                    <input type="number" class="form-input-pro" formControlName="quantite"
+                                        placeholder="Ex: 5">
                                 </div>
                             </div>
                             <div class="col-md-8">
-                                <button type="button" (click)="ajouterAuPanier()" class="btn-primary-pro w-100 bg-primary-soft border-0" style="height: 52px; background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                                <button type="button" (click)="ajouterAuPanier()"
+                                    class="btn-primary-pro w-100 bg-primary-soft border-0"
+                                    style="height: 52px; background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
                                     <i class="bi bi-cart-plus me-2"></i> Ajouter au panier de demande
                                 </button>
                             </div>
@@ -71,8 +77,9 @@
                         <!-- ═══ BASKET SECTION ═══ -->
                         <div class="basket-section mt-5 animate-slide-up" *ngIf="panier.length > 0">
                             <div class="section-divider"></div>
-                            <label class="form-label-pro mb-3">Articles dans la demande actuelle ({{ panier.length }})</label>
-                            
+                            <label class="form-label-pro mb-3">Articles dans la demande actuelle ({{ panier.length
+                                }})</label>
+
                             <div class="table-responsive">
                                 <table class="table-basket">
                                     <thead>
@@ -89,7 +96,8 @@
                                                 <span class="qty-badge">{{ item.quantite }}</span>
                                             </td>
                                             <td class="text-end">
-                                                <button type="button" (click)="retirerDuPanier(i)" class="btn-delete-pro border-0">
+                                                <button type="button" (click)="retirerDuPanier(i)"
+                                                    class="btn-delete-pro border-0">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </td>
@@ -123,7 +131,8 @@
                         </div>
 
                         <div class="mt-5">
-                            <button type="submit" class="btn-primary-pro w-100" [disabled]="panier.length === 0 || loading">
+                            <button type="submit" class="btn-primary-pro w-100"
+                                [disabled]="panier.length === 0 || loading">
                                 <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
                                 <i class="bi bi-send-check me-2" *ngIf="!loading"></i>
                                 {{ loading ? 'Envoi en cours...' : 'Soumettre la Demande Officielle' }}
@@ -141,4 +150,3 @@
         </div>
     </div>
 </div>
-
