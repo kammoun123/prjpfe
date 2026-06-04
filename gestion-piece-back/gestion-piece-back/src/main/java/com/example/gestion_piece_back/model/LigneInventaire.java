@@ -29,4 +29,6 @@ public class LigneInventaire {
     private Integer quantiteReelle;
 
     private Integer ecart;
+
+    private String observation;
 }

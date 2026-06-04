@@ -27,6 +27,7 @@ export class MouvementManagementComponent implements OnInit {
     };
 
     currentUserName: string = 'Admin';
+    isMagasinier: boolean = false;
 
     // Filter properties
     showFilters = true;
@@ -48,6 +49,10 @@ export class MouvementManagementComponent implements OnInit {
         if (user) {
             this.currentUserName = (user.prenom || '') + ' ' + (user.nom || '');
             this.currentUserName = this.currentUserName.trim() || 'Admin';
+            this.isMagasinier = user.role === 'MAGASINIER';
+            if (this.isMagasinier) {
+                this.newMouvement.typeMouvement = 'SORTIE';
+            }
         }
         this.initialiserPage();
     }

@@ -31,6 +31,7 @@ public class Utilisateur {
     private String motDePasse;
 
     private String role; // ADMIN, TECHNICIEN, CONTROLEUR, MAGASINIER
+  //  private Role role;
     private String statut; // ACTIVE, INACTIVE, etc.
 
     private String ville;

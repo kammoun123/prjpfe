@@ -58,14 +58,21 @@
                         </div>
 
                         <div class="row g-4 mt-1 align-items-end">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label-pro">Quantité Requise</label>
                                 <div class="input-group-pro">
                                     <input type="number" class="form-input-pro" formControlName="quantite"
                                         placeholder="Ex: 5">
                                 </div>
                             </div>
-                            <div class="col-md-8">
+                            <div class="col-md-6">
+                                <label class="form-label-pro">Observation Pièce (Optionnel)</label>
+                                <div class="input-group-pro">
+                                    <input type="text" class="form-input-pro" formControlName="observation"
+                                        placeholder="Note spécifique pour cette pièce...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
                                 <button type="button" (click)="ajouterAuPanier()"
                                     class="btn-primary-pro w-100 bg-primary-soft border-0"
                                     style="height: 52px; background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
@@ -85,6 +92,7 @@
                                     <thead>
                                         <tr>
                                             <th>Désignation de la pièce</th>
+                                            <th>Observation</th>
                                             <th style="width: 100px; text-align: center;">Qté</th>
                                             <th style="width: 80px; text-align: right;">Action</th>
                                         </tr>
@@ -92,6 +100,7 @@
                                     <tbody>
                                         <tr *ngFor="let item of panier; let i = index">
                                             <td class="fw-bold text-main">{{ item.designation }}</td>
+                                            <td class="small text-muted">{{ item.observation || '-' }}</td>
                                             <td class="text-center">
                                                 <span class="qty-badge">{{ item.quantite }}</span>
                                             </td>

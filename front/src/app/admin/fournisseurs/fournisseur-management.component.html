@@ -76,22 +76,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let f of filteredFournisseurs; let i = index" 
-                        class="row-hover animate-row"
+                    <tr *ngFor="let f of filteredFournisseurs; let i = index" class="row-hover animate-row"
                         [style.animation-delay]="i * 0.05 + 's'">
                         <td>
                             <div class="d-flex align-items-center gap-3">
-                                <div class="avatar-premium">{{ f.nom.charAt(0) }}</div>
+                                <div class="avatar-premium">{{ f.nom ? f.nom.charAt(0) : '?' }}</div>
                                 <div>
-                                    <div class="fw-bold text-dark">{{ f.nom }}</div>
+                                    <div class="fw-bold text-dark">{{ f.nom || 'Sans nom' }}</div>
                                     <div class="text-muted smaller">ID: #{{ f.idFournisseur }}</div>
                                 </div>
                             </div>
                         </td>
                         <td>
                             <div class="d-flex flex-column gap-1">
-                                <span class="small fw-semibold text-dark"><i class="bi bi-envelope-fill me-1 opacity-50"></i> {{ f.email }}</span>
-                                <span class="smaller text-muted"><i class="bi bi-telephone-fill me-1 opacity-50"></i> {{ f.telephone }}</span>
+                                <span class="small fw-semibold text-dark"><i
+                                        class="bi bi-envelope-fill me-1 opacity-50"></i> {{ f.email || 'Pas d\'email'
+                                    }}</span>
+                                <span class="smaller text-muted"><i class="bi bi-telephone-fill me-1 opacity-50"></i> {{
+                                    f.telephone || 'N/A' }}</span>
                             </div>
                         </td>
                         <td>
@@ -101,8 +103,10 @@
                         </td>
                         <td>
                             <div class="status-toggle-wrap" (click)="toggleStatut(f)">
-                                <span class="badge-premium" [class.active]="f.statut === 'ACTIF'" [class.inactive]="f.statut === 'INACTIF'">
-                                    <i class="bi" [class.bi-check-circle-fill]="f.statut === 'ACTIF'" [class.bi-dash-circle-fill]="f.statut === 'INACTIF'"></i>
+                                <span class="badge-premium" [class.active]="f.statut === 'ACTIF'"
+                                    [class.inactive]="f.statut === 'INACTIF'">
+                                    <i class="bi" [class.bi-check-circle-fill]="f.statut === 'ACTIF'"
+                                        [class.bi-dash-circle-fill]="f.statut === 'INACTIF'"></i>
                                     {{ f.statut === 'ACTIF' ? 'Opérationnel' : 'Inactif' }}
                                 </span>
                             </div>
@@ -112,7 +116,8 @@
                                 <button class="btn-circle-pro edit" (click)="openEditForm(f)" title="Modifier">
                                     <i class="bi bi-pencil-fill"></i>
                                 </button>
-                                <button class="btn-circle-pro delete" (click)="deleteFournisseur(f.idFournisseur!)" title="Supprimer">
+                                <button class="btn-circle-pro delete" (click)="deleteFournisseur(f.idFournisseur!)"
+                                    title="Supprimer">
                                     <i class="bi bi-trash-fill"></i>
                                 </button>
                             </div>
@@ -136,10 +141,12 @@
             <div class="modal-hdr" [class.edit-mode]="formMode === 'edit'">
                 <div class="modal-hdr-left">
                     <div class="modal-icon-wrap">
-                        <i class="bi" [class.bi-person-plus-fill]="formMode === 'add'" [class.bi-pencil-fill]="formMode === 'edit'"></i>
+                        <i class="bi" [class.bi-person-plus-fill]="formMode === 'add'"
+                            [class.bi-pencil-fill]="formMode === 'edit'"></i>
                     </div>
                     <div>
-                        <h2 class="modal-hdr-title">{{ formMode === 'add' ? 'Ajouter un Fournisseur' : 'Modifier le Fournisseur' }}</h2>
+                        <h2 class="modal-hdr-title">{{ formMode === 'add' ? 'Ajouter un Fournisseur' : 'Modifier le
+                            Fournisseur' }}</h2>
                         <p class="modal-hdr-sub">Gérez les informations de vos partenaires logistiques</p>
                     </div>
                 </div>
@@ -150,14 +157,17 @@
 
             <form #fForm="ngForm" (ngSubmit)="fForm.form.valid && saveFournisseur()" class="modal-body-new p-4">
                 <div class="section-label mb-4"><span class="section-num">1</span> Informations de base</div>
-                
+
                 <div class="row g-4 overflow-hidden">
                     <div class="col-md-12">
                         <div class="field-group">
-                            <label class="field-label">Nom de la société / Fournisseur <span class="req">*</span></label>
-                            <div class="field-input-wrap" [class.field-error]="nom.invalid && (nom.dirty || nom.touched)">
+                            <label class="field-label">Nom de la société / Fournisseur <span
+                                    class="req">*</span></label>
+                            <div class="field-input-wrap"
+                                [class.field-error]="nom.invalid && (nom.dirty || nom.touched)">
                                 <i class="field-icon bi bi-building"></i>
-                                <input class="field-input with-icon" type="text" [(ngModel)]="currentFournisseur.nom" name="nom" #nom="ngModel" required minlength="2" placeholder="Ex: Pièces Auto SARL">
+                                <input class="field-input with-icon" type="text" [(ngModel)]="currentFournisseur.nom"
+                                    name="nom" #nom="ngModel" required minlength="2" placeholder="Ex: Pièces Auto SARL">
                             </div>
                             <div class="field-error-msg" *ngIf="nom.invalid && (nom.dirty || nom.touched)">
                                 <span *ngIf="nom.errors?.['required']">Le nom du fournisseur est obligatoire.</span>
@@ -169,9 +179,11 @@
                     <div class="col-md-6">
                         <div class="field-group">
                             <label class="field-label">Adresse Email <span class="req">*</span></label>
-                            <div class="field-input-wrap" [class.field-error]="email.invalid && (email.dirty || email.touched)">
+                            <div class="field-input-wrap"
+                                [class.field-error]="email.invalid && (email.dirty || email.touched)">
                                 <i class="field-icon bi bi-envelope-at"></i>
-                                <input class="field-input with-icon" type="email" [(ngModel)]="currentFournisseur.email" name="email" #email="ngModel" required email placeholder="contact@fournisseur.com">
+                                <input class="field-input with-icon" type="email" [(ngModel)]="currentFournisseur.email"
+                                    name="email" #email="ngModel" required email placeholder="contact@fournisseur.com">
                             </div>
                             <div class="field-error-msg" *ngIf="email.invalid && (email.dirty || email.touched)">
                                 <span *ngIf="email.errors?.['required']">L'email est obligatoire.</span>
@@ -183,13 +195,17 @@
                     <div class="col-md-6">
                         <div class="field-group">
                             <label class="field-label">Téléphone <span class="req">*</span></label>
-                            <div class="field-input-wrap" [class.field-error]="tel.invalid && (tel.dirty || tel.touched)">
+                            <div class="field-input-wrap"
+                                [class.field-error]="tel.invalid && (tel.dirty || tel.touched)">
                                 <i class="field-icon bi bi-telephone"></i>
-                                <input class="field-input with-icon" type="text" [(ngModel)]="currentFournisseur.telephone" name="tel" #tel="ngModel" required pattern="^[0-9+ \-]{8,15}$" placeholder="+216 ...">
+                                <input class="field-input with-icon" type="text"
+                                    [(ngModel)]="currentFournisseur.telephone" name="tel" #tel="ngModel" required
+                                    pattern="^[0-9+ \-]{8,15}$" placeholder="+216 ...">
                             </div>
                             <div class="field-error-msg" *ngIf="tel.invalid && (tel.dirty || tel.touched)">
                                 <span *ngIf="tel.errors?.['required']">Le téléphone est obligatoire.</span>
-                                <span *ngIf="tel.errors?.['pattern']">Format invalide (8-15 chiffres/caractères autorisés).</span>
+                                <span *ngIf="tel.errors?.['pattern']">Format invalide (8-15 chiffres/caractères
+                                    autorisés).</span>
                             </div>
                         </div>
                     </div>
@@ -199,7 +215,8 @@
                             <label class="field-label">Adresse physique</label>
                             <div class="field-input-wrap">
                                 <i class="field-icon bi bi-geo-alt"></i>
-                                <textarea class="field-input with-icon pt-2" [(ngModel)]="currentFournisseur.adresse" name="adr" placeholder="Rue, Ville, Code Postal" rows="2"></textarea>
+                                <textarea class="field-input with-icon pt-2" [(ngModel)]="currentFournisseur.adresse"
+                                    name="adr" placeholder="Rue, Ville, Code Postal" rows="2"></textarea>
                             </div>
                         </div>
                     </div>
@@ -220,7 +237,8 @@
                         <i class="bi bi-x"></i> Annuler
                     </button>
                     <button type="submit" class="btn-submit-new" [disabled]="loading || fForm.invalid">
-                        <span *ngIf="!loading"><i class="bi" [class.bi-check-circle-fill]="formMode === 'add'" [class.bi-save-fill]="formMode === 'edit'"></i>
+                        <span *ngIf="!loading"><i class="bi" [class.bi-check-circle-fill]="formMode === 'add'"
+                                [class.bi-save-fill]="formMode === 'edit'"></i>
                             {{ formMode === 'add' ? 'Créer le partenaire' : 'Mettre à jour' }}
                         </span>
                         <span *ngIf="loading" class="spinner"></span>

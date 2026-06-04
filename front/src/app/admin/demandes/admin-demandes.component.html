@@ -6,12 +6,15 @@
       </div>
       <div class="header-text">
         <h1>Gestion des Opérations</h1>
-        <p>Suivi complet : Demandes, Commandes Fournisseurs et Réceptions.</p>
+        <p>Suivi complet : Demandes, Commandes et Réceptions.</p>
       </div>
     </div>
-    <div class="header-actions">
+    <div class="header-actions" style="display: flex; gap: 12px; align-items: center;">
+      <button class="btn-new-order" (click)="openDirectOrderModal()">
+        <i class="bi bi-cart-plus flex-shrink-0"></i> Nouvelle Commande
+      </button>
       <button class="btn-refresh" (click)="loadDemandes(); loadActiveOrders()">
-        <i class="bi bi-arrow-clockwise"></i> Actualiser
+        <i class="bi bi-arrow-clockwise flex-shrink-0"></i> Actualiser
       </button>
     </div>
   </header>
@@ -44,29 +47,35 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let d of filteredDemandes()">
-            <td>{{ d.dateDemande | date:'dd/MM/yyyy HH:mm' }}</td>
+          <tr *ngFor="let row of getFilteredDemandesFlattened()">
+            <td>{{ row.demande.dateDemande | date:'dd/MM/yyyy HH:mm' }}</td>
             <td>
-              <span class="fw-bold">{{ d.produit?.designation }}</span>
-              <div class="small text-muted">REF: {{ d.produit?.reference }}</div>
+              <span class="fw-bold">{{ row.pieceName }}</span>
+              <div class="small text-muted" *ngIf="row.demande.lignes && row.demande.lignes.length > 0"
+                style="margin-top: 4px;">
+                <i class="bi bi-archive"></i> Dem. #{{ row.demande.id }}
+              </div>
             </td>
             <td class="text-center">
-              <span class="qty-badge">{{ d.quantite }}</span>
+              <span class="qty-badge">{{ row.quantite }}</span>
             </td>
             <td class="text-center">
-              <span class="status-pill" [ngClass]="getStatusClass(d.statut)">
-                {{ formatStatut(d.statut) }}
+              <span class="status-pill" [ngClass]="getStatusClass(row.demande.statut)">
+                {{ formatStatut(row.demande.statut) }}
               </span>
             </td>
             <td class="text-end">
-              <div class="action-btns" *ngIf="d.statut !== 'VALIDATED' && d.statut !== 'TRAITEE' && d.statut !== 'REFUSED' && d.statut !== 'COMMANDEE'">
-                <button class="btn-action approve" (click)="updateStatus(d, 'VALIDATED')" title="Approuver (Interne)">
+              <div class="action-btns"
+                *ngIf="row.demande.statut !== 'VALIDATED' && row.demande.statut !== 'TRAITEE' && row.demande.statut !== 'REFUSED' && row.demande.statut !== 'COMMANDEE'">
+                <button class="btn-action approve" (click)="updateStatus(row.demande, 'VALIDATED')"
+                  title="Approuver (Interne)">
                   <i class="bi bi-check-lg"></i>
                 </button>
-                <button class="btn-action order" (click)="openOrderModal(d)" title="Commander chez un fournisseur">
+                <button class="btn-action order" (click)="openOrderModal(row.demande)"
+                  title="Commander chez un fournisseur">
                   <i class="bi bi-truck"></i>
                 </button>
-                <button class="btn-action reject" (click)="updateStatus(d, 'REFUSED')" title="Refuser">
+                <button class="btn-action reject" (click)="updateStatus(row.demande, 'REFUSED')" title="Refuser">
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
@@ -88,23 +97,30 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let c of activeOrders()">
-            <td>{{ c.dateCommande | date:'dd/MM/yyyy' }}</td>
-            <td>{{ c.fournisseur?.nom }}</td>
-            <td>{{ c.produit?.designation }}</td>
-            <td class="text-center"><span class="qty-badge">{{ c.quantite }}</span></td>
-            <td class="text-center">{{ c.dateReceptionPrevue || 'Non définie' }}</td>
+          <tr *ngFor="let row of getFilteredCommandesFlattened()">
+            <td>{{ row.commande.dateCommande | date:'dd/MM/yyyy' }}</td>
+            <td>{{ row.commande.fournisseur?.nom }}</td>
+            <td>
+              <span class="fw-bold">{{ row.pieceName }}</span>
+              <div class="small text-muted" style="margin-top: 4px;">
+                <i class="bi bi-hash"></i> Cmd. #{{ row.commande.id }}
+                <span *ngIf="row.commande.idDemandeOrigine"> | Dem. #{{ row.commande.idDemandeOrigine }}</span>
+              </div>
+            </td>
+            <td class="text-center"><span class="qty-badge">{{ row.quantite }}</span></td>
+            <td class="text-center">{{ row.commande.dateReceptionPrevue || 'Non définie' }}</td>
             <td class="text-end">
-              <button class="btn-action-reception" *ngIf="c.statut === 'EN_COURS'" (click)="receptionner(c)">
-                <i class="bi bi-box-seam"></i> Réceptionner la livraison
+              <button class="btn-action-reception" *ngIf="row.commande.statut === 'EN_COURS'"
+                (click)="receptionner(row.commande)">
+                <i class="bi bi-box-seam"></i> Réceptionner
               </button>
-              <span *ngIf="c.statut === 'LIVREE'" class="text-success small fw-bold">
+              <span *ngIf="row.commande.statut === 'LIVREE'" class="text-success small fw-bold">
                 <i class="bi bi-check-circle"></i> RÉCEPTIONNÉE
               </span>
             </td>
           </tr>
           <tr *ngIf="activeOrders().length === 0">
-            <td colspan="6" class="text-center py-5 text-muted">Aucune commande fournisseur active.</td>
+            <td colspan="6" class="text-center py-5 text-muted">Aucune commande active.</td>
           </tr>
         </tbody>
       </table>
@@ -115,12 +131,12 @@
   <div class="modal-overlay" *ngIf="showOrderModal()" (click)="closeOrderModal()">
     <div class="modal-premium animate-zoom" (click)="$event.stopPropagation()">
       <div class="modal-hdr">
-        <h2 class="text-white">Nouvelle Commande Fournisseur</h2>
+        <h2 class="text-white">Nouvelle Commande</h2>
         <button class="modal-close-btn" (click)="closeOrderModal()">×</button>
       </div>
       <div class="modal-body-new p-4">
-        <p class="text-muted small">Produit : {{ selectedDemandeForOrder()?.produit?.designation }}</p>
-        
+        <p class="text-muted small">Produits : {{ getProduitDesignation(selectedDemandeForOrder()!) }}</p>
+
         <div class="field-group mb-3">
           <label>Sélectionner un Fournisseur</label>
           <select class="field-input" [(ngModel)]="selectedFournisseurId">
@@ -130,12 +146,89 @@
 
         <div class="field-group mb-3">
           <label>Date de réception prévue</label>
-          <input type="date" class="field-input" [(ngModel)]="selectedDateLivraison">
+          <input type="date" class="field-input" [(ngModel)]="selectedDateLivraison" [min]="todayDate">
+        </div>
+
+        <div class="field-group mb-3">
+          <label>Observation (Note pour le fournisseur)</label>
+          <textarea class="field-input" [(ngModel)]="observationOrder" placeholder="Ex: Livraison au quai B, urgent..."
+            rows="2"></textarea>
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-4">
           <button class="btn-cancel-new" (click)="closeOrderModal()">Annuler</button>
-          <button class="btn-submit-new" (click)="submitOrder()" [disabled]="!selectedFournisseurId() || orderLoading()">
+          <button class="btn-submit-new" (click)="submitOrder()"
+            [disabled]="!selectedFournisseurId() || orderLoading()">
+            {{ orderLoading() ? 'Envoi...' : 'Passer la commande' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIRECT ORDER MODAL -->
+  <div class="modal-overlay" *ngIf="showDirectOrderModal()" (click)="closeDirectOrderModal()">
+    <div class="modal-premium animate-zoom" (click)="$event.stopPropagation()">
+      <div class="modal-hdr">
+        <h2 class="text-white">Commande Directe</h2>
+        <button class="modal-close-btn" (click)="closeDirectOrderModal()">×</button>
+      </div>
+      <div class="modal-body-new p-4">
+        <p class="text-muted small mb-3">Commander plusieurs pièces manuellement en cas de rupture de stock.</p>
+
+        <div class="direct-items-container mb-4">
+          <div class="direct-item-header d-flex gap-2 mb-2">
+            <span class="flex-grow-1 small fw-bold text-muted">Pièce</span>
+            <span class="small fw-bold text-muted text-center" style="width: 80px;">Quantité</span>
+            <span style="width: 32px;"></span>
+          </div>
+
+          <div class="direct-item-row d-flex gap-2 mb-3 align-items-center"
+            *ngFor="let item of directOrderItems(); let i = index">
+            <div class="flex-grow-1">
+              <select class="field-input" [(ngModel)]="item.produitId">
+                <option [ngValue]="null" disabled>Sélectionner...</option>
+                <option *ngFor="let p of pieces()" [value]="p.idProduit">
+                  {{ p.designation }} (Stock: {{ p.quantiteStock }})
+                </option>
+              </select>
+            </div>
+            <div style="width: 80px;">
+              <input type="number" class="field-input text-center" [(ngModel)]="item.quantite" min="1">
+            </div>
+            <button class="btn-remove-line" (click)="removeDirectOrderLine(i)" *ngIf="directOrderItems().length > 1">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+
+          <button class="btn-add-line" (click)="addDirectOrderLine()">
+            <i class="bi bi-plus-lg"></i> Ajouter une pièce
+          </button>
+        </div>
+
+        <div class="field-group mb-3">
+          <label>Sélectionner un Fournisseur</label>
+          <select class="field-input" [(ngModel)]="selectedFournisseurId">
+            <option [ngValue]="null" disabled>Choisir un fournisseur...</option>
+            <option *ngFor="let f of fournisseurs()" [value]="f.idFournisseur">{{ f.nom }}</option>
+          </select>
+        </div>
+
+        <div class="field-group mb-3">
+          <label>Date de réception prévue</label>
+          <input type="date" class="field-input" [(ngModel)]="selectedDateLivraison" [min]="todayDate">
+        </div>
+
+        <div class="field-group mb-3">
+          <label>Observation (Note pour le fournisseur)</label>
+          <textarea class="field-input" [(ngModel)]="observationDirect" placeholder="Instructions particulières..."
+            rows="2"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button class="btn-cancel-new" (click)="closeDirectOrderModal()">Annuler</button>
+          <button class="btn-submit-new" (click)="submitDirectOrder()"
+            [disabled]="!selectedFournisseurId() || orderLoading()">
             {{ orderLoading() ? 'Envoi...' : 'Passer la commande' }}
           </button>
         </div>

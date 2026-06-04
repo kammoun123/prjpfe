@@ -2,18 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { CommandeLigne } from '../models/commande-ligne.model';
+import { Fournisseur } from '../models/fournisseur.model';
 
 export interface Commande {
   id?: number;
-  idDemandeOrigine: number;
-  produitId: number;
+  idDemandeOrigine?: number;
   fournisseurId: number;
-  quantite: number;
   dateCommande?: string;
   dateReceptionPrevue?: string;
   statut: string;
-  produit?: any;
-  fournisseur?: any;
+  observation?: string;
+  fournisseur?: Fournisseur;
+  lignes?: CommandeLigne[];
 }
 
 @Injectable({
@@ -28,8 +29,12 @@ export class CommandeFournisseurService {
     return this.http.get<Commande[]>(this.apiUrl);
   }
 
-  creerCommande(idDemande: number, idFournisseur: number, dateReceptionPrevue?: string): Observable<Commande> {
-    return this.http.post<Commande>(this.apiUrl, { idDemande, idFournisseur, dateReceptionPrevue });
+  creerCommande(idDemande: number, idFournisseur: number, dateReceptionPrevue?: string, observation?: string): Observable<Commande> {
+    return this.http.post<Commande>(this.apiUrl, { idDemande, idFournisseur, dateReceptionPrevue, observation });
+  }
+
+  creerCommandeDirecte(items: { produitId: number | null, quantite: number }[], idFournisseur: number, dateReceptionPrevue?: string, observation?: string): Observable<Commande> {
+    return this.http.post<Commande>(`${this.apiUrl}/directe`, { items, idFournisseur, dateReceptionPrevue, observation });
   }
 
   receptionnerCommande(id: number): Observable<Commande> {

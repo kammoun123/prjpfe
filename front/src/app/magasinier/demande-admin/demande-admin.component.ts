@@ -60,13 +60,29 @@ export class DemandeAdminComponent implements OnInit {
 
   loadHistory() {
     this.demandeService.getDemandes().subscribe(data => {
-      const mapped = data.map(d => ({
-        id: d.id,
-        date: d.dateDemande,
-        piece: d.produit ? d.produit.designation : 'Pièce Inconnue',
-        quantite: d.quantite,
-        statut: d.statut
-      }));
+      const mapped = data.map(d => {
+        let pieceName = 'Pièce Inconnue';
+        let totalQte = 0;
+        
+        if (d.lignes && d.lignes.length > 0) {
+          const pieceNames = d.lignes.map(l => {
+            totalQte += l.quantite || 0;
+            if (l.produit && l.produit.designation) {
+              return l.produit.designation;
+            }
+            return 'Pièce #' + l.produitId;
+          });
+          pieceName = pieceNames.join(', ');
+        }
+        
+        return {
+          id: d.id,
+          date: d.dateDemande,
+          piece: pieceName,
+          quantite: totalQte,
+          statut: d.statut
+        };
+      });
 
       // Sort by date descending (newest first)
       mapped.sort((a, b) => {
@@ -85,13 +101,17 @@ export class DemandeAdminComponent implements OnInit {
     this.sending.set(true);
     const currentUser = this.authService.getCurrentUser();
     
+    // Create demand with single ligne
     const demande: DemandeProduit = {
-      produitId: Number(this.selectedPieceId),
-      quantite: this.quantity,
       statut: 'EN_ATTENTE',
-      motif: 'Demande d\'achat Magasinier',
       technicienId: currentUser?.idUtilisateur || 0,
-      dateDemande: new Date()
+      dateDemande: new Date(),
+      lignes: [{
+        produitId: Number(this.selectedPieceId),
+        quantite: this.quantity,
+        motif: 'Demande d\'achat Magasinier',
+        statut: 'EN_ATTENTE'
+      } as any]
     };
 
     this.demandeService.createDemande(demande).subscribe({

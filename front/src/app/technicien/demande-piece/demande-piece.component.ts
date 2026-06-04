@@ -24,7 +24,7 @@ export class DemandePieceComponent implements OnInit {
     categories: Categorie[] = [];
     demandeForm!: FormGroup;
     loading = false;
-    panier: { produitId: number; quantite: number; designation: string }[] = [];
+    panier: { produitId: number; quantite: number; designation: string; observation?: string }[] = [];
     backendUrl = environment.apiUrl.replace('/api', '');
     today = new Date();
 
@@ -78,6 +78,7 @@ export class DemandePieceComponent implements OnInit {
             categorie: [null],
             piece: [null, Validators.required],
             quantite: [1, [Validators.required, Validators.min(1)]],
+            observation: [''],
             motif: [''],
             urgence: ['Normale'],
             technicienId: [1]
@@ -94,7 +95,8 @@ export class DemandePieceComponent implements OnInit {
         const item = {
             produitId: formValue.piece.idProduit,
             quantite: formValue.quantite,
-            designation: formValue.piece.designation
+            designation: formValue.piece.designation,
+            observation: formValue.observation
         };
 
         this.panier.push(item);
@@ -102,7 +104,8 @@ export class DemandePieceComponent implements OnInit {
 
         this.demandeForm.patchValue({
             piece: null,
-            quantite: 1
+            quantite: 1,
+            observation: ''
         });
     }
 
@@ -118,19 +121,23 @@ export class DemandePieceComponent implements OnInit {
 
         this.loading = true;
         const formValue = this.demandeForm.value;
-        const requests: any[] = [];
 
-        for (const item of this.panier) {
-            const demande: DemandeProduit = {
-                statut: 'En attente',
-                produitId: item.produitId,
-                quantite: item.quantite,
-                motif: formValue.motif,
-                technicienId: formValue.technicienId || 1,
-                dateDemande: new Date()
-            };
-            requests.push(this.demandeService.createDemande(demande));
-        }
+        // Create ONE demand with multiple line items
+        const demandeLignes = this.panier.map(item => ({
+            produitId: item.produitId,
+            quantite: item.quantite,
+            observation: item.observation,
+            motif: formValue.motif
+        }));
+
+        const demande: DemandeProduit = {
+            statut: 'En attente',
+            technicienId: formValue.technicienId || 1,
+            dateDemande: new Date(),
+            lignes: demandeLignes as any
+        };
+
+        const requests = [this.demandeService.createDemande(demande)];
 
         import('rxjs').then(({ forkJoin }) => {
             forkJoin(requests).subscribe({

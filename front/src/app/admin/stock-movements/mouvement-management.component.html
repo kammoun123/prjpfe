@@ -68,7 +68,7 @@
                 <div class="form-group-pro">
                     <label>Nature du Mouvement</label>
                     <div class="type-toggle">
-                        <label class="toggle-btn" [class.active]="newMouvement.typeMouvement === 'ENTREE'">
+                        <label class="toggle-btn" [class.active]="newMouvement.typeMouvement === 'ENTREE'" *ngIf="!isMagasinier">
                             <input type="radio" [(ngModel)]="newMouvement.typeMouvement" name="type" value="ENTREE" hidden>
                             <i class="bi bi-arrow-down-left"></i> Entrée
                         </label>

@@ -1,8 +1,10 @@
 package com.example.gestion_piece_back.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -12,23 +14,11 @@ public class DemandeProduit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_demande")
-    private Long idDemande;
-
     @Column(name = "date_demande")
     private LocalDateTime dateDemande;
 
     @Column(name = "statut")
-    private String statut;
-
-    @Column(name = "produit_id")
-    private Long produitId;
-
-    @Column(name = "quantite")
-    private Integer quantite;
-
-    @Column(name = "motif")
-    private String motif;
+    private String statut; // "EN_ATTENTE", "APPROUVEE", "REJETEE"
 
     @Column(name = "date_livraison_prevue")
     private java.time.LocalDate dateLivraisonPrevue;
@@ -36,7 +26,13 @@ public class DemandeProduit {
     @Column(name = "technicien_id")
     private Long technicienId;
 
-    @ManyToOne
-    @JoinColumn(name = "produit_id", insertable = false, updatable = false)
-    private Produit produit;
+    @Column(name = "observation")
+    private String observation;
+
+    @Column(name = "id_demande")
+    private Long idDemande;
+
+    @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<DemandePieceLigne> lignes;
 }

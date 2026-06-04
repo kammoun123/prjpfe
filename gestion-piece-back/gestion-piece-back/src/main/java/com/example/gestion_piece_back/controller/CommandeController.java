@@ -26,8 +26,21 @@ public class CommandeController {
         Long idFournisseur = Long.valueOf(payload.get("idFournisseur").toString());
         String dateStr = (String) payload.get("dateReceptionPrevue");
         java.time.LocalDate datePrev = dateStr != null ? java.time.LocalDate.parse(dateStr) : null;
-        
-        return commandeService.creerCommande(idDemande, idFournisseur, datePrev);
+        String observation = (String) payload.get("observation");
+
+        return commandeService.creerCommande(idDemande, idFournisseur, datePrev, observation);
+    }
+
+    @PostMapping("/directe")
+    public Commande creerCommandeDirecte(@RequestBody Map<String, Object> payload) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> items = (List<Map<String, Object>>) payload.get("items");
+        Long idFournisseur = Long.valueOf(payload.get("idFournisseur").toString());
+        String dateStr = (String) payload.get("dateReceptionPrevue");
+        java.time.LocalDate datePrev = dateStr != null ? java.time.LocalDate.parse(dateStr) : null;
+        String observation = (String) payload.get("observation");
+
+        return commandeService.creerCommandeDirecte(items, idFournisseur, datePrev, observation);
     }
 
     @PutMapping("/{id}/receptionner")

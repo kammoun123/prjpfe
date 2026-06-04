@@ -63,6 +63,28 @@
     color: #1e293b;
 }
 
+.btn-new-order {
+    background: #0f172a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.btn-new-order:hover {
+    background: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(15, 23, 42, 0.25);
+}
+
 /* Tabs */
 .admin-tabs {
     display: flex;
@@ -510,6 +532,67 @@
         opacity: 1;
         transform: scale(1);
     }
+}
+
+/* Multi-item Direct Order Styles */
+.direct-items-container {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.direct-item-header span {
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+}
+
+.btn-remove-line {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #fee2e2;
+    background: #fef2f2;
+    color: #ef4444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 5px;
+}
+
+.btn-remove-line:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-add-line {
+    background: white;
+    border: 1.5px dashed #cbd5e1;
+    color: #64748b;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-add-line:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+textarea.field-input {
+    resize: vertical;
+    min-height: 80px;
 }
 
 @keyframes fadeIn {

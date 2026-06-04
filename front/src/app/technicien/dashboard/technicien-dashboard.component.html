@@ -145,7 +145,7 @@
                             <thead class="bg-light-pro">
                                 <tr>
                                     <th class="px-4 py-3">Date</th>
-                                    <th class="py-3">Référence</th>
+                                    <th class="py-3">Pièce</th>
                                     <th class="py-3">Quantité</th>
                                     <th class="py-3">Motif</th>
                                     <th class="py-3">Statut</th>
@@ -153,37 +153,41 @@
                                 </tr>
                             </thead>
                             <tbody class="border-top-0">
-                                <tr *ngFor="let d of filteredDemandes" class="align-middle border-bottom-soft">
+                                <tr *ngFor="let row of filteredDemandes" class="align-middle border-bottom-soft">
                                     <td class="px-4 py-3">
-                                        <div class="fw-medium small">{{ d.dateDemande | date:'dd MMM yyyy' }}</div>
-                                        <div class="text-muted smaller">{{ d.dateDemande | date:'HH:mm' }}</div>
+                                        <div class="fw-medium small">{{ row.dateCommande | date:'dd MMM yyyy' }}</div>
+                                        <div class="text-muted smaller">{{ row.dateCommande | date:'HH:mm' }}</div>
                                     </td>
                                     <td class="py-3">
-                                        <span class="badge bg-light text-dark fw-bold" [title]="'ID-' + (d.produitId || 'Inconnu')">
-                                            {{ getPieceReference(d) }}
+                                        <span class="badge bg-light text-dark fw-bold">
+                                            {{ row.pieceName }}
                                         </span>
                                     </td>
                                     <td class="py-3">
                                         <div class="fw-bold">
-                                            {{ d.quantite || 0 }} <small class="text-muted fw-normal">unités</small>
+                                            {{ row.quantite }} <small class="text-muted fw-normal">unités</small>
                                         </div>
                                     </td>
                                     <td class="py-3">
-                                        <div class="text-truncate" style="max-width: 150px;" [title]="d.motif">
-                                            {{ d.motif || 'Aucun motif spécifié' }}
+                                        <div class="text-truncate" style="max-width: 150px;" [title]="row.motif">
+                                            {{ row.motif || 'Aucun motif spécifié' }}
                                         </div>
                                     </td>
                                     <td class="py-3">
                                         <div [ngClass]="{
-                                            'status-pill pending': (d.statut || '').toLowerCase().includes('attente') || (d.statut || '').toLowerCase().includes('commande') || (d.statut || '').toUpperCase() === 'PENDING',
-                                            'status-pill success': d.statut === 'Validée' || d.statut === 'VALIDATED' || d.statut === 'VALIDE',
-                                            'status-pill error': d.statut === 'Rejetée' || d.statut === 'REFUSED' || d.statut === 'REFUSÉ'
-                                        }">{{ formatStatut(d.statut) }}</div>
+                                            'status-pill pending': (row.statut || '').toLowerCase().includes('attente') || (row.statut || '').toLowerCase().includes('commande') || (row.statut || '').toUpperCase() === 'PENDING',
+                                            'status-pill success': row.statut === 'Validée' || row.statut === 'VALIDATED' || row.statut === 'VALIDE',
+                                            'status-pill error': row.statut === 'Rejetée' || row.statut === 'REFUSED' || row.statut === 'REFUSÉ'
+                                        }">{{ formatStatut(row.statut) }}</div>
                                     </td>
                                     <td class="px-4 py-3 text-end">
                                         <div class="d-flex justify-content-end gap-2">
+                                            <button class="btn btn-icon-sm btn-info-pro"
+                                                (click)="openDetails(row.demande)" title="Voir détails">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
                                             <button class="btn btn-icon-sm btn-delete-pro"
-                                                (click)="onDeleteDemande(d.id)" title="Supprimer">
+                                                (click)="onDeleteDemande(row.idDemande)" title="Supprimer">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -204,3 +208,166 @@
         </div>
     </div>
 </div>
+
+<!-- Modal - Détails de la Demande -->
+<div *ngIf="showDetailsModal && selectedDemande" class="modal-overlay" (click)="closeDetailsModal()">
+    <div class="modal modal-lg modal-details" (click)="$event.stopPropagation()">
+        <div class="modal-header border-bottom">
+            <h5 class="modal-title fw-bold">Détails de la Demande #{{ selectedDemande.id }}</h5>
+            <button type="button" class="btn-close" (click)="closeDetailsModal()"></button>
+        </div>
+        
+        <div class="modal-body">
+            <!-- Informations générales -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="info-group">
+                        <label class="label-sm text-muted">Date de demande</label>
+                        <p class="fw-semibold">{{ selectedDemande.dateDemande | date:'dd MMM yyyy HH:mm' }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-group">
+                        <label class="label-sm text-muted">Statut</label>
+                        <p>
+                            <span [ngClass]="{
+                                'status-pill pending': (selectedDemande.statut || '').toLowerCase().includes('attente'),
+                                'status-pill success': selectedDemande.statut === 'Validée' || selectedDemande.statut === 'VALIDÉE' || selectedDemande.statut === 'VALIDE',
+                                'status-pill error': selectedDemande.statut === 'Rejetée' || selectedDemande.statut === 'REFUSÉ'
+                            }">
+                                {{ formatStatut(selectedDemande.statut) }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observation générale -->
+            <div class="mb-4" *ngIf="selectedDemande.observation">
+                <label class="label-sm text-muted">Observation générale</label>
+                <p>{{ selectedDemande.observation }}</p>
+            </div>
+
+            <!-- Liste des pièces -->
+            <div class="mb-4">
+                <label class="label-sm text-muted fw-bold mb-3 d-block">Pièces demandées ({{ selectedDemande.lignes?.length || 0 }})</label>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>N°</th>
+                                <th>Pièce</th>
+                                <th class="text-center">Quantité</th>
+                                <th>Motif</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let ligne of selectedDemande.lignes; let i = index">
+                                <td class="fw-semibold">{{ i + 1 }}</td>
+                                <td>
+                                    <span class="badge bg-light text-dark">
+                                        {{ ligne.produit?.designation || ('Pièce ID #' + ligne.produitId) }}
+                                    </span>
+                                </td>
+                                <td class="text-center fw-semibold">{{ ligne.quantite }}</td>
+                                <td class="small">{{ ligne.motif || '-' }}</td>
+                                <td>
+                                    <span class="badge" 
+                                        [ngClass]="{
+                                            'bg-warning': (ligne.statut || '').includes('ATTENTE'),
+                                            'bg-success': ligne.statut === 'LIVREE' || ligne.statut === 'VALIDE',
+                                            'bg-danger': (ligne.statut || '').includes('REFUSE')
+                                        }">
+                                        {{ ligne.statut || 'EN_ATTENTE' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Observation par ligne -->
+            <div class="mb-4" *ngIf="selectedDemande.lignes && selectedDemande.lignes.some(l => l.observation)">
+                <label class="label-sm text-muted fw-bold mb-3 d-block">Observations par pièce</label>
+                <div class="list-group list-group-flush">
+                    <div *ngFor="let ligne of selectedDemande.lignes" class="list-group-item px-0 py-2">
+                        <small class="text-muted" *ngIf="ligne.observation">
+                            <strong>{{ ligne.produit?.designation || ('Pièce ID #' + ligne.produitId) }}:</strong> 
+                            {{ ligne.observation }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer border-top">
+            <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">Fermer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Overlay Styles -->
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+    }
+
+    .modal {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-lg {
+        width: 100%;
+        max-width: 700px;
+    }
+
+    .label-sm {
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .info-group {
+        padding: 0.75rem 0;
+    }
+
+    .btn-info-pro {
+        background: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+        border: 1px solid rgba(13, 110, 253, 0.2);
+        padding: 0.4rem 0.6rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-info-pro:hover {
+        background: rgba(13, 110, 253, 0.2);
+        color: #0d6efd;
+        border-color: rgba(13, 110, 253, 0.3);
+    }
+</style>

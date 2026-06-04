@@ -1,11 +1,13 @@
 package com.example.gestion_piece_back.service;
 
+import com.example.gestion_piece_back.model.CommandeLigne;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class EmailService {
@@ -13,7 +15,69 @@ public class EmailService {
     @Autowired
     private JavaMailSender javaMailSender;
 
-    public void sendOrderEmail(String destinataire, String fournisseurNom, String produitRequis, Integer quantite, String motif, java.time.LocalDate dateLivraison) {
+    public void sendOrderEmailMulti(String destinataire, String fournisseurNom, List<CommandeLigne> lignes,
+            String observation, java.time.LocalDate dateLivraison) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(destinataire);
+            helper.setSubject("NOUVELLE COMMANDE - G-PIÈCES");
+
+            String dateLivraisonStr = (dateLivraison != null) ? dateLivraison.toString() : "Dès que possible";
+
+            StringBuilder itemsHtml = new StringBuilder();
+            itemsHtml.append(
+                    "<table style='width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'>");
+            itemsHtml.append("<tr style='background-color: #f8fafc;'>")
+                    .append("<th style='border: 1px solid #ddd; padding: 10px; text-align: left;'>Produit</th>")
+                    .append("<th style='border: 1px solid #ddd; padding: 10px; text-align: center;'>Quantité</th>")
+                    .append("</tr>");
+
+            for (CommandeLigne ligne : lignes) {
+                String designation = (ligne.getProduit() != null) ? ligne.getProduit().getDesignation()
+                        : ("Produit #" + ligne.getProduitId());
+                itemsHtml.append("<tr>")
+                        .append("<td style='border: 1px solid #ddd; padding: 10px;'>").append(designation)
+                        .append("</td>")
+                        .append("<td style='border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;'>")
+                        .append(ligne.getQuantite()).append("</td>")
+                        .append("</tr>");
+            }
+            itemsHtml.append("</table>");
+
+            String htmlContent = "<html>"
+                    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;'>"
+                    + "<div style='max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);'>"
+                    + "<h2 style='color: #4f46e5; text-align: center;'>Bon de Commande G-PIÈCES</h2>"
+                    + "<p>Bonjour <strong>" + fournisseurNom + "</strong>,</p>"
+                    + "<p>Nous souhaitons passer une commande pour les produits suivants :</p>"
+                    + itemsHtml.toString()
+                    + "<table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>"
+                    + "<tr><th style='border: 1px solid #ddd; padding: 10px; background-color: #f8fafc; text-align: left; width: 40%;'>Date de Livraison Prévue</th>"
+                    + "<td style='border: 1px solid #ddd; padding: 10px; color: #d97706; font-weight: bold;'>"
+                    + dateLivraisonStr + "</td></tr>"
+                    + "<tr><th style='border: 1px solid #ddd; padding: 10px; background-color: #f8fafc; text-align: left;'>Observation / Infos</th>"
+                    + "<td style='border: 1px solid #ddd; padding: 10px;'>"
+                    + ((observation != null && !observation.isEmpty()) ? observation : "N/A") + "</td></tr>"
+                    + "</table>"
+                    + "<p>Merci de traiter cette commande dans les meilleurs délais.</p>"
+                    + "<p style='margin-top: 30px; font-size: 12px; color: #888; text-align: center;'>Cet email est généré automatiquement par le système G-PIÈCES.</p>"
+                    + "</div>"
+                    + "</body>"
+                    + "</html>";
+
+            helper.setText(htmlContent, true);
+            javaMailSender.send(message);
+        } catch (MessagingException e) {
+            System.err.println("Erreur lors de l'envoi de l'email à : " + destinataire);
+            e.printStackTrace();
+            throw new RuntimeException("Erreur serveur lors de l'envoi de l'email de commande.");
+        }
+    }
+
+    public void sendOrderEmail(String destinataire, String fournisseurNom, String produitRequis, Integer quantite,
+            String motif, java.time.LocalDate dateLivraison) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -35,12 +99,14 @@ public class EmailService {
                     + "<tr><th style='border: 1px solid #ddd; padding: 10px; background-color: #f8fafc; text-align: left;'>Quantité</th>"
                     + "<td style='border: 1px solid #ddd; padding: 10px; font-weight: bold;'>" + quantite + "</td></tr>"
                     + "<tr><th style='border: 1px solid #ddd; padding: 10px; background-color: #f8fafc; text-align: left;'>Date de Livraison Prévue</th>"
-                    + "<td style='border: 1px solid #ddd; padding: 10px; color: #d97706; font-weight: bold;'>" + dateLivraisonStr + "</td></tr>"
+                    + "<td style='border: 1px solid #ddd; padding: 10px; color: #d97706; font-weight: bold;'>"
+                    + dateLivraisonStr + "</td></tr>"
                     + "<tr><th style='border: 1px solid #ddd; padding: 10px; background-color: #f8fafc; text-align: left;'>Motif / Infos</th>"
-                    + "<td style='border: 1px solid #ddd; padding: 10px;'>" + ((motif != null && !motif.isEmpty()) ? motif : "N/A") + "</td></tr>"
+                    + "<td style='border: 1px solid #ddd; padding: 10px;'>"
+                    + ((motif != null && !motif.isEmpty()) ? motif : "N/A") + "</td></tr>"
                     + "</table>"
                     + "<p>Merci de traiter cette commande dans les meilleurs délais.</p>"
-                    + "<p style='margin-top: 30px; font-size: 12px; color: #888; text-align: center;'>Cet email est généré automatiquement par le système G-PIÈCES.</p>"
+                    + "<p style='margin-top: 30px; font-size: 12px; color: #888; text-align: center;'>.</p>"
                     + "</div>"
                     + "</body>"
                     + "</html>";
@@ -55,7 +121,8 @@ public class EmailService {
         }
     }
 
-    public void sendLowStockAlertEmail(String toEmail, String produitDesignation, Integer quantiteActuelle, Integer seuilAlerte) {
+    public void sendLowStockAlertEmail(String toEmail, String produitDesignation, Integer quantiteActuelle,
+            Integer seuilAlerte) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -136,7 +203,8 @@ public class EmailService {
                     + "Vous avez demandé la réinitialisation de votre mot de passe pour votre compte <strong>G-PIÈCES</strong>."
                     + "</p>"
                     + "<div style='text-align: center; margin: 35px 0;'>"
-                    + "<a href='" + resetUrl + "' style='background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); transition: all 0.3s ease; display: inline-block;'>Réinitialiser mon mot de passe</a>"
+                    + "<a href='" + resetUrl
+                    + "' style='background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); transition: all 0.3s ease; display: inline-block;'>Réinitialiser mon mot de passe</a>"
                     + "</div>"
                     + "<p style='color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;'>"
                     + "Si vous n'avez pas effectué cette demande, vous pouvez ignorer cet email en toute sécurité. Ce lien expirera dans 1 heure."
@@ -157,7 +225,8 @@ public class EmailService {
         }
     }
 
-    public void sendNewUserRegistrationEmailToAdmin(String adminEmail, com.example.gestion_piece_back.model.Utilisateur newUser) {
+    public void sendNewUserRegistrationEmailToAdmin(String adminEmail,
+            com.example.gestion_piece_back.model.Utilisateur newUser) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -178,11 +247,17 @@ public class EmailService {
                     + "<div style='background-color: #f1f5f9; padding: 25px; border-radius: 12px; margin: 30px 0;'>"
                     + "<h3 style='margin-top: 0; color: #475569; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;'>Détails de l'utilisateur</h3>"
                     + "<table style='width: 100%; border-collapse: collapse;'>"
-                    + "<tr><td style='padding: 8px 0; color: #64748b; width: 40%;'>Nom complet :</td><td style='padding: 8px 0; color: #1e293b; font-weight: 600;'>" + newUser.getPrenom() + " " + newUser.getNom() + "</td></tr>"
-                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Email :</td><td style='padding: 8px 0; color: #1e293b; font-weight: 600;'>" + newUser.getEmail() + "</td></tr>"
-                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Rôle demandé :</td><td style='padding: 8px 0; color: #1e293b;'><span style='background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;'>" + newUser.getRole() + "</span></td></tr>"
-                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Téléphone :</td><td style='padding: 8px 0; color: #1e293b;'>" + (newUser.getTelephone() != null ? newUser.getTelephone() : "Non renseigné") + "</td></tr>"
-                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Localisation :</td><td style='padding: 8px 0; color: #1e293b;'>" + (newUser.getVille() != null ? newUser.getVille() : "-") + ", " + (newUser.getGouvernorat() != null ? newUser.getGouvernorat() : "-") + "</td></tr>"
+                    + "<tr><td style='padding: 8px 0; color: #64748b; width: 40%;'>Nom complet :</td><td style='padding: 8px 0; color: #1e293b; font-weight: 600;'>"
+                    + newUser.getPrenom() + " " + newUser.getNom() + "</td></tr>"
+                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Email :</td><td style='padding: 8px 0; color: #1e293b; font-weight: 600;'>"
+                    + newUser.getEmail() + "</td></tr>"
+                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Rôle demandé :</td><td style='padding: 8px 0; color: #1e293b;'><span style='background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;'>"
+                    + newUser.getRole() + "</span></td></tr>"
+                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Téléphone :</td><td style='padding: 8px 0; color: #1e293b;'>"
+                    + (newUser.getTelephone() != null ? newUser.getTelephone() : "Non renseigné") + "</td></tr>"
+                    + "<tr><td style='padding: 8px 0; color: #64748b;'>Localisation :</td><td style='padding: 8px 0; color: #1e293b;'>"
+                    + (newUser.getVille() != null ? newUser.getVille() : "-") + ", "
+                    + (newUser.getGouvernorat() != null ? newUser.getGouvernorat() : "-") + "</td></tr>"
                     + "</table>"
                     + "</div>"
                     + "<div style='text-align: center; margin-top: 30px;'>"
@@ -198,7 +273,8 @@ public class EmailService {
             helper.setText(htmlContent, true);
             javaMailSender.send(message);
         } catch (MessagingException e) {
-            System.err.println("Erreur lors de l'envoi de l'email de notification d'inscription à l'admin: " + e.getMessage());
+            System.err.println(
+                    "Erreur lors de l'envoi de l'email de notification d'inscription à l'admin: " + e.getMessage());
         }
     }
 }

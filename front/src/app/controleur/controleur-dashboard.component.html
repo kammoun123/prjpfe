@@ -46,7 +46,7 @@
     <div class="modal-content modal-lg glass-premium">
       <div class="modal-header">
         <h2>
-          <i class="bi bi-file-earmark-bar-graph text-primary"></i> 
+          <i class="bi bi-file-earmark-bar-graph text-primary"></i>
           {{ isViewing ? 'Consultation' : 'Saisie' }} d'Audit de Stock
         </h2>
         <button class="btn-close" (click)="showReportModal = false"><i class="bi bi-x"></i></button>
@@ -61,6 +61,7 @@
                 <th>Système</th>
                 <th>Réel (Manuel)</th>
                 <th>Écart</th>
+                <th>Observation</th>
                 <th>État</th>
               </tr>
             </thead>
@@ -79,9 +80,17 @@
                   </strong>
                 </td>
                 <td>
+                  <ng-container *ngIf="!isViewing && p.ecart !== 0">
+                    <textarea [(ngModel)]="p.observation" placeholder="⚠️ Justification requise..."
+                      style="width: 150px; min-height: 48px; padding: 4px 7px; border: 1.5px solid #f59e0b; border-radius: 6px; font-size: 0.82rem; resize: vertical; background: #fffbeb;"
+                      rows="2"></textarea>
+                  </ng-container>
+                  <span *ngIf="p.ecart === 0 && !isViewing" class="text-muted small">—</span>
+                  <span *ngIf="isViewing" class="text-muted small">{{ p.observation || '—' }}</span>
+                </td>
+                <td>
                   <span class="status-badge" [ngClass]="p.ecart < 0 ? 'error' : p.ecart > 0 ? 'valid' : 'pending'">
-                    {{ p.ecart === 0 ? 'Conforme' : p.ecart < 0 ? 'Manquant' : 'Surplus' }}
-                  </span>
+                    {{ p.ecart === 0 ? 'Conforme' : p.ecart < 0 ? 'Manquant' : 'Surplus' }} </span>
                 </td>
               </tr>
             </tbody>
@@ -151,7 +160,7 @@
 
   <!-- ═══ DASHBOARD CONTENT ═══ -->
   <div class="tab-content-pro animate-fade-in" *ngIf="currentTab === 'dashboard'">
-    
+
     <!-- MINIMAL STATS GRID -->
     <section class="stats-section">
       <div class="stats-grid-pro">
@@ -197,7 +206,7 @@
 
     <!-- CONTENT PANELS GRID -->
     <div class="panels-grid-pro">
-      
+
       <!-- Recent Activity Panel -->
       <section class="panel glass-premium">
         <div class="panel-header-pro">
@@ -277,7 +286,11 @@
           <table class="w-100">
             <thead>
               <tr>
-                <th>Référence</th><th>Date de Lancement</th><th>Clôture prévue/Réelle</th><th>Statut</th><th>Actions</th>
+                <th>Référence</th>
+                <th>Date de Lancement</th>
+                <th>Clôture prévue/Réelle</th>
+                <th>Statut</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -286,21 +299,25 @@
                 <td>{{ inv.dateDebut | date:'dd MMM yyyy, HH:mm' }}</td>
                 <td>{{ inv.dateFin ? (inv.dateFin | date:'dd MMM yyyy, HH:mm') : '—' }}</td>
                 <td>
-                  <span class="status-badge" [ngClass]="inv.statut === 'Validé' ? 'valid' : inv.statut === 'Refusé' ? 'error' : 'pending'">
+                  <span class="status-badge"
+                    [ngClass]="inv.statut === 'Validé' ? 'valid' : inv.statut === 'Refusé' ? 'error' : 'pending'">
                     {{ inv.statut }}
                   </span>
                 </td>
                 <td>
                   <div class="d-flex gap-2">
                     <ng-container *ngIf="inv.statut === 'En cours'">
-                      <button class="btn btn-outline btn-sm text-success" (click)="validerInventaire(inv)" title="Valider">
+                      <button class="btn btn-outline btn-sm text-success" (click)="validerInventaire(inv)"
+                        title="Valider">
                         <i class="bi bi-check-lg"></i>
                       </button>
-                      <button class="btn btn-outline btn-sm text-warning" (click)="refuserInventaire(inv)" title="Refuser">
+                      <button class="btn btn-outline btn-sm text-warning" (click)="refuserInventaire(inv)"
+                        title="Refuser">
                         <i class="bi bi-x-lg"></i>
                       </button>
                     </ng-container>
-                    <button class="btn btn-outline btn-sm text-danger" (click)="supprimerInventaire(inv)" title="Supprimer">
+                    <button class="btn btn-outline btn-sm text-danger" (click)="supprimerInventaire(inv)"
+                      title="Supprimer">
                       <i class="bi bi-trash3"></i>
                     </button>
                   </div>
@@ -316,7 +333,7 @@
   <!-- Reports Tab -->
   <div class="tab-content-pro animate-fade-in" *ngIf="currentTab === 'reports'">
     <div class="panels-grid-pro mt-0">
-      
+
       <section class="panel glass-premium">
         <div class="panel-header-pro">
           <div class="ph-title">
@@ -325,12 +342,14 @@
           </div>
         </div>
         <div class="panel-body-pro p-4">
-          <p class="text-muted small mb-4">Générez des rapports instantanés ou envoyez un bilan général à l'administration.</p>
+          <p class="text-muted small mb-4">Générez des rapports instantanés ou envoyez un bilan général à
+            l'administration.</p>
           <div class="d-flex flex-column gap-3">
             <button class="btn btn-prime-pro w-100" (click)="genererRapport()">
               <i class="bi bi-file-earmark-plus ms-0 me-2"></i> Lancer un Nouvel Audit
             </button>
-            <button class="btn btn-outline w-100" style="border-color: #0ea5e9; color: #0ea5e9;" (click)="envoyerRapportGeneral()">
+            <button class="btn btn-outline w-100" style="border-color: #0ea5e9; color: #0ea5e9;"
+              (click)="envoyerRapportGeneral()">
               <i class="bi bi-journal-check me-2"></i> Envoyer Rapport Général
             </button>
           </div>
@@ -349,11 +368,18 @@
           <div class="table-responsive">
             <table class="w-100">
               <thead>
-                <tr><th>Titre du Rapport</th><th>Date généré</th><th>Action</th></tr>
+                <tr>
+                  <th>Titre du Rapport</th>
+                  <th>Date généré</th>
+                  <th>Action</th>
+                </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let r of rapports">
-                  <td><div class="fw-bold">{{ r.titre }}</div><small class="text-muted">{{ r.data.length }} articles</small></td>
+                  <td>
+                    <div class="fw-bold">{{ r.titre }}</div><small class="text-muted">{{ r.data.length }}
+                      articles</small>
+                  </td>
                   <td>{{ r.date | date:'dd/MM, HH:mm' }}</td>
                   <td>
                     <div class="d-flex gap-2">

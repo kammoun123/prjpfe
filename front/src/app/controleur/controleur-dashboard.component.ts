@@ -17,6 +17,7 @@ import autoTable from 'jspdf-autotable';
 interface AuditItem extends Produit {
   quantiteReelle: number;
   ecart: number;
+  observation?: string;
 }
 
 interface RapportAudit {
@@ -261,7 +262,8 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
       this.piecesReport = data.map(p => ({
         ...p,
         quantiteReelle: p.quantiteStock,
-        ecart: 0
+        ecart: 0,
+        observation: ''
       }));
       this.isViewing = false;
       this.showReportModal = true;
@@ -293,7 +295,8 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
           quantite_reelle: p.quantiteReelle,
           quantitePhysique: p.quantiteReelle,
           quantite_physique: p.quantiteReelle,
-          ecart: p.ecart
+          ecart: p.ecart,
+          observation: p.observation
         }))
       };
 
@@ -368,14 +371,14 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
       // --- TABLE ---
       autoTable(doc, {
         startY: 85,
-        head: [['RÉFÉRENCE', 'DÉSIGNATION', 'SYSTÈME', 'RÉEL', 'ÉCART', 'STATUT']],
+        head: [['RÉFÉRENCE', 'DÉSIGNATION', 'SYSTÈME', 'RÉEL', 'ÉCART', 'OBSERVATION']],
         body: this.piecesReport.map(p => [
           p.reference,
           p.designation,
           p.quantiteStock.toString(),
           p.quantiteReelle.toString(),
           { content: (p.ecart > 0 ? '+' : '') + p.ecart, styles: { fontStyle: 'bold', textColor: p.ecart === 0 ? [30, 41, 59] : (p.ecart > 0 ? [22, 163, 74] : [220, 38, 38]) } },
-          { content: p.ecart === 0 ? 'Conforme' : (p.ecart < 0 ? 'Manquant' : 'Surplus'), styles: { fontStyle: 'bold', textColor: p.ecart === 0 ? [100, 116, 139] : (p.ecart > 0 ? [22, 163, 74] : [220, 38, 38]) } }
+          p.observation || (p.ecart === 0 ? 'Conforme' : 'Anomalie')
         ]),
         theme: 'striped',
         headStyles: { fillColor: [13, 148, 136], textColor: [255, 255, 255], fontStyle: 'bold' },
@@ -420,7 +423,8 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
         quantite_reelle: p.quantiteReelle,
         quantitePhysique: p.quantiteReelle,
         quantite_physique: p.quantiteReelle,
-        ecart: p.ecart
+        ecart: p.ecart,
+        observation: p.observation
       }))
     };
 

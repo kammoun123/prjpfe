@@ -19,7 +19,7 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    public List<Notification> getAllNotifications() {
+    public List<Notification>   getAllNotifications() {
         return notificationRepository.findAll();
     }
 

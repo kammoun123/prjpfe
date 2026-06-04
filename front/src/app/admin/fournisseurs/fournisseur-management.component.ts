@@ -23,7 +23,7 @@ export class FournisseurManagementComponent implements OnInit {
 
   currentFournisseur: Fournisseur = this.getEmptyFournisseur();
 
-  constructor(private fournisseurService: FournisseurService) {}
+  constructor(private fournisseurService: FournisseurService) { }
 
   ngOnInit(): void {
     this.loadFournisseurs();
@@ -77,7 +77,7 @@ export class FournisseurManagementComponent implements OnInit {
     this.success = '';
     this.error = '';
     this.loading = true;
-    const obs = this.formMode === 'add' 
+    const obs = this.formMode === 'add'
       ? this.fournisseurService.createFournisseur(this.currentFournisseur)
       : this.fournisseurService.updateFournisseur(this.currentFournisseur.idFournisseur!, this.currentFournisseur);
 
@@ -116,9 +116,13 @@ export class FournisseurManagementComponent implements OnInit {
   }
 
   get filteredFournisseurs(): Fournisseur[] {
-    return this.fournisseurs.filter(f => 
-      f.nom.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      f.email.toLowerCase().includes(this.searchTerm.toLowerCase())
+    if (!this.fournisseurs) return [];
+    const term = (this.searchTerm || '').toLowerCase().trim();
+    if (!term) return this.fournisseurs;
+
+    return this.fournisseurs.filter(f =>
+      (f.nom && f.nom.toLowerCase().includes(term)) ||
+      (f.email && f.email.toLowerCase().includes(term))
     );
   }
 }

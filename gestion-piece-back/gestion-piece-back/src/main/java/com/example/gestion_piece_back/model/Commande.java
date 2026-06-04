@@ -1,12 +1,14 @@
 package com.example.gestion_piece_back.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
-@Table(name = "commandes_fournisseurs")
+@Table(name = "commandes")
 public class Commande {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,14 +17,8 @@ public class Commande {
     @Column(name = "id_demande_origine")
     private Long idDemandeOrigine;
 
-    @Column(name = "produit_id")
-    private Long produitId;
-
     @Column(name = "fournisseur_id")
     private Long fournisseurId;
-
-    @Column(name = "quantite")
-    private Integer quantite;
 
     @Column(name = "date_commande")
     private LocalDateTime dateCommande;
@@ -31,13 +27,16 @@ public class Commande {
     private java.time.LocalDate dateReceptionPrevue;
 
     @Column(name = "statut")
-    private String statut; // "EN_COURS", "LIVREE"
+    private String statut; // "EN_COURS", "LIVREE", "PARTIELLEMENT_LIVREE"
 
-    @ManyToOne
-    @JoinColumn(name = "produit_id", insertable = false, updatable = false)
-    private Produit produit;
+    @Column(name = "observation")
+    private String observation;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fournisseur_id", insertable = false, updatable = false)
     private Fournisseur fournisseur;
+
+    @OneToMany(mappedBy = "commande", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<CommandeLigne> lignes;
 }
