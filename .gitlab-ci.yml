@@ -73,5 +73,15 @@ deploy:
     - cd /home/azerty/prjpfe
     - docker-compose down
     - docker-compose up -d
+ - sleep 10
+    - echo "=========================================="
+    - echo "✅ DÉPLOIEMENT RÉUSSI !"
+    - echo "=========================================="
+    - echo "🌐 Frontend  → http://192.168.146.145:4200"
+    - echo "⚙️  Backend   → http://192.168.146.145:8883"
+    - echo "📊 Grafana   → http://192.168.146.145:3000"
+    - echo "🔍 SonarQube → http://192.168.146.145:9000"
+    - echo "=========================================="
+    - docker-compose ps
   only:
     - main
