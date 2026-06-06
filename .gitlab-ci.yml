@@ -73,8 +73,6 @@ deploy:
     - cd /home/azerty/prjpfe
     - docker-compose down
     - docker-compose up -d
-    
-   - sleep 10
     - echo "=========================================="
     - echo "✅ DÉPLOIEMENT RÉUSSI !"
     - echo "=========================================="
