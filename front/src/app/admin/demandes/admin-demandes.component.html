@@ -32,11 +32,41 @@
     </button>
   </div>
 
+  <!-- FILTER BAR -->
+  <div class="filter-bar animate-slide-down"
+    style="padding: 1rem; margin-bottom: 1rem; background: var(--bg-card, #fff); border-radius: 8px; display: flex; gap: 1rem; align-items: flex-end; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <div class="filter-group" style="flex-grow: 1;">
+      <label style="font-size: 0.8rem; font-weight: 600; color: #6c757d; margin-bottom: 4px; display: block;">Rechercher
+        un produit</label>
+      <div class="search-input-wrapper" style="position: relative;">
+        <i class="bi bi-search" style="position: absolute; left: 12px; top: 10px; color: #6c757d;"></i>
+        <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" placeholder="Recherche..."
+          style="width: 100%; padding: 8px 12px 8px 36px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: #1e293b;">
+      </div>
+    </div>
+    <div class="filter-group">
+      <label style="font-size: 0.8rem; font-weight: 600; color: #6c757d; margin-bottom: 4px; display: block;">Du</label>
+      <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)"
+        style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: #1e293b;">
+    </div>
+    <div class="filter-group">
+      <label style="font-size: 0.8rem; font-weight: 600; color: #6c757d; margin-bottom: 4px; display: block;">Au</label>
+      <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)"
+        style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: #1e293b;">
+    </div>
+    <div class="filter-actions">
+      <button class="btn-reset" (click)="searchTerm.set(''); startDate.set(''); endDate.set('')" title="Réinitialiser"
+        style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: #1e293b; cursor: pointer;">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+
   <!-- TABLE VIEW -->
   <div class="demandes-main-card shadow-sm">
     <div class="table-responsive">
-      <!-- TABLE FOR DEMANDS (PENDING/HISTORY) -->
-      <table class="premium-table" *ngIf="activeTab !== 'orders'">
+      <!-- TABLE FOR DEMANDS (PENDING) -->
+      <table class="premium-table" *ngIf="activeTab === 'pending'">
         <thead>
           <tr>
             <th>DATE</th>
@@ -121,6 +151,41 @@
           </tr>
           <tr *ngIf="activeOrders().length === 0">
             <td colspan="6" class="text-center py-5 text-muted">Aucune commande active.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- TABLE FOR HISTORY -->
+      <table class="premium-table" *ngIf="activeTab === 'history'">
+        <thead>
+          <tr>
+            <th>DATE</th>
+            <th>PRODUIT</th>
+            <th class="text-center">QUANTITÉ</th>
+            <th class="text-center">STATUT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of getHistoryFlattened()">
+            <td>{{ row.dateObj | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="fw-bold">{{ row.pieceName }}</span>
+              <div class="small text-muted" style="margin-top: 4px;">
+                <i class="bi" [class]="row.typeRow === 'DEMANDE' ? 'bi-archive' : 'bi-hash'"></i>
+                {{ row.typeRow === 'DEMANDE' ? 'Dem.' : 'Cmd.' }} #{{ row.originalRef.id }}
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="qty-badge">{{ row.quantite }}</span>
+            </td>
+            <td class="text-center">
+              <span class="status-pill" [ngClass]="getStatusClass(row.statut)">
+                {{ formatStatut(row.statut) }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="getHistoryFlattened().length === 0">
+            <td colspan="4" class="text-center py-5 text-muted">Aucun historique récent.</td>
           </tr>
         </tbody>
       </table>

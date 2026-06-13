@@ -169,7 +169,7 @@ public class DemandeProduitService {
                     // physically)
                     if (qtyToValidate > 0) {
                         MouvementStock mouvement = new MouvementStock();
-                        mouvement.setProduitId(ligne.getProduitId());
+                        mouvement.setProduit(produit);
                         mouvement.setQuantite(qtyToValidate);
                         mouvement.setTypeMouvement("SORTIE");
                         mouvement.setMotif("Validation Demande - " + technicienNom + " (#" + id + ")");
@@ -249,6 +249,34 @@ public class DemandeProduitService {
                 notifTechnicien.setStatut("NON_LUE");
                 notifTechnicien.setDateCreation(LocalDateTime.now());
                 notificationRepository.save(notifTechnicien);
+            }
+        } else if ("REFUSED".equals(statut) && !statut.equalsIgnoreCase(oldStatus)) {
+            // Notify MAGASINIER that Admin refused the order
+            Notification notifRefus = new Notification();
+            if (demande.getLignes() != null && !demande.getLignes().isEmpty()) {
+                notifRefus.setProduitId(demande.getLignes().get(0).getProduitId());
+            }
+            notifRefus.setTitre("Demande refusée par l'Admin");
+            notifRefus.setMessage("L'Admin a refusé la commande pour la demande #" + id + ".");
+            notifRefus.setTypeNotification("error");
+            notifRefus.setRoleCible("MAGASINIER");
+            notifRefus.setStatut("NON_LUE");
+            notifRefus.setDateCreation(LocalDateTime.now());
+            notificationRepository.save(notifRefus);
+
+            // Optionally notify Technicien
+            if (demande.getTechnicienId() != null) {
+                Notification notifTechRefus = new Notification();
+                if (demande.getLignes() != null && !demande.getLignes().isEmpty()) {
+                    notifTechRefus.setProduitId(demande.getLignes().get(0).getProduitId());
+                }
+                notifTechRefus.setTitre("Demande refusée");
+                notifTechRefus.setMessage("⚠️ Votre demande #" + id + " a été refusée et annulée.");
+                notifTechRefus.setTypeNotification("error");
+                notifTechRefus.setRoleCible("TECHNICIEN");
+                notifTechRefus.setStatut("NON_LUE");
+                notifTechRefus.setDateCreation(LocalDateTime.now());
+                notificationRepository.save(notifTechRefus);
             }
         }
         return saved;

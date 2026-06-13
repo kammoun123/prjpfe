@@ -20,7 +20,7 @@ public class CommandeLigne {
     @JsonBackReference
     private Commande commande;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "produit_id")
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Produit produit;

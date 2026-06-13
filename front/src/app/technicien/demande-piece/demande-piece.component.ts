@@ -91,6 +91,10 @@ export class DemandePieceComponent implements OnInit {
             this.toastService.show('Sélectionnez une pièce d\'abord', 'warning');
             return;
         }
+        if (formValue.quantite < 1 || isNaN(formValue.quantite)) {
+            this.toastService.show('La quantité doit être au moins 1', 'warning');
+            return;
+        }
 
         const item = {
             produitId: formValue.piece.idProduit,

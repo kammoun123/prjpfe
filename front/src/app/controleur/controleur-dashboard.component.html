@@ -67,8 +67,8 @@
             </thead>
             <tbody>
               <tr *ngFor="let p of piecesReport">
-                <td><strong>{{ p.reference }}</strong></td>
-                <td>{{ p.designation }}</td>
+                <td><strong>{{ p.reference || 'N/A' }}</strong></td>
+                <td>{{ p.designation || p.reference || 'Désignation manquante' }}</td>
                 <td class="text-center">{{ p.quantiteStock }}</td>
                 <td class="text-center">
                   <input type="number" *ngIf="!isViewing" [(ngModel)]="p.quantiteReelle" (input)="updateItemEcart(p)">
@@ -102,11 +102,8 @@
         <button class="btn btn-outline" (click)="exporterEnPDF()">
           <i class="bi bi-file-pdf"></i> PDF
         </button>
-        <button class="btn btn-outline" (click)="envoyerAAdmin()" *ngIf="isViewing">
-          <i class="bi bi-send"></i> Envoyer Admin
-        </button>
         <button class="btn btn-prime-pro" *ngIf="!isViewing" (click)="fermerRapport()">
-          <i class="bi bi-save"></i> Enregistrer l'Audit
+          <i class="bi bi-send-check"></i> Enregistrer et Envoyer
         </button>
       </div>
     </div>
@@ -133,8 +130,8 @@
             </thead>
             <tbody>
               <tr *ngFor="let p of piecesDeficit">
-                <td><strong>{{ p.reference }}</strong></td>
-                <td>{{ p.designation }}</td>
+                <td><strong>{{ p.reference || 'N/A' }}</strong></td>
+                <td>{{ p.designation || p.reference || 'Désignation manquante' }}</td>
                 <td><strong class="text-danger">{{ p.quantiteStock }}</strong></td>
                 <td>{{ p.seuilAlerte }}</td>
                 <td>
@@ -350,7 +347,7 @@
             </button>
             <button class="btn btn-outline w-100" style="border-color: #0ea5e9; color: #0ea5e9;"
               (click)="envoyerRapportGeneral()">
-              <i class="bi bi-journal-check me-2"></i> Envoyer Rapport Général
+              <i class="bi bi-journal-check me-2"></i> Bilan Système (Sans Écarts)
             </button>
           </div>
         </div>

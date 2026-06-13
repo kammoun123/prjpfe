@@ -14,4 +14,6 @@ public interface ProduitRepository extends JpaRepository<Produit, Long> {
     @Transactional
     @Query("UPDATE Produit p SET p.quantiteStock = 0 WHERE p.quantiteStock < 0")
     void resetNegativeStocks();
+
+    boolean existsByIdCategorie(Long idCategorie);
 }

@@ -36,22 +36,23 @@ public class MouvementStockService {
     }
 
     public List<MouvementStock> getMouvementsByProduit(Long produitId) {
-        return mouvementStockRepository.findByProduitId(produitId);
+        return mouvementStockRepository.findByProduitIdProduit(produitId);
     }
 
     public MouvementStock createMouvement(MouvementStock mouvement) {
         MouvementStock saved = mouvementStockRepository.save(mouvement);
 
         // Mettre à jour la quantité en stock
-        if (mouvement.getProduitId() != null) {
-            Produit produit = produitRepository.findById(mouvement.getProduitId()).orElse(null);
+        if (mouvement.getProduit() != null) {
+            Produit produit = produitRepository.findById(mouvement.getProduit().getIdProduit()).orElse(null);
             if (produit != null) {
-                int newQuantite = produit.getQuantiteStock();
+                int newQuantite = produit.getQuantiteStock() != null ? produit.getQuantiteStock() : 0;
                 if ("ENTREE".equals(mouvement.getTypeMouvement())) {
                     newQuantite += mouvement.getQuantite();
                 } else if ("SORTIE".equals(mouvement.getTypeMouvement())) {
-                    if (produit.getQuantiteStock() < mouvement.getQuantite()) {
-                        throw new RuntimeException("Stock insuffisant pour effectuer cette sortie. Stock actuel: " + produit.getQuantiteStock());
+                    if (produit.getQuantiteStock() != null && produit.getQuantiteStock() < mouvement.getQuantite()) {
+                        throw new RuntimeException("Stock insuffisant pour effectuer cette sortie. Stock actuel: "
+                                + produit.getQuantiteStock());
                     }
                     newQuantite -= mouvement.getQuantite();
                 }
@@ -59,7 +60,8 @@ public class MouvementStockService {
                 produitRepository.save(produit);
 
                 // Vérifier si le seuil d'alerte est atteint
-                if (newQuantite <= produit.getSeuilAlerte()) {
+                int seuilAlerte = produit.getSeuilAlerte() != null ? produit.getSeuilAlerte() : 0;
+                if (newQuantite <= seuilAlerte) {
                     createAlertNotification(produit);
                 }
             }
@@ -68,8 +70,32 @@ public class MouvementStockService {
         return saved;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void deleteMouvement(Long id) {
-        mouvementStockRepository.deleteById(id);
+        MouvementStock mouvement = mouvementStockRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Mouvement non trouvé"));
+
+        // Reverse stock level before deleting
+        if (mouvement.getProduit() != null) {
+            Produit produit = produitRepository.findById(mouvement.getProduit().getIdProduit()).orElse(null);
+            if (produit != null) {
+                int newQuantite = produit.getQuantiteStock();
+                if ("ENTREE".equals(mouvement.getTypeMouvement())) {
+                    newQuantite -= mouvement.getQuantite();
+                } else if ("SORTIE".equals(mouvement.getTypeMouvement())) {
+                    newQuantite += mouvement.getQuantite();
+                }
+
+                // Prevent negative stock result
+                if (newQuantite < 0)
+                    newQuantite = 0;
+
+                produit.setQuantiteStock(newQuantite);
+                produitRepository.save(produit);
+            }
+        }
+
+        mouvementStockRepository.delete(mouvement);
     }
 
     private void createAlertNotification(Produit produit) {
@@ -95,11 +121,10 @@ public class MouvementStockService {
                 if (admin.getEmail() != null && !admin.getEmail().isEmpty()) {
                     try {
                         emailService.sendLowStockAlertEmail(
-                            admin.getEmail(), 
-                            produit.getDesignation(), 
-                            produit.getQuantiteStock(), 
-                            produit.getSeuilAlerte()
-                        );
+                                admin.getEmail(),
+                                produit.getDesignation(),
+                                produit.getQuantiteStock(),
+                                produit.getSeuilAlerte());
                     } catch (Exception e) {
                         System.err.println("Erreur envoi email alerte stock a " + admin.getEmail());
                     }

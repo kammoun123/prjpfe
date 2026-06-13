@@ -80,12 +80,14 @@
             </div>
         </div>
 
-        <div class="stat-card-premium alert-mode" [class.active]="stats.lowStockAlerts > 0" routerLink="/admin/products" style="--accent: #ef4444">
+        <div class="stat-card-premium alert-mode" [class.active]="stats.lowStockAlerts > 0" routerLink="/admin/products"
+            style="--accent: #ef4444">
             <div class="card-glow"></div>
             <div class="card-content">
                 <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
                 <div class="stat-info">
-                    <h3 class="stat-value" [class.text-danger]="stats.lowStockAlerts > 0">{{ stats.lowStockAlerts }}</h3>
+                    <h3 class="stat-value" [class.text-danger]="stats.lowStockAlerts > 0">{{ stats.lowStockAlerts }}
+                    </h3>
                     <p class="stat-label">Alertes Stock</p>
                 </div>
             </div>
@@ -98,13 +100,16 @@
         <div class="glass-panel">
             <div class="panel-head d-flex justify-content-between align-items-center mb-4">
                 <h2 class="m-0"><i class="bi bi-person-plus me-2 text-primary"></i>Inscriptions en Attente</h2>
-                <span class="count-pill badge bg-primary rounded-pill" *ngIf="pendingUsers.length > 0">{{ pendingUsers.length }}</span>
+                <span class="count-pill badge bg-primary rounded-pill" *ngIf="pendingUsers.length > 0">{{
+                    pendingUsers.length }}</span>
             </div>
-            
+
             <div class="pending-list-container">
-                <div *ngFor="let user of pendingUsers" class="pending-user-card d-flex justify-content-between align-items-center p-3 mb-2 rounded-4">
+                <div *ngFor="let user of pendingUsers"
+                    class="pending-user-card d-flex justify-content-between align-items-center p-3 mb-2 rounded-4">
                     <div class="p-user-info d-flex align-items-center gap-3">
-                        <div class="p-avatar d-flex align-items-center justify-content-center fw-bold text-primary rounded-3">
+                        <div
+                            class="p-avatar d-flex align-items-center justify-content-center fw-bold text-primary rounded-3">
                             {{ getInitials(user) }}
                         </div>
                         <div class="p-details d-flex flex-column">
@@ -113,8 +118,10 @@
                         </div>
                     </div>
                     <div class="p-actions d-flex align-items-center gap-3">
-                        <span class="role-badge badge rounded-pill px-3 py-2" [ngClass]="user.role.toLowerCase()">{{ user.role }}</span>
-                        <button class="btn-action-approve btn btn-sm btn-light shadow-sm rounded-circle p-2" (click)="approveUser(user)" title="Valider">
+                        <span class="role-badge badge rounded-pill px-3 py-2" [ngClass]="user.role.toLowerCase()">{{
+                            user.role }}</span>
+                        <button class="btn-action-approve btn btn-sm btn-light shadow-sm rounded-circle p-2"
+                            (click)="approveUser(user)" title="Valider">
                             <i class="bi bi-check-lg text-success fw-bold"></i>
                         </button>
                     </div>
@@ -131,21 +138,29 @@
         <div class="glass-panel">
             <div class="panel-head d-flex justify-content-between align-items-center mb-4">
                 <h2 class="m-0"><i class="bi bi-lightning-charge me-2 text-warning"></i>Flux d'Activité Récent</h2>
-                <a routerLink="/admin/mouvements" class="btn-link text-decoration-none fw-bold smaller text-primary">Voir tout</a>
+                <a routerLink="/admin/mouvements"
+                    class="btn-link text-decoration-none fw-bold smaller text-primary">Voir tout</a>
             </div>
 
             <div class="activity-timeline ps-3">
-                <div *ngFor="let m of recentMovements" class="timeline-item position-relative pb-4 ps-4 border-start border-2">
-                    <div class="t-icon position-absolute rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
-                         [ngClass]="m.typeMouvement === 'ENTREE' ? 't-in' : 't-out'"
-                         style="left: -13px; top: 0; width: 24px; height: 24px; background: white;">
-                        <i class="bi" [ngClass]="m.typeMouvement === 'ENTREE' ? 'bi-plus-circle-fill' : 'bi-dash-circle-fill'"></i>
+                <div *ngFor="let m of recentMovements"
+                    class="timeline-item position-relative pb-4 ps-4 border-start border-2">
+                    <div class="t-icon position-absolute rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                        [ngClass]="m.typeMouvement === 'ENTREE' ? 't-in' : (m.typeMouvement === 'COMMANDE' ? 't-info' : 't-out')"
+                        [style.background]="m.typeMouvement === 'COMMANDE' ? '#3b82f6' : 'white'"
+                        style="left: -13px; top: 0; width: 24px; height: 24px;">
+                        <i class="bi"
+                            [ngClass]="m.typeMouvement === 'ENTREE' ? 'bi-plus-circle-fill' : (m.typeMouvement === 'COMMANDE' ? 'bi-cart-fill text-white' : 'bi-dash-circle-fill')"
+                            style="font-size: 0.85rem;"></i>
                     </div>
                     <div class="t-content">
                         <div class="t-main d-flex justify-content-between align-items-start mb-1">
-                            <span class="t-title fw-bold text-dark">{{ m.produit?.designation || 'Pièce #' + m.produitId }}</span>
-                            <span class="t-qty fw-bold px-2 rounded-2" [ngClass]="m.typeMouvement === 'ENTREE' ? 'q-in' : 'q-out'">
-                                {{ m.typeMouvement === 'ENTREE' ? '+' : '-' }}{{ m.quantite }}
+                            <span class="t-title fw-bold text-dark">{{ m.produit?.designation || 'Pièce #' + m.produitId
+                                }}</span>
+                            <span class="t-qty fw-bold px-2 rounded-2"
+                                [ngClass]="m.typeMouvement === 'ENTREE' ? 'q-in' : (m.typeMouvement === 'COMMANDE' ? 'bg-light text-primary border border-primary-subtle' : 'q-out')">
+                                {{ m.typeMouvement === 'ENTREE' ? '+' : (m.typeMouvement === 'COMMANDE' ? '' : '-') }}{{
+                                m.quantite }}
                             </span>
                         </div>
                         <div class="t-sub d-flex justify-content-between align-items-center">

@@ -20,7 +20,7 @@ public class LigneInventaire {
     @JsonBackReference
     private Inventaire inventaire;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "produit_id")
     private Produit produit;
 

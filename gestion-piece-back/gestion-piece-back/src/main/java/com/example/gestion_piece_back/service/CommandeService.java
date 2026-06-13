@@ -58,10 +58,9 @@ public class CommandeService {
             for (DemandePieceLigne demandeLigne : demande.getLignes()) {
                 CommandeLigne cmdLigne = new CommandeLigne();
                 cmdLigne.setCommande(commande);
-                cmdLigne.setProduitId(demandeLigne.getProduitId());
                 if (demandeLigne.getProduitId() != null) {
                     Produit p = produitRepository.findById(demandeLigne.getProduitId()).orElse(null);
-                    cmdLigne.setProduit(p);
+                    cmdLigne.setProduit(p); // Set the entity – this writes to the produit_id FK column
                 }
                 cmdLigne.setQuantite(demandeLigne.getQuantite());
                 cmdLigne.setStatut("EN_COURS");
@@ -84,7 +83,50 @@ public class CommandeService {
             System.err.println("Erreur email: " + e.getMessage());
         }
 
-        return commandeRepository.save(commande);
+        // 4. Notification au magasinier que la commande a été passée
+        Notification notifMagasinier = new Notification();
+        if (commande.getLignes() != null && !commande.getLignes().isEmpty()) {
+            CommandeLigne firstLigne = commande.getLignes().get(0);
+            Long firstPid = firstLigne.getProduitId();
+            if (firstPid == null && firstLigne.getProduit() != null)
+                firstPid = firstLigne.getProduit().getIdProduit();
+            notifMagasinier.setProduitId(firstPid);
+        }
+        notifMagasinier.setMessage(
+                "La commande fournisseur pour la demande #" + idDemande + " a été passée ! En attente de livraison.");
+        notifMagasinier.setTypeNotification("info");
+        notifMagasinier.setRoleCible("MAGASINIER");
+        notifMagasinier.setStatut("NON_LUE");
+        notifMagasinier.setDateCreation(LocalDateTime.now());
+        notificationService.saveNotification(notifMagasinier);
+
+        Commande savedCommande = commandeRepository.save(commande);
+
+        // Add history trace for each line
+        if (savedCommande.getLignes() != null) {
+            for (CommandeLigne cmdLigne : savedCommande.getLignes()) {
+                Long pid = cmdLigne.getProduitId();
+                if (pid == null && cmdLigne.getProduit() != null)
+                    pid = cmdLigne.getProduit().getIdProduit();
+                if (pid != null) {
+                    Produit p = cmdLigne.getProduit();
+                    if (p == null) {
+                        p = produitRepository.findById(pid).orElse(null);
+                    }
+                    if (p != null) {
+                        MouvementStock mouvement = new MouvementStock();
+                        mouvement.setProduit(p);
+                        mouvement.setQuantite(cmdLigne.getQuantite());
+                        mouvement.setTypeMouvement("COMMANDE");
+                        mouvement.setMotif("Nouvelle commande fournisseur (Reliquat) #" + savedCommande.getId());
+                        mouvement.setDateMouvement(LocalDateTime.now());
+                        mouvementStockService.createMouvement(mouvement);
+                    }
+                }
+            }
+        }
+
+        return savedCommande;
     }
 
     @Transactional
@@ -104,10 +146,9 @@ public class CommandeService {
 
             CommandeLigne cmdLigne = new CommandeLigne();
             cmdLigne.setCommande(commande);
-            cmdLigne.setProduitId(idProduit);
             if (idProduit != null) {
                 Produit p = produitRepository.findById(idProduit).orElse(null);
-                cmdLigne.setProduit(p);
+                cmdLigne.setProduit(p); // Set the entity – this writes to the produit_id FK column
             }
             cmdLigne.setQuantite(quantite);
             cmdLigne.setStatut("EN_COURS");
@@ -116,17 +157,42 @@ public class CommandeService {
 
         commande.setLignes(commandeLignes);
 
+        Commande savedCommande = commandeRepository.save(commande);
+
         // Envoyer Email au fournisseur
         try {
             Fournisseur f = fournisseurRepository.findById(idFournisseur).orElse(null);
             if (f != null && f.getEmail() != null) {
-                emailService.sendOrderEmailMulti(f.getEmail(), f.getNom(), commande.getLignes(), observation, datePrev);
+                emailService.sendOrderEmailMulti(f.getEmail(), f.getNom(), savedCommande.getLignes(), observation,
+                        datePrev);
             }
         } catch (Exception e) {
             System.err.println("Erreur email directe: " + e.getMessage());
         }
 
-        return commandeRepository.save(commande);
+        // Add history trace for each line
+        for (CommandeLigne cmdLigne : savedCommande.getLignes()) {
+            Long pid = cmdLigne.getProduitId();
+            if (pid == null && cmdLigne.getProduit() != null)
+                pid = cmdLigne.getProduit().getIdProduit();
+            if (pid != null) {
+                Produit p = cmdLigne.getProduit();
+                if (p == null) {
+                    p = produitRepository.findById(pid).orElse(null);
+                }
+                if (p != null) {
+                    MouvementStock mouvement = new MouvementStock();
+                    mouvement.setProduit(p);
+                    mouvement.setQuantite(cmdLigne.getQuantite());
+                    mouvement.setTypeMouvement("COMMANDE");
+                    mouvement.setMotif("Nouvelle commande directe #" + savedCommande.getId());
+                    mouvement.setDateMouvement(LocalDateTime.now());
+                    mouvementStockService.createMouvement(mouvement);
+                }
+            }
+        }
+
+        return savedCommande;
     }
 
     @Transactional
@@ -141,16 +207,29 @@ public class CommandeService {
         // Process each ligne in the command
         if (commande.getLignes() != null) {
             for (CommandeLigne ligne : commande.getLignes()) {
-                // Créer mouvement de stock ENTREE (US 14.10)
-                // L'incrémentation de la quantité en stock se fait automatiquement à
-                // l'intérieur de createMouvement("ENTREE")
-                MouvementStock mouvement = new MouvementStock();
-                mouvement.setProduitId(ligne.getProduitId());
-                mouvement.setQuantite(ligne.getQuantite());
-                mouvement.setTypeMouvement("ENTREE");
-                mouvement.setMotif("Réception commande #" + commande.getId());
-                mouvement.setDateMouvement(LocalDateTime.now());
-                mouvementStockService.createMouvement(mouvement);
+                // Resolve produit ID safely (column is read-only from FK)
+                Long produitId = ligne.getProduitId();
+                if (produitId == null && ligne.getProduit() != null) {
+                    produitId = ligne.getProduit().getIdProduit();
+                }
+                if (produitId == null) {
+                    System.err.println("Ligne #" + ligne.getId() + " n'a pas de produit associé, ignorée.");
+                    continue;
+                }
+
+                Produit p = ligne.getProduit();
+                if (p == null) {
+                    p = produitRepository.findById(produitId).orElse(null);
+                }
+                if (p != null) {
+                    MouvementStock mouvement = new MouvementStock();
+                    mouvement.setProduit(p);
+                    mouvement.setQuantite(ligne.getQuantite());
+                    mouvement.setTypeMouvement("ENTREE");
+                    mouvement.setMotif("Réception commande #" + commande.getId());
+                    mouvement.setDateMouvement(LocalDateTime.now());
+                    mouvementStockService.createMouvement(mouvement);
+                }
 
                 // Update ligne status
                 ligne.setStatut("LIVREE");
@@ -173,17 +252,27 @@ public class CommandeService {
         if (commande.getLignes() != null && !commande.getLignes().isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (CommandeLigne ligne : commande.getLignes()) {
+                Long pid = ligne.getProduitId();
+                if (pid == null && ligne.getProduit() != null)
+                    pid = ligne.getProduit().getIdProduit();
+                if (pid == null)
+                    continue;
+
                 if (sb.length() > 0)
                     sb.append(", ");
-                Produit p = produitRepository.findById(ligne.getProduitId()).orElse(null);
-                sb.append(p != null ? p.getDesignation() : "Produit #" + ligne.getProduitId());
+                Produit p = produitRepository.findById(pid).orElse(null);
+                sb.append(p != null ? p.getDesignation() : "Produit #" + pid);
             }
             productsInfo = sb.toString();
         }
 
         Notification notification = new Notification();
         if (commande.getLignes() != null && !commande.getLignes().isEmpty()) {
-            notification.setProduitId(commande.getLignes().get(0).getProduitId());
+            CommandeLigne firstLigne = commande.getLignes().get(0);
+            Long firstPid = firstLigne.getProduitId();
+            if (firstPid == null && firstLigne.getProduit() != null)
+                firstPid = firstLigne.getProduit().getIdProduit();
+            notification.setProduitId(firstPid);
         }
         notification.setMessage(
                 "La commande pour " + productsInfo + " a été réceptionnée. Le stock est à jour.");

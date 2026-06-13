@@ -6,11 +6,11 @@ import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, inject, Injectable } from '@angular/core';
 
 export interface Profil extends Utilisateur {
-    id?: string;
-    departement?: string;
-    dateAdhesion?: string;
-    notificationsEmail?: boolean;
-    modeSombre?: boolean;
+  id?: string;
+  departement?: string;
+  dateAdhesion?: string;
+  notificationsEmail?: boolean;
+  modeSombre?: boolean;
 }
 
 @Injectable({
@@ -113,5 +113,18 @@ export class AuthService {
 
   updateProfil(id: string, profil: Partial<Profil>): Observable<Profil> {
     return this.http.put<Profil>(`${environment.apiUrl}/users/${id}`, profil);
+  }
+
+  // Registration Requests Management
+  getRegistrationRequests(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/admin/demandes-inscription`);
+  }
+
+  accepterDemande(id: number): Observable<Utilisateur> {
+    return this.http.post<Utilisateur>(`${environment.apiUrl}/admin/demandes-inscription/${id}/accepter`, {});
+  }
+
+  refuserDemande(id: number): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/admin/demandes-inscription/${id}/refuser`, {});
   }
 }

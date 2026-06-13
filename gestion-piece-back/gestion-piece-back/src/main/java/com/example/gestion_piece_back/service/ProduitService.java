@@ -38,7 +38,8 @@ public class ProduitService {
     }
 
     public Produit createProduit(Produit produit) {
-        String qrContent = "REF: " + produit.getReference() + " | NOM: " + produit.getDesignation() + " | STOCK: " + produit.getQuantiteStock();
+        String qrContent = "REF: " + produit.getReference() + " | NOM: " + produit.getDesignation() + " | STOCK: "
+                + produit.getQuantiteStock();
         produit.setQrCode(generateQRCodeBase64(qrContent));
         return produitRepository.save(produit);
     }
@@ -61,7 +62,8 @@ public class ProduitService {
         }
 
         // Régénérer le QR code si les infos changent
-        String qrContent = "REF: " + produit.getReference() + " | NOM: " + produit.getDesignation() + " | STOCK: " + produit.getQuantiteStock();
+        String qrContent = "REF: " + produit.getReference() + " | NOM: " + produit.getDesignation() + " | STOCK: "
+                + produit.getQuantiteStock();
         produit.setQrCode(generateQRCodeBase64(qrContent));
 
         return produitRepository.save(produit);
@@ -86,16 +88,50 @@ public class ProduitService {
 
     public void deleteProduit(Long id) {
         try {
+            // Clean every table that has a FK on produit_id
             jdbcTemplate.update("DELETE FROM mouvements_stock WHERE produit_id = ?", id);
-            jdbcTemplate.update("DELETE FROM notifications WHERE produit_id = ?", id);
+            try {
+                jdbcTemplate.update("DELETE FROM notifications WHERE produit_id = ?", id);
+            } catch (Exception e) {
+            }
             try {
                 jdbcTemplate.update("DELETE FROM lignes_inventaire WHERE produit_id = ?", id);
-            } catch (Exception e) {} // Ignorer si la table n'existe pas ou autre nom
+            } catch (Exception e) {
+            }
             try {
                 jdbcTemplate.update("DELETE FROM ligne_inventaire WHERE produit_id = ?", id);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
 
-            jdbcTemplate.update("UPDATE demandes SET produit_id = NULL WHERE produit_id = ?", id);
+            // Commandes / demandes — delete the lines first so the parent can be handled
+            try {
+                jdbcTemplate.update("DELETE FROM commandes_lignes WHERE produit_id = ?", id);
+            } catch (Exception e) {
+            }
+            try {
+                jdbcTemplate.update("DELETE FROM commande_ligne WHERE produit_id = ?", id);
+            } catch (Exception e) {
+            }
+            try {
+                jdbcTemplate.update("DELETE FROM lignes_commande WHERE produit_id = ?", id);
+            } catch (Exception e) {
+            }
+
+            try {
+                jdbcTemplate.update("DELETE FROM demandes_pieces_lignes WHERE produit_id = ?", id);
+            } catch (Exception e) {
+            }
+            try {
+                jdbcTemplate.update("DELETE FROM demande_piece_ligne WHERE produit_id = ?", id);
+            } catch (Exception e) {
+            }
+
+            // Nullable FKs: just nullify
+            try {
+                jdbcTemplate.update("UPDATE demandes SET produit_id = NULL WHERE produit_id = ?", id);
+            } catch (Exception e) {
+            }
+
         } catch (Exception e) {
             System.err.println("Database cleanup error before product deletion: " + e.getMessage());
         }
@@ -107,7 +143,8 @@ public class ProduitService {
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
-        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename().replace(" ", "_") : "photo";
+        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename().replace(" ", "_")
+                : "photo";
         String filename = UUID.randomUUID() + "_" + originalFilename;
         Path filePath = uploadPath.resolve(filename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
@@ -119,7 +156,8 @@ public class ProduitService {
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
-        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename().replace(" ", "_") : "document.pdf";
+        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename().replace(" ", "_")
+                : "document.pdf";
         String filename = UUID.randomUUID() + "_" + originalFilename;
         Path filePath = uploadPath.resolve(filename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);

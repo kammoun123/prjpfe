@@ -1,10 +1,7 @@
 package com.example.gestion_piece_back.service;
 
-import com.example.gestion_piece_back.model.Inventaire;
-import com.example.gestion_piece_back.model.LigneInventaire;
-import com.example.gestion_piece_back.model.Produit;
-import com.example.gestion_piece_back.repository.InventaireRepository;
-import com.example.gestion_piece_back.repository.ProduitRepository;
+import com.example.gestion_piece_back.model.*;
+import com.example.gestion_piece_back.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +19,15 @@ public class InventaireService {
     @Autowired
     private ProduitRepository produitRepository;
 
+    @Autowired
+    private MouvementStockService mouvementStockService;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private UtilisateurRepository utilisateurRepository;
+
     public List<Inventaire> getAllInventaires() {
         return inventaireRepository.findAll();
     }
@@ -36,6 +42,10 @@ public class InventaireService {
         if (inventaire.getDateDebut() == null) {
             inventaire.setDateDebut(LocalDateTime.now());
         }
+
+        // Match front-end expectations or force status if sent
+        boolean isSent = "Validé".equalsIgnoreCase(inventaire.getStatut());
+
         if (inventaire.getStatut() == null) {
             inventaire.setStatut("En cours");
         }
@@ -54,26 +64,42 @@ public class InventaireService {
             }).collect(Collectors.toList());
             inventaire.setLignes(lignes);
         } else {
-            // S'assurer que le lien bidirectionnel est correct
-            inventaire.getLignes().forEach(l -> l.setInventaire(inventaire));
+            inventaire.getLignes().forEach(l -> {
+                l.setInventaire(inventaire);
+                if (l.getQuantiteTheorique() != null && l.getQuantiteReelle() != null) {
+                    l.setEcart(l.getQuantiteReelle() - l.getQuantiteTheorique());
+                } else {
+                    l.setEcart(0);
+                }
+            });
         }
 
-        return inventaireRepository.save(inventaire);
+        Inventaire saved = inventaireRepository.save(inventaire);
+
+        if ("Validé".equalsIgnoreCase(saved.getStatut()) || "VALIDATED".equalsIgnoreCase(saved.getStatut())) {
+            saved.setDateFin(LocalDateTime.now());
+            updateStocksFromInventaire(saved);
+            sendAuditNotifications(saved);
+        }
+
+        return saved;
     }
 
     @Transactional
     public Inventaire updateInventaire(Long id, Inventaire details) {
         Inventaire inventaire = getInventaireById(id);
-        
+
         if (details.getStatut() != null) {
             String oldStatus = inventaire.getStatut();
             inventaire.setStatut(details.getStatut());
-            
+
             // Si on valide, on met à jour les stocks réels
-            if ("Validé".equals(details.getStatut()) && !"Validé".equals(oldStatus)) {
+            if ("Validé".equalsIgnoreCase(details.getStatut()) && !"Validé".equalsIgnoreCase(oldStatus)) {
                 inventaire.setDateFin(LocalDateTime.now());
                 updateStocksFromInventaire(inventaire);
-            } else if ("Refusé".equals(details.getStatut()) || "Annulé".equals(details.getStatut())) {
+                sendAuditNotifications(inventaire);
+            } else if ("Refusé".equalsIgnoreCase(details.getStatut())
+                    || "Annulé".equalsIgnoreCase(details.getStatut())) {
                 inventaire.setDateFin(LocalDateTime.now());
             }
         }
@@ -82,18 +108,21 @@ public class InventaireService {
             inventaire.setDateFin(details.getDateFin());
         }
 
-        // Mise à jour des lignes si fournies
         if (details.getLignes() != null && !details.getLignes().isEmpty()) {
-            // Logique simplifiée: on remplace ou on met à jour
-            // Pour ce MVP, on met à jour les quantités réelles et écarts
             for (LigneInventaire detailsLigne : details.getLignes()) {
                 inventaire.getLignes().stream()
-                    .filter(l -> l.getId() != null && l.getId().equals(detailsLigne.getId()))
-                    .findFirst()
-                    .ifPresent(l -> {
-                        l.setQuantiteReelle(detailsLigne.getQuantiteReelle());
-                        l.setEcart(l.getQuantiteReelle() - l.getQuantiteTheorique());
-                    });
+                        .filter(l -> l.getId() != null && l.getId().equals(detailsLigne.getId()))
+                        .findFirst()
+                        .ifPresent(l -> {
+                            if (detailsLigne.getQuantiteReelle() != null) {
+                                l.setQuantiteReelle(detailsLigne.getQuantiteReelle());
+                                l.setEcart(l.getQuantiteReelle()
+                                        - (l.getQuantiteTheorique() != null ? l.getQuantiteTheorique() : 0));
+                            }
+                            if (detailsLigne.getObservation() != null) {
+                                l.setObservation(detailsLigne.getObservation());
+                            }
+                        });
             }
         }
 
@@ -107,10 +136,46 @@ public class InventaireService {
     private void updateStocksFromInventaire(Inventaire inventaire) {
         for (LigneInventaire ligne : inventaire.getLignes()) {
             Produit produit = ligne.getProduit();
-            if (produit != null) {
+            if (produit != null && ligne.getEcart() != 0) {
+                // Record movement for traceability
+                MouvementStock mouvement = new MouvementStock();
+                mouvement.setProduit(produit);
+                mouvement.setQuantite(Math.abs(ligne.getEcart()));
+                mouvement.setTypeMouvement(ligne.getEcart() > 0 ? "ENTREE" : "SORTIE");
+                mouvement.setMotif("Ajustement par Audit #" + inventaire.getId() +
+                        (ligne.getObservation() != null ? " - " + ligne.getObservation() : ""));
+                mouvement.setDateMouvement(LocalDateTime.now());
+                mouvementStockService.createMouvement(mouvement); // This also updates current stock
+
+                // Note: mouvementStockService.createMouvement already updates the produit's
+                // quantiteStock
+            } else if (produit != null && ligne.getEcart() == 0) {
+                // Even if no gap, we ensure it's synced if theoretically it was different
                 produit.setQuantiteStock(ligne.getQuantiteReelle());
                 produitRepository.save(produit);
             }
         }
+    }
+
+    private void sendAuditNotifications(Inventaire inventaire) {
+        // Notification for Admin
+        Notification notifAdmin = new Notification();
+        notifAdmin.setTitre("Audit de stock terminé");
+        notifAdmin.setMessage("L'audit #" + inventaire.getId()
+                + " a été validé par le contrôleur. Les écarts de stock ont été régularisés.");
+        notifAdmin.setRoleCible("ADMIN");
+        notifAdmin.setTypeNotification("SUCCESS");
+        notifAdmin.setDateCreation(LocalDateTime.now());
+        notificationRepository.save(notifAdmin);
+
+        // Notification for Magasinier
+        Notification notifMag = new Notification();
+        notifMag.setTitre("Régularisation de stock");
+        notifMag.setMessage("Le stock a été mis à jour suite à l'audit #" + inventaire.getId()
+                + ". Veuillez consulter les historiques.");
+        notifMag.setRoleCible("MAGASINIER");
+        notifMag.setTypeNotification("info");
+        notifMag.setDateCreation(LocalDateTime.now());
+        notificationRepository.save(notifMag);
     }
 }

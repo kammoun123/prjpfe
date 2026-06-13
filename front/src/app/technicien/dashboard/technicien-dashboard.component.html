@@ -78,25 +78,24 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
                             <h5 class="fw-bold mb-1">Tendances d'Activité</h5>
-                            <p class="text-muted small mb-0">Évolution des demandes sur les {{ chartPeriod === 'weekly' ? '7 derniers jours' : '30 derniers jours' }}</p>
+                            <p class="text-muted small mb-0">Évolution des demandes sur les {{ chartPeriod === 'weekly'
+                                ? '7 derniers jours' : '30 derniers jours' }}</p>
                         </div>
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-secondary" [class.active]="chartPeriod === 'weekly'" 
-                                    (click)="setChartPeriod('weekly')">Hebdomadaire</button>
-                            <button class="btn btn-outline-secondary" [class.active]="chartPeriod === 'monthly'" 
-                                    (click)="setChartPeriod('monthly')">Mensuel</button>
+                            <button class="btn btn-outline-secondary" [class.active]="chartPeriod === 'weekly'"
+                                (click)="setChartPeriod('weekly')">Hebdomadaire</button>
+                            <button class="btn btn-outline-secondary" [class.active]="chartPeriod === 'monthly'"
+                                (click)="setChartPeriod('monthly')">Mensuel</button>
                         </div>
                     </div>
 
-                    <div class="d-flex align-items-end justify-content-between px-2 pb-2" 
-                         [class.gap-3]="chartPeriod === 'weekly'"
-                         [class.gap-1]="chartPeriod === 'monthly'"
-                         style="height: 151px;">
-                        <div *ngFor="let day of chartData; let i = index" class="text-center w-100 h-100 d-flex flex-column justify-content-end">
-                            <div class="bg-primary rounded-top-3 transition-all" 
-                                 [style.height.%]="day.height"
-                                 [style.opacity]="0.25 + (i * 0.1)"
-                                 [title]="day.count + ' demandes'"></div>
+                    <div class="d-flex align-items-end justify-content-between px-2 pb-2"
+                        [class.gap-3]="chartPeriod === 'weekly'" [class.gap-1]="chartPeriod === 'monthly'"
+                        style="height: 151px;">
+                        <div *ngFor="let day of chartData; let i = index"
+                            class="text-center w-100 h-100 d-flex flex-column justify-content-end">
+                            <div class="bg-primary rounded-top-3 transition-all" [style.height.%]="day.height"
+                                [style.opacity]="0.25 + (i * 0.1)" [title]="day.count + ' demandes'"></div>
                             <div class="small text-muted mt-2">{{ day.label }}</div>
                         </div>
                     </div>
@@ -182,10 +181,6 @@
                                     </td>
                                     <td class="px-4 py-3 text-end">
                                         <div class="d-flex justify-content-end gap-2">
-                                            <button class="btn btn-icon-sm btn-info-pro"
-                                                (click)="openDetails(row.demande)" title="Voir détails">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
                                             <button class="btn btn-icon-sm btn-delete-pro"
                                                 (click)="onDeleteDemande(row.idDemande)" title="Supprimer">
                                                 <i class="bi bi-trash"></i>
@@ -216,7 +211,7 @@
             <h5 class="modal-title fw-bold">Détails de la Demande #{{ selectedDemande.id }}</h5>
             <button type="button" class="btn-close" (click)="closeDetailsModal()"></button>
         </div>
-        
+
         <div class="modal-body">
             <!-- Informations générales -->
             <div class="row mb-4">
@@ -250,7 +245,8 @@
 
             <!-- Liste des pièces -->
             <div class="mb-4">
-                <label class="label-sm text-muted fw-bold mb-3 d-block">Pièces demandées ({{ selectedDemande.lignes?.length || 0 }})</label>
+                <label class="label-sm text-muted fw-bold mb-3 d-block">Pièces demandées ({{
+                    selectedDemande.lignes?.length || 0 }})</label>
                 <div class="table-responsive">
                     <table class="table table-sm">
                         <thead class="table-light">
@@ -273,8 +269,7 @@
                                 <td class="text-center fw-semibold">{{ ligne.quantite }}</td>
                                 <td class="small">{{ ligne.motif || '-' }}</td>
                                 <td>
-                                    <span class="badge" 
-                                        [ngClass]="{
+                                    <span class="badge" [ngClass]="{
                                             'bg-warning': (ligne.statut || '').includes('ATTENTE'),
                                             'bg-success': ligne.statut === 'LIVREE' || ligne.statut === 'VALIDE',
                                             'bg-danger': (ligne.statut || '').includes('REFUSE')
@@ -294,7 +289,7 @@
                 <div class="list-group list-group-flush">
                     <div *ngFor="let ligne of selectedDemande.lignes" class="list-group-item px-0 py-2">
                         <small class="text-muted" *ngIf="ligne.observation">
-                            <strong>{{ ligne.produit?.designation || ('Pièce ID #' + ligne.produitId) }}:</strong> 
+                            <strong>{{ ligne.produit?.designation || ('Pièce ID #' + ligne.produitId) }}:</strong>
                             {{ ligne.observation }}
                         </small>
                     </div>
@@ -337,6 +332,7 @@
             opacity: 0;
             transform: translateY(20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);

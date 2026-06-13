@@ -1,0 +1,11 @@
+{
+    "items": [
+        {
+            "produitId": 1,
+            "quantite": 7
+        }
+    ],
+    "idFournisseur": 1,
+    "dateReceptionPrevue": "2026-06-12",
+    "observation": "teerr"
+}

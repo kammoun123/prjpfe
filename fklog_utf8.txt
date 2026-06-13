@@ -1,0 +1,8 @@
+﻿=== Existing FKs on commandes_lignes ===
+FK6te6krt56jciky3hxf1nidanx -> produits
+FKr47xqg0w5drdb263wjayxxa6l -> commandes
+fk_commandes_lignes_commande -> commandes
+FK drop result: Can't DROP FOREIGN KEY `FKqg2yhwmbpso6g5991ljrnwbgw`; check that it exists
+FK add result: Can't create table `piece`.`commandes_lignes` (errno: 121 "Duplicate key on write or update")
+Table commandes_fournisseurs still exists. No action needed (JPA will use commandes).
+Done.

@@ -12,8 +12,9 @@ public class MouvementStock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "produit_id")
-    private Long produitId;
+    @ManyToOne
+    @JoinColumn(name = "produit_id")
+    private Produit produit;
 
     @Column(name = "type_mouvement")
     private String typeMouvement; // "ENTREE" ou "SORTIE"
@@ -26,10 +27,6 @@ public class MouvementStock {
 
     @Column(name = "motif")
     private String motif;
-
-    @ManyToOne
-    @JoinColumn(name = "produit_id", insertable = false, updatable = false)
-    private Produit produit;
 
     @PrePersist
     protected void onCreate() {

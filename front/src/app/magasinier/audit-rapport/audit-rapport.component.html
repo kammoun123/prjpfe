@@ -1,57 +1,57 @@
 <div class="admin-container animate-fade-in">
   <!-- ═══ CLEAN HEADER ═══ -->
   <header class="hero-header">
-      <div class="hero-content">
-          <div class="hero-badge">
-              <i class="bi bi-shield-check"></i> Espace Magasinier
-          </div>
-          <h1>Rapports d'Audit</h1>
-          <p>Consultation de l'historique des inventaires physiques</p>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="bi bi-shield-check"></i> Espace Magasinier
       </div>
-      <div class="hero-date">
-          <i class="bi bi-calendar3"></i>
-          {{ today | date:'EEEE d MMMM yyyy' }}
-      </div>
+      <h1>Rapports d'Audit</h1>
+      <p>Consultation de l'historique des inventaires physiques</p>
+    </div>
+    <div class="hero-date">
+      <i class="bi bi-calendar3"></i>
+      {{ today | date:'EEEE d MMMM yyyy' }}
+    </div>
   </header>
 
   <!-- ═══ MINIMAL STATS GRID ═══ -->
   <section class="stats-section">
-      <div class="stats-grid">
+    <div class="stats-grid">
 
-          <div class="stat-card">
-              <div class="stat-icon-wrap blue">
-                  <i class="bi bi-journal-check"></i>
-              </div>
-              <div class="stat-body">
-                  <span class="stat-label">Total Audits</span>
-                  <div class="stat-value">{{ totalAudits() }}</div>
-                  <span class="stat-sublabel">tous les rapports</span>
-              </div>
-          </div>
-
-          <div class="stat-card">
-              <div class="stat-icon-wrap green">
-                  <i class="bi bi-check-circle"></i>
-              </div>
-              <div class="stat-body">
-                  <span class="stat-label">Validés</span>
-                  <div class="stat-value">{{ validatedAudits() }}</div>
-                  <span class="stat-sublabel">rapports confirmés</span>
-              </div>
-          </div>
-
-          <div class="stat-card">
-              <div class="stat-icon-wrap red">
-                  <i class="bi bi-x-circle"></i>
-              </div>
-              <div class="stat-body">
-                  <span class="stat-label">Refusés</span>
-                  <div class="stat-value">{{ rejectedAudits() }}</div>
-                  <span class="stat-sublabel">anomalies ou rejets</span>
-              </div>
-          </div>
-
+      <div class="stat-card">
+        <div class="stat-icon-wrap blue">
+          <i class="bi bi-journal-check"></i>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Total Audits</span>
+          <div class="stat-value">{{ totalAudits() }}</div>
+          <span class="stat-sublabel">tous les rapports</span>
+        </div>
       </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrap green">
+          <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Validés</span>
+          <div class="stat-value">{{ validatedAudits() }}</div>
+          <span class="stat-sublabel">rapports confirmés</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrap red">
+          <i class="bi bi-x-circle"></i>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Refusés</span>
+          <div class="stat-value">{{ rejectedAudits() }}</div>
+          <span class="stat-sublabel">anomalies ou rejets</span>
+        </div>
+      </div>
+
+    </div>
   </section>
 
   <!-- MAIN AUDIT CARD -->
@@ -63,7 +63,7 @@
       </div>
       <div class="filter-tools">
         <button class="btn-tool" (click)="showFilters.set(!showFilters())" [class.active]="showFilters()">
-          <i class="bi bi-filter"></i> 
+          <i class="bi bi-filter"></i>
           {{ showFilters() ? 'Masquer' : 'Filtrer' }}
         </button>
         <button class="btn-tool" (click)="loadInventaires()"><i class="bi bi-arrow-clockwise"></i> Actualiser</button>
@@ -77,7 +77,8 @@
           <label>Recherche par ID / Description</label>
           <div class="search-input-wrapper">
             <i class="bi bi-search"></i>
-            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" placeholder="Entrez un ID ou mot-clé...">
+            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+              placeholder="Entrez un ID ou mot-clé...">
           </div>
         </div>
         <div class="filter-group">
@@ -103,9 +104,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of filteredInventaires(); let i = index" 
-              class="table-row-animate" 
-              [style.animation-delay]="i * 0.05 + 's'">
+          <tr *ngFor="let item of filteredInventaires(); let i = index" class="table-row-animate"
+            [style.animation-delay]="i * 0.05 + 's'">
             <td>
               <div class="id-wrapper">
                 <span class="id-hash">#</span>
@@ -159,7 +159,8 @@
       <div class="m-titles">
         <span class="m-badge">RAPPORT D'AUDIT</span>
         <h3>Détails de l'Inventaire Physique</h3>
-        <p class="m-subtitle">Référence: <span class="fw-bold">#{{ selectedAudit()?.idInventaire || selectedAudit()?.id }}</span></p>
+        <p class="m-subtitle">Référence: <span class="fw-bold">#{{ selectedAudit()?.idInventaire || selectedAudit()?.id
+            }}</span></p>
       </div>
       <button class="btn-close-circle" (click)="closeModal()"><i class="bi bi-x"></i></button>
     </div>
@@ -194,7 +195,7 @@
           <h5 class="section-sub"><i class="bi bi-box-seam"></i> Articles Contrôlés</h5>
           <span class="articles-count">{{ selectedAudit()?.lignes?.length || 0 }} références</span>
         </div>
-        
+
         <div class="lignes-scroll-area">
           <table class="lignes-table-premium">
             <thead>
@@ -203,20 +204,28 @@
                 <th class="text-center">THÉORIQUE</th>
                 <th class="text-center">RÉELLE</th>
                 <th class="text-center">ÉCART</th>
+                <th>OBSERVATION</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let l of selectedAudit()?.lignes">
                 <td>
-                  <span class="l-piece-name">{{ l.produit?.designation || l.piece?.designation || 'Article Inconnu' }}</span>
+                  <span class="l-piece-name">{{ getPieceDesignation(l) }}</span>
                 </td>
-                <td class="text-center"><span class="l-qty-muted">{{ l.quantiteTheorique ?? l.quantite_theorique ?? l.produit?.quantiteStock }}</span></td>
-                <td class="text-center"><span class="l-qty-bold">{{ l.quantiteReelle ?? l.quantite_reelle ?? l.quantitePhysique ?? l.quantite_physique ?? ((l.quantiteTheorique ?? l.quantite_theorique ?? l.produit?.quantiteStock ?? 0) + (l.ecart ?? 0)) }}</span></td>
+                <td class="text-center"><span class="l-qty-muted">{{ l.quantiteTheorique ?? l.quantite_theorique ??
+                    l.produit?.quantiteStock }}</span></td>
+                <td class="text-center"><span class="l-qty-bold">{{ l.quantiteReelle ?? l.quantite_reelle ??
+                    l.quantitePhysique ?? l.quantite_physique ?? ((l.quantiteTheorique ?? l.quantite_theorique ??
+                    l.produit?.quantiteStock ?? 0) + (l.ecart ?? 0)) }}</span></td>
                 <td class="text-center">
-                  <div class="ecart-indicator" [class.ecart-error]="l.ecart !== 0" [class.ecart-success]="l.ecart === 0">
+                  <div class="ecart-indicator" [class.ecart-error]="l.ecart !== 0"
+                    [class.ecart-success]="l.ecart === 0">
                     <i class="bi" [ngClass]="l.ecart === 0 ? 'bi-check-circle' : 'bi-exclamation-triangle'"></i>
                     {{ l.ecart > 0 ? '+' : '' }}{{ l.ecart }}
                   </div>
+                </td>
+                <td style="font-size: 0.85rem; color: #64748b; max-width: 150px; text-wrap: wrap;">
+                  {{ l.observation || (l.ecart === 0 ? 'Conforme' : '—') }}
                 </td>
               </tr>
             </tbody>

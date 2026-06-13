@@ -20,14 +20,30 @@ export class DemandeAdminComponent implements OnInit {
   private demandeService = inject(DemandeProduitService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
-  
+
   pieces = signal<Produit[]>([]);
   sending = signal(false);
   showFilters = signal(false);
-  
+
   selectedPieceId: number | null = null;
   quantity: number = 0;
-  
+
+  lignes: { produitId: number | null, quantite: number }[] = [{ produitId: null, quantite: 0 }];
+
+  get isFormValid(): boolean {
+    return this.lignes.some(l => l.produitId && l.quantite > 0);
+  }
+
+  addLine() {
+    this.lignes.push({ produitId: null, quantite: 0 });
+  }
+
+  removeLine(index: number) {
+    if (this.lignes.length > 1) {
+      this.lignes.splice(index, 1);
+    }
+  }
+
   historique = signal<any[]>([]);
 
   // Filtering Signals
@@ -60,28 +76,28 @@ export class DemandeAdminComponent implements OnInit {
 
   loadHistory() {
     this.demandeService.getDemandes().subscribe(data => {
-      const mapped = data.map(d => {
-        let pieceName = 'Pièce Inconnue';
-        let totalQte = 0;
-        
+      const mapped: any[] = [];
+      data.forEach(d => {
         if (d.lignes && d.lignes.length > 0) {
-          const pieceNames = d.lignes.map(l => {
-            totalQte += l.quantite || 0;
-            if (l.produit && l.produit.designation) {
-              return l.produit.designation;
-            }
-            return 'Pièce #' + l.produitId;
+          d.lignes.forEach(l => {
+            const pieceName = (l.produit && l.produit.designation) ? l.produit.designation : ('Pièce #' + l.produitId);
+            mapped.push({
+              id: d.id,
+              date: d.dateDemande,
+              piece: pieceName,
+              quantite: l.quantite || 0,
+              statut: d.statut
+            });
           });
-          pieceName = pieceNames.join(', ');
+        } else {
+          mapped.push({
+            id: d.id,
+            date: d.dateDemande,
+            piece: 'Demande vide',
+            quantite: 0,
+            statut: d.statut
+          });
         }
-        
-        return {
-          id: d.id,
-          date: d.dateDemande,
-          piece: pieceName,
-          quantite: totalQte,
-          statut: d.statut
-        };
       });
 
       // Sort by date descending (newest first)
@@ -96,30 +112,30 @@ export class DemandeAdminComponent implements OnInit {
   }
 
   submit() {
-    if (!this.selectedPieceId || this.quantity <= 0) return;
-    
+    const validLines = this.lignes.filter(l => l.produitId && l.quantite > 0);
+    if (validLines.length === 0) return;
+
     this.sending.set(true);
     const currentUser = this.authService.getCurrentUser();
-    
-    // Create demand with single ligne
+
+    // Create demand with multiple lignes
     const demande: DemandeProduit = {
       statut: 'EN_ATTENTE',
       technicienId: currentUser?.idUtilisateur || 0,
       dateDemande: new Date(),
-      lignes: [{
-        produitId: Number(this.selectedPieceId),
-        quantite: this.quantity,
+      lignes: validLines.map(l => ({
+        produitId: Number(l.produitId),
+        quantite: l.quantite,
         motif: 'Demande d\'achat Magasinier',
         statut: 'EN_ATTENTE'
-      } as any]
+      })) as any
     };
 
     this.demandeService.createDemande(demande).subscribe({
       next: (res) => {
         this.toastService.show('Demande envoyée avec succès !', 'success');
         this.loadHistory();
-        this.selectedPieceId = null;
-        this.quantity = 0;
+        this.lignes = [{ produitId: null, quantite: 0 }];
         this.sending.set(false);
       },
       error: (err) => {

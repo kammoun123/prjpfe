@@ -63,6 +63,11 @@ export class AdminDemandesComponent implements OnInit {
   selectedDateLivraison = signal<string>('');
   orderLoading = signal(false);
 
+  // Filters
+  searchTerm = signal('');
+  startDate = signal('');
+  endDate = signal('');
+
   todayDate: string = new Date().toISOString().split('T')[0];
 
   pendingCount = computed(() => {
@@ -181,13 +186,15 @@ export class AdminDemandesComponent implements OnInit {
       }
     });
 
-    return flattenedRows;
+    return this.applyFilters(flattenedRows, row => row.pieceName, row => row.demande.dateDemande ? new Date(row.demande.dateDemande) : new Date());
   }
 
   getFilteredCommandesFlattened(): CommandeLigneRow[] {
     const flattenedRows: CommandeLigneRow[] = [];
 
     this.activeOrders().forEach(c => {
+      // Only "EN_COURS" in active orders tab
+      if (c.statut !== 'EN_COURS') return;
       if (!c.lignes || c.lignes.length === 0) {
         flattenedRows.push({
           commande: c,
@@ -219,7 +226,110 @@ export class AdminDemandesComponent implements OnInit {
       }
     });
 
-    return flattenedRows;
+    return this.applyFilters(flattenedRows, row => row.pieceName, row => row.commande.dateCommande ? new Date(row.commande.dateCommande) : new Date());
+  }
+
+  getHistoryFlattened() {
+    let historyRows: any[] = [];
+
+    // Add DEMANDES history
+    const demandesHistory = this.demandes().filter(d => {
+      const s = (d.statut || '').toUpperCase().trim();
+      return s === 'VALIDATED' || s === 'REFUSED' || s === 'TRAITEE';
+    });
+
+    demandesHistory.forEach(d => {
+      if (!d.lignes || d.lignes.length === 0) {
+        historyRows.push({
+          typeRow: 'DEMANDE',
+          originalRef: d,
+          pieceName: '-',
+          quantite: 0,
+          dateObj: d.dateDemande ? new Date(d.dateDemande) : new Date(),
+          statut: d.statut
+        });
+      } else {
+        d.lignes.forEach(ligne => {
+          let pieceName = 'Pièce Inconnue';
+          if (ligne.produit && ligne.produit.designation) {
+            pieceName = ligne.produit.designation;
+          } else if (ligne.produitId) {
+            const piece = this.pieces().find(p => p.idProduit === ligne.produitId);
+            pieceName = piece?.designation || `Pièce #${ligne.produitId}`;
+          }
+          historyRows.push({
+            typeRow: 'DEMANDE',
+            originalRef: d,
+            pieceName: pieceName,
+            quantite: ligne.quantite || 0,
+            dateObj: d.dateDemande ? new Date(d.dateDemande) : new Date(),
+            statut: d.statut
+          });
+        });
+      }
+    });
+
+    // Add DIRECT COMMANDS history (LIVREE and no idDemandeOrigine)
+    const directCommandesHistory = this.activeOrders().filter(c => c.statut === 'LIVREE' && !c.idDemandeOrigine);
+    directCommandesHistory.forEach(c => {
+      if (!c.lignes || c.lignes.length === 0) {
+        historyRows.push({
+          typeRow: 'COMMANDE',
+          originalRef: c,
+          pieceName: '-',
+          quantite: 0,
+          dateObj: c.dateCommande ? new Date(c.dateCommande) : new Date(),
+          statut: 'LIVREE'
+        });
+      } else {
+        c.lignes.forEach(ligne => {
+          let pieceName = 'Pièce Inconnue';
+          if (ligne.produit && ligne.produit.designation) {
+            pieceName = ligne.produit.designation;
+          } else if (ligne.produitId) {
+            const piece = this.pieces().find(p => p.idProduit === ligne.produitId);
+            pieceName = piece?.designation || `Pièce #${ligne.produitId}`;
+          }
+          historyRows.push({
+            typeRow: 'COMMANDE',
+            originalRef: c,
+            pieceName: pieceName,
+            quantite: ligne.quantite || 0,
+            dateObj: c.dateCommande ? new Date(c.dateCommande) : new Date(),
+            statut: 'LIVREE'
+          });
+        });
+      }
+    });
+
+    // Apply sorting
+    historyRows.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
+
+    return this.applyFilters(historyRows, row => row.pieceName, row => row.dateObj);
+  }
+
+  private applyFilters<T>(rows: T[], getName: (row: T) => string, getDate: (row: T) => any): T[] {
+    const search = this.searchTerm().toLowerCase();
+    const start = this.startDate();
+    const end = this.endDate();
+
+    return rows.filter(row => {
+      const name = getName(row).toLowerCase();
+      let matchesSearch = true;
+      if (search) {
+        matchesSearch = name.includes(search);
+      }
+
+      let matchesDate = true;
+      const dateVal = getDate(row);
+      if (dateVal && (start || end)) {
+        const rowDate = (dateVal instanceof Date ? dateVal : new Date(dateVal as string | number | Date)).toISOString().split('T')[0];
+        if (start && rowDate < start) matchesDate = false;
+        if (end && rowDate > end) matchesDate = false;
+      }
+
+      return matchesSearch && matchesDate;
+    });
   }
 
   updateStatus(demande: DemandeProduit, newStatut: string) {

@@ -70,8 +70,8 @@ export class ProductManagementComponent implements OnInit {
     get filteredProduits() {
         return this.produits.filter(p => {
             const matchSearch =
-                p.designation.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                p.reference.toLowerCase().includes(this.searchTerm.toLowerCase());
+                (p.designation || '').toLowerCase().includes((this.searchTerm || '').toLowerCase()) ||
+                (p.reference || '').toLowerCase().includes((this.searchTerm || '').toLowerCase());
             const matchCat =
                 this.selectedCategory == null || p.idCategorie === +this.selectedCategory;
             return matchSearch && matchCat;
@@ -109,7 +109,6 @@ export class ProductManagementComponent implements OnInit {
     }
 
     onCategoryChange() {
-        if (this.formMode !== 'add') return;
 
         const selectedCat = this.categories.find(
             c => c.idCategorie != null && c.idCategorie === +(this.currentProduit.idCategorie ?? 0)
@@ -125,7 +124,7 @@ export class ProductManagementComponent implements OnInit {
             .substring(0, 3)
             .toUpperCase();
 
-        // Find all existing references matching this prefix (e.g. MEC-xxx)
+        // ADD mode: generate the next sequential number for this prefix
         const pattern = new RegExp(`^${prefix}-(\\d+)$`);
         const existingNumbers = this.produits
             .map(p => {
@@ -177,14 +176,21 @@ export class ProductManagementComponent implements OnInit {
     }
 
     savePiece() {
-        if (this.currentProduit.quantiteStock < 0) {
+        if (!this.currentProduit.designation || !this.currentProduit.reference || this.currentProduit.idCategorie == null) {
+            this.error = 'Veuillez remplir tous les champs obligatoires';
+            return;
+        }
+
+        if (this.currentProduit.quantiteStock == null || this.currentProduit.quantiteStock < 0) {
             this.error = 'La quantité en stock ne peut pas être négative';
             return;
         }
-        if (this.currentProduit.seuilAlerte < 0) {
-            this.error = 'Le seuil d\'alerte ne peut pas être négatif';
+
+        if (this.currentProduit.seuilAlerte == null || this.currentProduit.seuilAlerte < 1) {
+            this.error = 'Le seuil d\'alerte doit être au minimum 1';
             return;
         }
+
         this.loading = true;
         if (this.formMode === 'add') {
             this.produitService.createProduit(this.currentProduit).subscribe({
@@ -205,11 +211,11 @@ export class ProductManagementComponent implements OnInit {
                 next: (updated) => {
                     if (this.selectedFile) {
                         this.produitService.uploadPhoto(updated.idProduit!, this.selectedFile).subscribe({
-                            next: () => { 
-                                this.uploadFicheIfSelected(updated.idProduit!, 'Produit modifié avec succès !'); 
+                            next: () => {
+                                this.uploadFicheIfSelected(updated.idProduit!, 'Produit modifié avec succès !');
                             },
-                            error: () => { 
-                                this.uploadFicheIfSelected(updated.idProduit!, 'Produit modifié (erreur photo)'); 
+                            error: () => {
+                                this.uploadFicheIfSelected(updated.idProduit!, 'Produit modifié (erreur photo)');
                             }
                         });
                     } else {
@@ -245,8 +251,13 @@ export class ProductManagementComponent implements OnInit {
 
     deletePiece(id: number | undefined) {
         if (!id) return;
+        const numericId = Number(id);
+        if (isNaN(numericId) || numericId <= 0) {
+            this.error = 'Identifiant produit invalide';
+            return;
+        }
         if (confirm('Supprimer ce produit ?')) {
-            this.produitService.deleteProduit(id).subscribe({
+            this.produitService.deleteProduit(numericId).subscribe({
                 next: () => {
                     this.success = 'Produit supprimé';
                     this.fetchData();
@@ -270,12 +281,12 @@ export class ProductManagementComponent implements OnInit {
     printQR() {
         const printContent = document.getElementById('qr-print-section');
         if (!printContent) return;
-        
+
         const windowUrl = '';
         const uniqueName = new Date();
         const windowName = 'Print' + uniqueName.getTime();
         const printWindow = window.open(windowUrl, windowName, 'left=500,top=500,width=900,height=900');
-        
+
         if (printWindow) {
             printWindow.document.write(`
                 <html>

@@ -2,10 +2,13 @@ package com.example.gestion_piece_back.service;
 
 import com.example.gestion_piece_back.model.Utilisateur;
 import com.example.gestion_piece_back.model.Notification;
+import com.example.gestion_piece_back.model.DemandeInscription;
 import com.example.gestion_piece_back.repository.UtilisateurRepository;
+import com.example.gestion_piece_back.repository.DemandeInscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,24 +17,30 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UtilisateurService {
     private final UtilisateurRepository utilisateurRepository;
+    private final DemandeInscriptionRepository demandeInscriptionRepository;
     private final NotificationService notificationService;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    public Utilisateur register(Utilisateur utilisateur) {
+    public DemandeInscription register(Utilisateur utilisateur) {
         if (utilisateur.getMotDePasse() == null || utilisateur.getMotDePasse().isBlank()) {
             throw new RuntimeException("Le mot de passe est obligatoire pour l'inscription");
         }
-        utilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
-        utilisateur.setStatut("PENDING"); // Les nouveaux utilisateurs sont en attente par défaut
-        Utilisateur savedUser = utilisateurRepository.save(utilisateur);
+        DemandeInscription demande = new DemandeInscription();
+        demande.setNom(utilisateur.getNom());
+        demande.setPrenom(utilisateur.getPrenom());
+        demande.setEmail(utilisateur.getEmail());
+        demande.setRole(utilisateur.getRole());
+        demande.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
+
+        DemandeInscription savedDemande = demandeInscriptionRepository.save(demande);
 
         // Créer une notification pour l'administrateur et envoyer un email
         try {
             // Notification interne
             Notification notification = new Notification();
             notification.setTitre("Nouvelle Inscription");
-            notification.setMessage("Un nouvel utilisateur [" + savedUser.getPrenom() + " " + savedUser.getNom()
+            notification.setMessage("Un nouvel utilisateur [" + savedDemande.getPrenom() + " " + savedDemande.getNom()
                     + "] vient de s'inscrire et attend votre validation.");
             notification.setTypeNotification("USER_REGISTRATION");
             notification.setRoleCible("ADMIN");
@@ -42,14 +51,59 @@ public class UtilisateurService {
             List<Utilisateur> admins = utilisateurRepository.findByRole("ADMIN");
             for (Utilisateur admin : admins) {
                 if (admin.getEmail() != null && !admin.getEmail().isBlank()) {
-                    emailService.sendNewUserRegistrationEmailToAdmin(admin.getEmail(), savedUser);
+                    emailService.sendNewUserRegistrationEmailToAdmin(admin.getEmail(), utilisateur);
                 }
             }
         } catch (Exception e) {
             System.err.println("Erreur lors de la notification d'inscription : " + e.getMessage());
         }
 
+        return savedDemande;
+    }
+
+    public List<DemandeInscription> findAllDemandes() {
+        return demandeInscriptionRepository.findAll();
+    }
+
+    @Transactional
+    public Utilisateur accepterDemande(Long idDemande) {
+        DemandeInscription demande = demandeInscriptionRepository.findById(idDemande)
+                .orElseThrow(() -> new RuntimeException("Demande d'inscription non trouvée"));
+
+        Utilisateur user = new Utilisateur();
+        user.setNom(demande.getNom());
+        user.setPrenom(demande.getPrenom());
+        user.setEmail(demande.getEmail());
+        user.setRole(demande.getRole());
+        user.setMotDePasse(demande.getMotDePasse()); // Déjà encodé
+        user.setStatut("ACTIVE");
+
+        Utilisateur savedUser = utilisateurRepository.save(user);
+        demandeInscriptionRepository.delete(demande);
+
+        // Envoyer email d'acceptation
+        try {
+            emailService.sendUserAcceptedEmail(user.getEmail(), user.getPrenom());
+        } catch (Exception e) {
+            System.err.println("Erreur envoi email acceptation : " + e.getMessage());
+        }
+
         return savedUser;
+    }
+
+    @Transactional
+    public void refuserDemande(Long idDemande) {
+        DemandeInscription demande = demandeInscriptionRepository.findById(idDemande)
+                .orElseThrow(() -> new RuntimeException("Demande d'inscription non trouvée"));
+
+        // Envoyer email de refus
+        try {
+            emailService.sendUserRefusedEmail(demande.getEmail(), demande.getPrenom());
+        } catch (Exception e) {
+            System.err.println("Erreur envoi email refus : " + e.getMessage());
+        }
+
+        demandeInscriptionRepository.delete(demande);
     }
 
     public List<Utilisateur> findAll() {

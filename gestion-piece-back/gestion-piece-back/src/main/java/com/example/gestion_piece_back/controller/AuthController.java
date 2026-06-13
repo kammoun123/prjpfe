@@ -1,6 +1,7 @@
 package com.example.gestion_piece_back.controller;
 
 import com.example.gestion_piece_back.model.Utilisateur;
+import com.example.gestion_piece_back.model.DemandeInscription;
 import com.example.gestion_piece_back.service.UtilisateurService;
 import com.example.gestion_piece_back.config.JwtUtils;
 import jakarta.validation.Valid;
@@ -30,12 +31,13 @@ public class AuthController {
         if (utilisateurService.findByEmail(utilisateur.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email déjà utilisé");
         }
-        Utilisateur savedUser = utilisateurService.register(utilisateur);
-        
+        DemandeInscription savedDemande = utilisateurService.register(utilisateur);
+
         java.util.Map<String, Object> response = new java.util.HashMap<>();
-        response.put("message", "Inscription réussie ! Votre compte est en attente de validation par l'administrateur.");
-        response.put("id", savedUser.getIdUtilisateur());
-        
+        response.put("message",
+                "Inscription réussie ! Votre compte est en attente de validation par l'administrateur.");
+        response.put("id", savedDemande.getId());
+
         return ResponseEntity.ok(response);
     }
 

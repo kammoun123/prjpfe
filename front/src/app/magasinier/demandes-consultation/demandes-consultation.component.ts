@@ -59,6 +59,10 @@ export class DemandesConsultationComponent implements OnInit {
     const groupedRows: DemandeRow[] = [];
 
     this.demandes().forEach(d => {
+      // Ignore les demandes créées par le magasinier lui-même
+      const isMagasinierDemand = d.lignes?.some(l => l.motif === "Demande d'achat Magasinier");
+      if (isMagasinierDemand) return;
+
       const pieces: { name: string; quantite: number; observation?: string }[] = [];
       let searchArr: string[] = [];
       let totalQty = 0;
