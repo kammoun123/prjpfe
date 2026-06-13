@@ -172,7 +172,7 @@
 
 /* STATUS BADGES PRO */
 .badge-status-pro { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; }
-.badge-status-pro.en_attente { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+.badge-status-pro.en_attente { background: rgba(245, 158, 11, 0.1); color: #92400e; }
 .badge-status-pro.validated, .badge-status-pro.approved { background: rgba(16, 185, 129, 0.1); color: var(--success); }
 .badge-status-pro.rejected { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 .badge-status-pro.transféré_admin { background: rgba(37, 99, 235, 0.1); color: #2563eb; }

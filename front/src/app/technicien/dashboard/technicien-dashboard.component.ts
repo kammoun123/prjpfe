@@ -67,7 +67,7 @@ export class TechnicienDashboardComponent implements OnInit {
     loadDemandes(): void {
         this.demandeService.getDemandes().subscribe({
             next: (data) => {
-                this.demandes = data.sort((a, b) => new Date(b.dateDemande || new Date()).getTime() - new Date(a.dateDemande || new Date()).getTime());
+                this.demandes = ([...data]).sort((a, b) => new Date(b.dateDemande || new Date()).getTime() - new Date(a.dateDemande || new Date()).getTime());
                 this.applyFilter();
                 this.calculateStats();
                 this.updateChartInfo();

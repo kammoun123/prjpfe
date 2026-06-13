@@ -96,7 +96,7 @@ export class MouvementManagementComponent implements OnInit {
 
         this.mouvementService.getAllMouvements().subscribe({
             next: (data: MouvementStock[]) => {
-                this.mouvements = data.sort((a: MouvementStock, b: MouvementStock) => new Date(b.dateMouvement).getTime() - new Date(a.dateMouvement).getTime());
+                this.mouvements = ([...data]).sort((a: MouvementStock, b: MouvementStock) => new Date(b.dateMouvement).getTime() - new Date(a.dateMouvement).getTime());
                 this.loading = false;
             },
             error: () => this.loading = false

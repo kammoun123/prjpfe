@@ -144,7 +144,7 @@ export class DemandePieceComponent implements OnInit {
         const requests = [this.demandeService.createDemande(demande)];
 
         import('rxjs').then(({ forkJoin }) => {
-            forkJoin(requests).subscribe({
+            forkJoin([...requests]).subscribe({
                 next: () => {
                     this.loading = false;
 

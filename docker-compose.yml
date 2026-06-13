@@ -1,49 +1,134 @@
+
 services:
-  db:
-    image: mysql:8.0
-    container_name: piece-db
+
+  # ===== BASE DE DONNÉES =====
+  gestion-db:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: gestion-db
+    image: gestion-db:latest
     restart: always
     environment:
+      MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: piece
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
     ports:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      - pfe-network
+      - gestion-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  backend:
+  # ===== BACKEND =====
+  gestion-backend:
     build:
       context: ./gestion-piece-back/gestion-piece-back
       dockerfile: Dockerfile
-    container_name: gestion-piece-back
-    depends_on:
-      - db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3307/piece?createDatabaseIfNotExist=true&serverTimezone=UTC
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=
+    container_name: gestion-backend
+    image: gestion-backend:latest
+    restart: always
     ports:
       - "8883:8883"
+    depends_on:
+      gestion-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://gestion-db:3306/piece?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpass
     networks:
-      - pfe-network
+      - gestion-network
 
-  frontend:
+  # ===== FRONTEND =====
+  gestion-frontend:
     build:
       context: ./front
       dockerfile: Dockerfile
-    container_name: pfe-front
+    container_name: gestion-frontend
+    image: gestion-frontend:latest
+    restart: always
     ports:
       - "4200:80"
     depends_on:
-      - backend
+      - gestion-backend
     networks:
-      - pfe-network
+      - gestion-network
 
+  # ===== SONARQUBE =====
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonar-db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - gestion-network
+    depends_on:
+      - sonar-db
+
+  # ===== SONARQUBE DATABASE =====
+  sonar-db:
+    image: postgres:15-alpine
+    container_name: sonar-db
+    restart: always
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - sonar_db_data:/var/lib/postgresql/data
+    networks:
+      - gestion-network
+
+  # ===== PROMETHEUS =====
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - gestion-network
+
+  # ===== GRAFANA =====
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - gestion-network
+
+# ===== RÉSEAU =====
 networks:
-  pfe-network:
+  gestion-network:
     driver: bridge
 
+# ===== VOLUMES =====
 volumes:
   db_data:
+  sonarqube_data:
+  sonarqube_logs:
+  sonar_db_data:
+  grafana_data:

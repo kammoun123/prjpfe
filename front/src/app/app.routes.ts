@@ -42,7 +42,8 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { role: 'ADMIN' },
         children: [
-            { path: '', component: AdminDashboardComponent },
+            { path: '', component: AdminDashboardComponent, pathMatch: 'full' },
+            { path: 'dashboard', redirectTo: '' },
             { path: 'categories', component: CategorieManagementComponent },
             { path: 'products', component: ProductManagementComponent },
             { path: 'mouvements', component: MouvementManagementComponent },
@@ -95,6 +96,9 @@ export const routes: Routes = [
         ]
     },
 
+
+    { path: 'admin/products', redirectTo: 'admin/products' },
+    { path: 'admin/audit', redirectTo: 'admin/audit' },
 
     { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];
