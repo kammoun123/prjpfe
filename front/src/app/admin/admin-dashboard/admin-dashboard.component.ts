@@ -90,8 +90,8 @@ export class AdminDashboardComponent implements OnInit {
             error: () => { }
         });
         // Load pending registration requests from demandes-inscription
-        this.authService.getRegistrationRequests().subscribe({
-            next: (demandes) => {
+        (this.authService as any).getRegistrationRequests().subscribe({
+            next: (demandes: any[]) => {
                 this.pendingUsers = demandes;
                 this.loadingUsers = false;
             },
@@ -100,8 +100,8 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     approveUser(user: any): void {
-        if (!user.id) return;
-        this.authService.accepterDemande(user.id).subscribe({
+        if (!user.idUtilisateur) return;
+        (this.authService as any).accepterDemande(user.idUtilisateur).subscribe({
             next: () => {
                 this.loadPendingUsers();
                 this.loadStats(); // refresh user count
@@ -110,7 +110,8 @@ export class AdminDashboardComponent implements OnInit {
         });
     }
 
-    getInitials(user: Utilisateur): string {
+    getInitials(user: any): string {
+        if (!user || !user.nom || !user.prenom) return '??';
         return (user.nom[0] + user.prenom[0]).toUpperCase();
     }
 }
