@@ -59,9 +59,9 @@ security_scan:
   allow_failure: true
   script:
     - trivy image --download-db-only
-    - trivy image --skip-update --exit-code 0 --severity HIGH,CRITICAL $BACKEND_IMAGE
-    - trivy image --skip-update --exit-code 0 --severity HIGH,CRITICAL $FRONTEND_IMAGE
-    - trivy image --skip-update --exit-code 0 --severity HIGH,CRITICAL $DB_IMAGE
+    - trivy image --skip-update --skip-java-db-update --exit-code 0 --severity HIGH,CRITICAL $BACKEND_IMAGE
+    - trivy image --skip-update --skip-java-db-update --exit-code 0 --severity HIGH,CRITICAL $FRONTEND_IMAGE
+    - trivy image --skip-update --skip-java-db-update --exit-code 0 --severity HIGH,CRITICAL $DB_IMAGE
 
 deploy:
   stage: deploy
