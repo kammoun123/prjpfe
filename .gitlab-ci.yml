@@ -43,7 +43,7 @@ docker_build:
   stage: docker
   script:
     - docker build -t $BACKEND_IMAGE ./gestion-piece-back/gestion-piece-back
-    - docker build -t $FRONTEND_IMAGE ./front
+    - docker build --no-cache -t $FRONTEND_IMAGE ./front
     - docker build -t $DB_IMAGE ./database
 
 docker_push:
