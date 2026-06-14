@@ -36,15 +36,22 @@ public class MouvementStockService {
     }
 
     public List<MouvementStock> getMouvementsByProduit(Long produitId) {
-        return mouvementStockRepository.findByProduitIdProduit(produitId);
+        return mouvementStockRepository.findByProduitId(produitId);
     }
 
     public MouvementStock createMouvement(MouvementStock mouvement) {
+        // Resolve produit from produitId if produit object is not set
+        Long pid = mouvement.getProduitId();
+        if (pid == null && mouvement.getProduit() != null) {
+            pid = mouvement.getProduit().getIdProduit();
+            mouvement.setProduitId(pid);
+        }
+
         MouvementStock saved = mouvementStockRepository.save(mouvement);
 
         // Mettre à jour la quantité en stock
-        if (mouvement.getProduit() != null) {
-            Produit produit = produitRepository.findById(mouvement.getProduit().getIdProduit()).orElse(null);
+        if (pid != null) {
+            Produit produit = produitRepository.findById(pid).orElse(null);
             if (produit != null) {
                 int newQuantite = produit.getQuantiteStock() != null ? produit.getQuantiteStock() : 0;
                 if ("ENTREE".equals(mouvement.getTypeMouvement())) {
@@ -76,8 +83,12 @@ public class MouvementStockService {
                 .orElseThrow(() -> new RuntimeException("Mouvement non trouvé"));
 
         // Reverse stock level before deleting
-        if (mouvement.getProduit() != null) {
-            Produit produit = produitRepository.findById(mouvement.getProduit().getIdProduit()).orElse(null);
+        Long pid = mouvement.getProduitId();
+        if (pid == null && mouvement.getProduit() != null) {
+            pid = mouvement.getProduit().getIdProduit();
+        }
+        if (pid != null) {
+            Produit produit = produitRepository.findById(pid).orElse(null);
             if (produit != null) {
                 int newQuantite = produit.getQuantiteStock();
                 if ("ENTREE".equals(mouvement.getTypeMouvement())) {

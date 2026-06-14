@@ -1,0 +1,223 @@
+﻿node.exe : 
+[1m[33mThe 
+"prerender" option is 
+not considered when 
+"outputMode" is 
+specified.[39m[22m
+Au caractère 
+C:\Program Files\nodejs
+\npx.ps1:29 : 3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([1m[33mThe    
+ "p...fied.[39m[2    
+2m:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+[33mÔØ»[39m Building...
+ERROR ReferenceError: 
+localStorage is not 
+defined
+    at 
+e.getUserFromStorage (f
+ile:///C:/prg2/front/.a
+ngular/prerender-root/5
+27b5f0e-9303-48ef-b462-
+58de4e7fde9b/main.serve
+r.mjs:105:815)
+    at <instance_member
+s_initializer> (file://
+/C:/prg2/front/.angular
+/prerender-root/527b5f0
+e-9303-48ef-b462-58de4e
+7fde9b/main.server.mjs:
+105:169)
+    at new e (file:///C
+:/prg2/front/.angular/p
+rerender-root/527b5f0e-
+9303-48ef-b462-58de4e7f
+de9b/main.server.mjs:10
+5:95)
+    at Object.╔Áfac 
+[as factory] (file:///C
+:/prg2/front/.angular/p
+rerender-root/527b5f0e-
+9303-48ef-b462-58de4e7f
+de9b/main.server.mjs:10
+5:915)
+    at Cs.hydrate (file
+:///C:/prg2/front/.angu
+lar/prerender-root/527b
+5f0e-9303-48ef-b462-58d
+e4e7fde9b/main.server.m
+js:5:7696)
+    at Cs.get (file:///
+C:/prg2/front/.angular/
+prerender-root/527b5f0e
+-9303-48ef-b462-58de4e7
+fde9b/main.server.mjs:5
+:7007)
+    at Cs.get (file:///
+C:/prg2/front/.angular/
+prerender-root/527b5f0e
+-9303-48ef-b462-58de4e7
+fde9b/main.server.mjs:5
+:7079)
+    at rA.get (file:///
+C:/prg2/front/.angular/
+prerender-root/527b5f0e
+-9303-48ef-b462-58de4e7
+fde9b/main.server.mjs:3
+1:6980)
+    at CD (file:///C:/p
+rg2/front/.angular/prer
+ender-root/527b5f0e-930
+3-48ef-b462-58de4e7fde9
+b/main.server.mjs:5:294
+99)
+    at wD (file:///C:/p
+rg2/front/.angular/prer
+ender-root/527b5f0e-930
+3-48ef-b462-58de4e7fde9
+b/main.server.mjs:5:297
+04)
+[32mÔ£ö[39m Building...
+[35mBrowser bundles[39m     
+[1mInitial chunk files[22m [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m[2m | [22m[1mEstimated transfer size[22m
+[32mmain-GGAPT33K.js[39m    [2m | [22m[2mmain[22m            [2m | [22m[36m460.61 kB[39m[2m | [22m              [36m110.08 kB[39m
+[32mstyles-ZWD5MYE3.css[39m [2m | [22m[2mstyles[22m          [2m | [22m  [36m1.41 kB[39m[2m | [22m              [36m544 bytes[39m
+
+[1m [22m                   [2m | [22m[1mInitial total[22m   [2m | [22m[1m462.01 kB[22m[2m | [22m              [1m110.62 kB[22m
+
+
+[35mServer bundles[39m      
+[1mInitial chunk files[22m [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m
+[32mmain.server.mjs[39m     [2m | [22m[2mmain.server[22m     [2m | [22m[36m897.56 kB[39m[2m | [22m                       
+[32mserver.mjs[39m          [2m | [22m[2mserver[22m          [2m | [22m[36m810.22 kB[39m[2m | [22m                       
+[32mpolyfills.server.mjs[39m[2m | [22m[2mpolyfills.server[22m[2m | [22m[36m233.25 kB[39m[2m | [22m                       
+[32mchunk-L2MVFUKD.mjs[39m  [2m | [22m[2m-[22m               [2m | [22m  [36m1.32 kB[39m[2m | [22m                       
+[32mchunk-T55IDOPT.mjs[39m  [2m | [22m[2m-[22m               [2m | [22m[36m976 bytes[39m[2m | [22m                       
+
+[1mLazy chunk files[22m    [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m
+[32mchunk-RHDGF2TI.mjs[39m  [2m | [22m[2mxhr2[22m            [2m | [22m [36m12.14 kB[39m[2m | [22m                       
+[32mchunk-N3SI5I4Q.mjs[39m  [2m | [22m[2mxhr2[22m            [2m | [22m [36m12.07 kB[39m[2m | [22m                       
+
+[35mPrerendered 10 static routes.[39m
+Application bundle generation failed. [8.996 seconds] - 2026-03-15T13:58:41.517Z
+
+[1m[33m[33mÔû▓ [43;
+33m[[43;30mWARNING[43
+;33m][0m [1mcss-inlin
+e-fonts:https://fonts.g
+oogleapis.com/css2?fami
+ly=Syne:wght@400;600;70
+0;800&family=DM+Sans:wg
+ht@300;400;500;600&disp
+lay=swap exceeded 
+maximum budget. Budget 
+10.00 kB was not met 
+by 248 bytes with a 
+total of 10.25 kB.[0m
+
+[39m[22m
+[1m[31m[31mX [41;31
+m[[41;97mERROR[41;31m
+][0m [1mAn error 
+occurred while 
+prerendering route 
+'/register'.
+
+localStorage is not 
+defined[0m
+
+
+[31mX [41;31m[[41;97
+mERROR[41;31m][0m 
+[1mAn error occurred 
+while prerendering 
+route '/controleur'.
+
+Terminating worker 
+thread[0m
+
+
+[31mX [41;31m[[41;97
+mERROR[41;31m][0m 
+[1mAn error occurred 
+while prerendering 
+route '/magasinier'.
+
+Terminating worker 
+thread[0m
+
+
+[31mX [41;31m[[41;97
+mERROR[41;31m][0m 
+[1mAn error occurred 
+while prerendering 
+route '/admin'.
+
+Terminating worker 
+thread[0m
+
+
+[31mX [41;31m[[41;97
+mERROR[41;31m][0m 
+[1mAn error occurred 
+while prerendering 
+route 
+'/admin/products'.
+
+Terminating worker 
+thread[0m
+
+
+[31mX [41;31m[[41;97
+mERROR[41;31m][0m 
+[1mAn error occurred 
+while prerendering 
+route '/login'.
+
+Terminating worker 
+thread[0m
+
+
+[31mX [41;31m[[41;97
+mERROR[41;31m][0m 
+[1mAn error occurred 
+while prerendering 
+route 
+'/admin/categories'.
+
+Terminating worker 
+thread[0m
+
+
+[31mX [41;31m[[41;97
+mERROR[41;31m][0m 
+[1mAn error occurred 
+while prerendering 
+route 
+'/admin/mouvements'.
+
+Terminating worker 
+thread[0m
+
+
+[31mX [41;31m[[41;97
+mERROR[41;31m][0m 
+[1mAn error occurred 
+while prerendering 
+route '/technicien'.
+
+Terminating worker 
+thread[0m
+
+[39m[22m

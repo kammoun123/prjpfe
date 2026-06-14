@@ -1,0 +1,81 @@
+stages:
+  - build
+  - sonar
+  - docker
+  - push
+  - scan
+  - deploy
+
+variables:
+  BACKEND_IMAGE: kammounhamdi/gestion-backend
+  FRONTEND_IMAGE: kammounhamdi/gestion-frontend
+  DB_IMAGE: kammounhamdi/gestion-db
+default:
+  tags:
+    - vm-runner
+
+backend_build:
+  stage: build
+  script:
+    - cd gestion-piece-back/gestion-piece-back
+    - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - gestion-piece-back/gestion-piece-back/target/*.jar
+
+frontend_build:
+  stage: build
+  script:
+    - cd front
+    - npm install --legacy-peer-deps
+    - npm run build --configuration=production
+
+sonarqube_scan:
+  stage: sonar
+  allow_failure: true
+  script:
+    - cd gestion-piece-back/gestion-piece-back
+    - mvn compile -DskipTests
+    - mvn sonar:sonar
+      -DskipTests
+      -Dsonar.projectKey=gestion-piece
+      -Dsonar.host.url=http://localhost:9000
+      -Dsonar.token=$SONAR_TOKEN
+      -Dsonar.java.binaries=target/classes
+
+docker_build:
+  stage: docker
+  script:
+    - docker build -t $BACKEND_IMAGE ./gestion-piece-back/gestion-piece-back
+    - docker build -t $FRONTEND_IMAGE ./front
+    - docker build -t $DB_IMAGE ./database
+
+docker_push:
+  stage: push
+  script:
+    - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+    - docker push $BACKEND_IMAGE
+    - docker push $FRONTEND_IMAGE
+    - docker push $DB_IMAGE
+
+security_scan:
+  stage: scan
+  allow_failure: true
+  script:
+    - trivy image --download-db-only
+    - trivy image --skip-update --exit-code 0 --severity HIGH,CRITICAL $BACKEND_IMAGE
+    - trivy image --skip-update --exit-code 0 --severity HIGH,CRITICAL $FRONTEND_IMAGE
+    - trivy image --skip-update --exit-code 0 --severity HIGH,CRITICAL $DB_IMAGE
+
+deploy:
+  stage: deploy
+  script:
+    - docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+    - docker pull $BACKEND_IMAGE
+    - docker pull $FRONTEND_IMAGE
+    - docker pull $DB_IMAGE
+    - cd /home/azerty/prjpfe
+    - docker-compose down
+    - docker-compose up -d
+  only:
+    - main

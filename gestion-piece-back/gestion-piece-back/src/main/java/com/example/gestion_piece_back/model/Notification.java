@@ -8,42 +8,37 @@ import java.time.LocalDateTime;
 @Data
 @Table(name = "notifications")
 public class Notification {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long idNotification;
+    private Long id;
 
     @Column(name = "titre")
     private String titre;
 
+    @Column(name = "message", columnDefinition = "TEXT")
+    private String message;
+
+    @Column(name = "type_notification")
+    private String typeNotification;
+
+    @Column(name = "role_cible")
+    private String roleCible;
+
+    @Column(name = "statut")
+    private String statut; // "NON_LUE" or "LUE"
+
     @Column(name = "produit_id")
     private Long produitId;
-
-    @Column(name = "message")
-    private String message;
 
     @Column(name = "date_creation")
     private LocalDateTime dateCreation;
 
-    @Column(name = "statut")
-    private String statut; // "NON_LUE" ou "LUE"
-
-    @Column(name = "type_notification")
-    private String typeNotification; // "ALERTE_STOCK", "MOUVEMENT", etc.
-
-    @Column(name = "role_cible")
-    private String roleCible; // "ADMIN", "CONTROLEUR", etc.
-
-    @Column(name = "data", columnDefinition = "TEXT")
-    private String data; // Contenu JSON additionnel
-
-    @ManyToOne
-    @JoinColumn(name = "produit_id", insertable = false, updatable = false)
-    private Produit produit;
-
     @PrePersist
     protected void onCreate() {
-        dateCreation = LocalDateTime.now();
+        if (dateCreation == null) {
+            dateCreation = LocalDateTime.now();
+        }
         if (statut == null) {
             statut = "NON_LUE";
         }

@@ -1,0 +1,183 @@
+﻿node.exe : [1m[33mThe 
+"prerender" option is not 
+considered when 
+"outputMode" is 
+specified.[39m[22m
+Au caractère C:\Program 
+Files\nodejs\npx.ps1:29 : 3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo         
+     : NotSpecified: ([1  
+  m[33mThe "p...fied.[   
+ 39m[22m:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+[33mÔØ»[39m Building...
+[32mÔ£ö[39m Building...
+[35mBrowser bundles[39m     
+[1mInitial chunk files[22m [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m[2m | [22m[1mEstimated transfer size[22m
+[32mmain-KFFXRBG6.js[39m    [2m | [22m[2mmain[22m            [2m | [22m[36m754.46 kB[39m[2m | [22m              [36m152.22 kB[39m
+[32mchunk-VFCZJGS5.js[39m   [2m | [22m[2m-[22m               [2m | [22m [36m49.00 kB[39m[2m | [22m               [36m14.06 kB[39m
+[32mstyles-ZWD5MYE3.css[39m [2m | [22m[2mstyles[22m          [2m | [22m  [36m1.41 kB[39m[2m | [22m              [36m544 bytes[39m
+
+[1m [22m                   [2m | [22m[1mInitial total[22m   [2m | [22m[1m[93m804.87 kB[39m[22m[2m | [22m              [1m166.83 kB[22m
+
+[1mLazy chunk files[22m    [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m[2m | [22m[1mEstimated transfer size[22m
+[32mchunk-LHODR5PL.js[39m   [2m | [22m[2mindex[22m           [2m | [22m  [36m4.28 kB[39m[2m | [22m                [36m1.38 kB[39m
+
+
+[35mServer bundles[39m      
+[1mInitial chunk files[22m [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m
+[32mmain.server.mjs[39m     [2m | [22m[2mmain.server[22m     [2m | [22m  [36m1.19 MB[39m[2m | [22m                       
+[32mserver.mjs[39m          [2m | [22m[2mserver[22m          [2m | [22m[36m810.22 kB[39m[2m | [22m                       
+[32mpolyfills.server.mjs[39m[2m | [22m[2mpolyfills.server[22m[2m | [22m[36m233.25 kB[39m[2m | [22m                       
+[32mchunk-D3IGGWML.mjs[39m  [2m | [22m[2m-[22m               [2m | [22m [36m48.39 kB[39m[2m | [22m                       
+[32mchunk-L2MVFUKD.mjs[39m  [2m | [22m[2m-[22m               [2m | [22m  [36m1.32 kB[39m[2m | [22m                       
+[32mchunk-T55IDOPT.mjs[39m  [2m | [22m[2m-[22m               [2m | [22m[36m976 bytes[39m[2m | [22m                       
+
+[1mLazy chunk files[22m    [2m | [22m[1mNames[22m           [2m | [22m [1mRaw size[22m
+[32mchunk-RHDGF2TI.mjs[39m  [2m | [22m[2mxhr2[22m            [2m | [22m [36m12.14 kB[39m[2m | [22m                       
+[32mchunk-N3SI5I4Q.mjs[39m  [2m | [22m[2mxhr2[22m            [2m | [22m [36m12.07 kB[39m[2m | [22m                       
+[32mchunk-VYJXNUZ4.mjs[39m  [2m | [22m[2mindex[22m           [2m | [22m  [36m3.36 kB[39m[2m | [22m                       
+
+[35mPrerendered 9 static routes.[39m
+Application bundle generation failed. [12.423 seconds] - 2026-04-07T13:54:46.731Z
+
+[1m[33m[33mÔû▓ [43;33m[
+[43;30mWARNING[43;33m][0
+m [1mbundle initial 
+exceeded maximum budget. 
+Budget 500.00 kB was not 
+met by 304.87 kB with a 
+total of 804.87 kB.[0m
+
+
+[33mÔû▓ [43;33m[[43;30mW
+ARNING[43;33m][0m [1mcss
+-inline-fonts:https://fonts
+.googleapis.com/css2?family
+=Plus+Jakarta+Sans:wght@400
+;500;600;700;800&display=sw
+ap exceeded maximum 
+budget. Budget 10.00 kB 
+was not met by 2.58 kB 
+with a total of 12.58 
+kB.[0m
+
+
+[33mÔû▓ [43;33m[[43;30mW
+ARNING[43;33m][0m [1mcss
+-inline-fonts:https://fonts
+.googleapis.com/css2?family
+=Outfit:wght@300;400;500;60
+0;700;800&family=Plus+Jakar
+ta+Sans:wght@300;400;500;60
+0;700;800&display=swap 
+exceeded maximum budget. 
+Budget 10.00 kB was not 
+met by 11.86 kB with a 
+total of 21.86 kB.[0m
+
+
+[33mÔû▓ [43;33m[[43;30mW
+ARNING[43;33m][0m [1mcss
+-inline-fonts:https://fonts
+.googleapis.com/css2?family
+=Outfit:wght@300;400;500;60
+0;700;800&family=Plus+Jakar
+ta+Sans:wght@300;400;500;60
+0;700;800&display=swap 
+exceeded maximum budget. 
+Budget 10.00 kB was not 
+met by 9.46 kB with a 
+total of 19.46 kB.[0m
+
+
+[33mÔû▓ [43;33m[[43;30mW
+ARNING[43;33m][0m [1mcss
+-inline-fonts:https://fonts
+.googleapis.com/css2?family
+=Plus+Jakarta+Sans:wght@400
+;500;600;700;800&display=sw
+ap exceeded maximum 
+budget. Budget 10.00 kB 
+was not met by 4.10 kB 
+with a total of 14.10 
+kB.[0m
+
+
+[33mÔû▓ [43;33m[[43;30mW
+ARNING[43;33m][0m [1mcss
+-inline-fonts:https://fonts
+.googleapis.com/css2?family
+=Outfit:wght@300;400;500;60
+0;700;800&family=Plus+Jakar
+ta+Sans:wght@300;400;500;60
+0;700;800&display=swap 
+exceeded maximum budget. 
+Budget 10.00 kB was not 
+met by 13.50 kB with a 
+total of 23.50 kB.[0m
+
+
+[33mÔû▓ [43;33m[[43;30mW
+ARNING[43;33m][0m [1mcss
+-inline-fonts:https://fonts
+.googleapis.com/css2?family
+=Outfit:wght@300;400;500;60
+0;700;800&family=Plus+Jakar
+ta+Sans:wght@300;400;500;60
+0;700;800&display=swap 
+exceeded maximum budget. 
+Budget 10.00 kB was not 
+met by 11.03 kB with a 
+total of 21.03 kB.[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[
+41;97mERROR[41;31m][0m [
+1mcss-inline-fonts:https://
+fonts.googleapis.com/css2?f
+amily=Outfit:wght@300;400;5
+00;600;700;800&family=Plus+
+Jakarta+Sans:wght@300;400;5
+00;600;700;800&display=swap
+ exceeded maximum budget. 
+Budget 20.00 kB was not 
+met by 1.86 kB with a 
+total of 21.86 kB.[0m
+
+
+[31mX [41;31m[[41;97mERR
+OR[41;31m][0m [1mcss-inl
+ine-fonts:https://fonts.goo
+gleapis.com/css2?family=Out
+fit:wght@300;400;500;600;70
+0;800&family=Plus+Jakarta+S
+ans:wght@300;400;500;600;70
+0;800&display=swap 
+exceeded maximum budget. 
+Budget 20.00 kB was not 
+met by 3.50 kB with a 
+total of 23.50 kB.[0m
+
+
+[31mX [41;31m[[41;97mERR
+OR[41;31m][0m [1mcss-inl
+ine-fonts:https://fonts.goo
+gleapis.com/css2?family=Out
+fit:wght@300;400;500;600;70
+0;800&family=Plus+Jakarta+S
+ans:wght@300;400;500;600;70
+0;800&display=swap 
+exceeded maximum budget. 
+Budget 20.00 kB was not 
+met by 1.03 kB with a 
+total of 21.03 kB.[0m
+
+[39m[22m

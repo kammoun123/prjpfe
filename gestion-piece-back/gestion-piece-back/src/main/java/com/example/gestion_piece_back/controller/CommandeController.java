@@ -25,7 +25,7 @@ public class CommandeController {
         Long idDemande = Long.valueOf(payload.get("idDemande").toString());
         Long idFournisseur = Long.valueOf(payload.get("idFournisseur").toString());
         String dateStr = (String) payload.get("dateReceptionPrevue");
-        java.time.LocalDate datePrev = dateStr != null ? java.time.LocalDate.parse(dateStr) : null;
+        java.time.LocalDate datePrev = (dateStr != null && !dateStr.trim().isEmpty()) ? java.time.LocalDate.parse(dateStr) : null;
         String observation = (String) payload.get("observation");
 
         return commandeService.creerCommande(idDemande, idFournisseur, datePrev, observation);
@@ -37,7 +37,7 @@ public class CommandeController {
         List<Map<String, Object>> items = (List<Map<String, Object>>) payload.get("items");
         Long idFournisseur = Long.valueOf(payload.get("idFournisseur").toString());
         String dateStr = (String) payload.get("dateReceptionPrevue");
-        java.time.LocalDate datePrev = dateStr != null ? java.time.LocalDate.parse(dateStr) : null;
+        java.time.LocalDate datePrev = (dateStr != null && !dateStr.trim().isEmpty()) ? java.time.LocalDate.parse(dateStr) : null;
         String observation = (String) payload.get("observation");
 
         return commandeService.creerCommandeDirecte(items, idFournisseur, datePrev, observation);

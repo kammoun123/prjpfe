@@ -1,5 +1,6 @@
 package com.example.gestion_piece_back.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -12,9 +13,14 @@ public class MouvementStock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "produit_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "produit_id", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"categorie", "qrCode", "ficheTechniqueUrl"})
     private Produit produit;
+
+    // Used by frontend to send the produit ID
+    @Column(name = "produit_id")
+    private Long produitId;
 
     @Column(name = "type_mouvement")
     private String typeMouvement; // "ENTREE" ou "SORTIE"
@@ -30,6 +36,8 @@ public class MouvementStock {
 
     @PrePersist
     protected void onCreate() {
-        dateMouvement = LocalDateTime.now();
+        if (dateMouvement == null) {
+            dateMouvement = LocalDateTime.now();
+        }
     }
 }
