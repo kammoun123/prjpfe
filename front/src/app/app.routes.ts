@@ -9,8 +9,6 @@ import { ProductManagementComponent } from './admin/products/product-management.
 import { MouvementManagementComponent } from './admin/stock-movements/mouvement-management.component';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
-import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { authGuard } from './guards/auth.guard';
 import { ControleurDashboardComponent } from './controleur/controleur-dashboard.component';
 import { UserManagementComponent } from './admin/users/user-management.component';
@@ -33,8 +31,6 @@ import { SettingsComponent } from './admin/settings/settings.component';
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
-    { path: 'forgot-password', component: ForgotPasswordComponent },
-    { path: 'reset-password', component: ResetPasswordComponent },
 
     {
         path: 'admin',
