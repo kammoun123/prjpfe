@@ -26,6 +26,10 @@ export class ProductManagementComponent implements OnInit {
     success: string = '';
     error: string = '';
 
+    // QR Code
+    showQRCodeModal: boolean = false;
+    selectedPieceForQR: Produit | null = null;
+
     // Photo
     selectedFile: File | null = null;
     photoPreview: string | null = null;
@@ -66,8 +70,8 @@ export class ProductManagementComponent implements OnInit {
     get filteredProduits() {
         return this.produits.filter(p => {
             const matchSearch =
-                p.designation.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                p.reference.toLowerCase().includes(this.searchTerm.toLowerCase());
+                (p.designation || '').toLowerCase().includes((this.searchTerm || '').toLowerCase()) ||
+                (p.reference || '').toLowerCase().includes((this.searchTerm || '').toLowerCase());
             const matchCat =
                 this.selectedCategory == null || p.idCategorie === +this.selectedCategory;
             return matchSearch && matchCat;
@@ -105,7 +109,6 @@ export class ProductManagementComponent implements OnInit {
     }
 
     onCategoryChange() {
-        if (this.formMode !== 'add') return;
 
         const selectedCat = this.categories.find(
             c => c.idCategorie != null && c.idCategorie === +(this.currentProduit.idCategorie ?? 0)
@@ -121,7 +124,7 @@ export class ProductManagementComponent implements OnInit {
             .substring(0, 3)
             .toUpperCase();
 
-        // Find all existing references matching this prefix (e.g. MEC-xxx)
+        // ADD mode: generate the next sequential number for this prefix
         const pattern = new RegExp(`^${prefix}-(\\d+)$`);
         const existingNumbers = this.produits
             .map(p => {
@@ -173,14 +176,21 @@ export class ProductManagementComponent implements OnInit {
     }
 
     savePiece() {
-        if (this.currentProduit.quantiteStock < 0) {
+        if (!this.currentProduit.designation || !this.currentProduit.reference || this.currentProduit.idCategorie == null) {
+            this.error = 'Veuillez remplir tous les champs obligatoires';
+            return;
+        }
+
+        if (this.currentProduit.quantiteStock == null || this.currentProduit.quantiteStock < 0) {
             this.error = 'La quantité en stock ne peut pas être négative';
             return;
         }
-        if (this.currentProduit.seuilAlerte < 0) {
-            this.error = 'Le seuil d\'alerte ne peut pas être négatif';
+
+        if (this.currentProduit.seuilAlerte == null || this.currentProduit.seuilAlerte < 1) {
+            this.error = 'Le seuil d\'alerte doit être au minimum 1';
             return;
         }
+
         this.loading = true;
         if (this.formMode === 'add') {
             this.produitService.createProduit(this.currentProduit).subscribe({
@@ -201,11 +211,11 @@ export class ProductManagementComponent implements OnInit {
                 next: (updated) => {
                     if (this.selectedFile) {
                         this.produitService.uploadPhoto(updated.idProduit!, this.selectedFile).subscribe({
-                            next: () => { 
-                                this.uploadFicheIfSelected(updated.idProduit!, 'Produit modifié avec succès !'); 
+                            next: () => {
+                                this.uploadFicheIfSelected(updated.idProduit!, 'Produit modifié avec succès !');
                             },
-                            error: () => { 
-                                this.uploadFicheIfSelected(updated.idProduit!, 'Produit modifié (erreur photo)'); 
+                            error: () => {
+                                this.uploadFicheIfSelected(updated.idProduit!, 'Produit modifié (erreur photo)');
                             }
                         });
                     } else {
@@ -241,8 +251,13 @@ export class ProductManagementComponent implements OnInit {
 
     deletePiece(id: number | undefined) {
         if (!id) return;
+        const numericId = Number(id);
+        if (isNaN(numericId) || numericId <= 0) {
+            this.error = 'Identifiant produit invalide';
+            return;
+        }
         if (confirm('Supprimer ce produit ?')) {
-            this.produitService.deleteProduit(id).subscribe({
+            this.produitService.deleteProduit(numericId).subscribe({
                 next: () => {
                     this.success = 'Produit supprimé';
                     this.fetchData();
@@ -250,6 +265,52 @@ export class ProductManagementComponent implements OnInit {
                 },
                 error: () => this.error = 'Erreur lors de la suppression'
             });
+        }
+    }
+
+    openQRCode(piece: Produit) {
+        this.selectedPieceForQR = piece;
+        this.showQRCodeModal = true;
+    }
+
+    closeQRCodeModal() {
+        this.showQRCodeModal = false;
+        this.selectedPieceForQR = null;
+    }
+
+    printQR() {
+        const printContent = document.getElementById('qr-print-section');
+        if (!printContent) return;
+
+        const windowUrl = '';
+        const uniqueName = new Date();
+        const windowName = 'Print' + uniqueName.getTime();
+        const printWindow = window.open(windowUrl, windowName, 'left=500,top=500,width=900,height=900');
+
+        if (printWindow) {
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Imprimer Code QR - ${this.selectedPieceForQR?.reference}</title>
+                        <style>
+                            body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                            .qr-container { border: 2px solid #333; padding: 20px; border-radius: 10px; text-align: center; }
+                            img { max-width: 300px; }
+                            h2 { margin-top: 20px; color: #333; }
+                            p { color: #666; font-size: 1.2rem; }
+                        </style>
+                    </head>
+                    <body onload="window.print();window.close()">
+                        <div class="qr-container">
+                            <img src="data:image/png;base64,${this.selectedPieceForQR?.qrCode}" />
+                            <h2>${this.selectedPieceForQR?.designation}</h2>
+                            <p>REF: ${this.selectedPieceForQR?.reference}</p>
+                        </div>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
         }
     }
 }

@@ -23,33 +23,49 @@
       <h2>Nouvelle Demande</h2>
     </div>
     <form (ngSubmit)="submit()" class="quick-form-pro">
-      <div class="form-grid-pro single-column">
-        <div class="form-group-pro">
-          <label>Sélectionner la Pièce</label>
-          <div class="input-icon-group">
-            <i class="bi bi-box-seam"></i>
-            <select [(ngModel)]="selectedPieceId" name="piece" required>
-              <option [ngValue]="null" disabled selected>Sélectionner une pièce...</option>
-              <option *ngFor="let p of pieces()" [ngValue]="p.idProduit">{{ p.designation }} (Ref: {{ p.reference }})</option>
-            </select>
+      <div class="form-grid-pro single-column position-relative">
+        <div *ngFor="let ligne of lignes; let i = index; let last = last"
+          class="p-3 mb-3 border rounded-3 position-relative" style="background: rgba(255,255,255,0.4);">
+          <button *ngIf="lignes.length > 1" type="button" class="btn btn-sm btn-outline-danger position-absolute"
+            style="top: 10px; right: 10px;" (click)="removeLine(i)" title="Retirer cette ligne">
+            <i class="bi bi-x-lg"></i>
+          </button>
+
+          <div class="form-group-pro mb-3">
+            <label>Pièce #{{i + 1}}</label>
+            <div class="input-icon-group">
+              <i class="bi bi-box-seam"></i>
+              <select [(ngModel)]="ligne.produitId" [name]="'piece_' + i" required>
+                <option [ngValue]="null" disabled selected>Sélectionner une pièce...</option>
+                <option *ngFor="let p of pieces()" [ngValue]="p.idProduit">{{ p.designation }} (Ref: {{ p.reference }})
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group-pro mb-0">
+            <label>Quantité Souhaitée</label>
+            <div class="qty-input-pro">
+              <button type="button" (click)="ligne.quantite = ligne.quantite > 0 ? ligne.quantite - 1 : 0">
+                <i class="bi bi-dash"></i>
+              </button>
+              <input type="number" [(ngModel)]="ligne.quantite" [name]="'qty_' + i" required placeholder="0">
+              <button type="button" (click)="ligne.quantite = ligne.quantite + 1">
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="form-group-pro">
-          <label>Quantité Souhaitée</label>
-          <div class="qty-input-pro">
-            <button type="button" (click)="quantity = quantity > 0 ? quantity - 1 : 0">
-              <i class="bi bi-dash"></i>
-            </button>
-            <input type="number" [(ngModel)]="quantity" name="qty" required placeholder="0">
-            <button type="button" (click)="quantity = quantity + 1">
-              <i class="bi bi-plus"></i>
-            </button>
-          </div>
+        <div class="d-flex justify-content-center mb-4 mt-2">
+          <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm fw-bold"
+            (click)="addLine()">
+            <i class="bi bi-plus-circle me-1"></i> Ajouter une autre pièce
+          </button>
         </div>
 
-        <div class="form-actions-pro mt-4">
-          <button type="submit" class="btn-submit-pro" [disabled]="sending() || !selectedPieceId || quantity <= 0">
+        <div class="form-actions-pro mt-2">
+          <button type="submit" class="btn-submit-pro" [disabled]="sending() || !isFormValid">
             <i class="bi bi-send-fill" *ngIf="!sending()"></i>
             <span class="loader" *ngIf="sending()"></span>
             <span>{{ sending() ? 'Envoi...' : 'Envoyer la Demande' }}</span>
@@ -68,7 +84,7 @@
       </div>
       <div class="filter-tools">
         <button class="btn-tool" (click)="showFilters.set(!showFilters())" [class.active]="showFilters()">
-          <i class="bi bi-filter"></i> 
+          <i class="bi bi-filter"></i>
           {{ showFilters() ? 'Masquer' : 'Filtrer' }}
         </button>
         <button class="btn-tool" (click)="loadHistory()"><i class="bi bi-arrow-clockwise"></i></button>
@@ -82,7 +98,8 @@
           <label>Recherche par Pièce</label>
           <div class="search-wrapper">
             <i class="bi bi-search"></i>
-            <input type="text" [ngModel]="searchPiece()" (ngModelChange)="searchPiece.set($event)" placeholder="Nom de la pièce...">
+            <input type="text" [ngModel]="searchPiece()" (ngModelChange)="searchPiece.set($event)"
+              placeholder="Nom de la pièce...">
           </div>
         </div>
         <div class="filter-group-pro">
@@ -111,9 +128,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let d of filteredHistory(); let i = index" 
-              class="table-row-animate" 
-              [style.animation-delay]="i * 0.05 + 's'">
+          <tr *ngFor="let d of filteredHistory(); let i = index" class="table-row-animate"
+            [style.animation-delay]="i * 0.05 + 's'">
             <td>
               <div class="timestamp">
                 <span class="date">{{ d.date | date:'dd MMM yyyy' }}</span>
@@ -143,7 +159,7 @@
           <tr *ngIf="filteredHistory().length === 0">
             <td colspan="4">
               <div class="empty-state">
-                <img src="https://img.icons8.com/bubbles/200/empty-box.png" alt="Empty list">
+                <i class="bi bi-box-seam" style="font-size: 5rem; color: #a0aec0; margin-bottom: 1rem; display: inline-block;"></i>
                 <h3>Aucun résultat</h3>
                 <p>Ajustez vos filtres pour voir vos demandes.</p>
               </div>

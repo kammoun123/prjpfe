@@ -10,11 +10,14 @@ import { AuthService } from '../Services/auth.service';
 import { ToastService } from '../Services/toast.service';
 import { ActivatedRoute } from '@angular/router';
 
-declare var jspdf: any;
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 interface AuditItem extends Produit {
   quantiteReelle: number;
   ecart: number;
+  observation?: string;
 }
 
 interface RapportAudit {
@@ -178,8 +181,9 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
   }
 
   markAsRead(notif: any) {
-    if (notif.idNotification && notif.statut === 'NON_LUE') {
-      this.notificationService.markAsRead(notif.idNotification).subscribe(() => {
+    const notifId = notif.id || notif.idNotification;
+    if (notifId && notif.statut === 'NON_LUE') {
+      this.notificationService.markAsRead(notifId).subscribe(() => {
         this.notificationService.fetchNotificationsForRole('CONTROLEUR').subscribe();
       });
     }
@@ -259,7 +263,8 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
       this.piecesReport = data.map(p => ({
         ...p,
         quantiteReelle: p.quantiteStock,
-        ecart: 0
+        ecart: 0,
+        observation: ''
       }));
       this.isViewing = false;
       this.showReportModal = true;
@@ -291,7 +296,8 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
           quantite_reelle: p.quantiteReelle,
           quantitePhysique: p.quantiteReelle,
           quantite_physique: p.quantiteReelle,
-          ecart: p.ecart
+          ecart: p.ecart,
+          observation: p.observation
         }))
       };
 
@@ -324,34 +330,78 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
 
   exporterEnPDF() {
     try {
-      const GlobalJsPDF = (window as any).jspdf?.jsPDF || (window as any).jsPDF;
-      if (!GlobalJsPDF) {
-        this.toastService.show("Bibliothèque PDF non chargée.", "error");
-        return;
-      }
+      const doc = new jsPDF();
+      const now = new Date();
+      const dateStr = now.toLocaleString();
+      const reportId = `AUD-${now.getTime()}`;
 
-      const doc = new GlobalJsPDF();
-      doc.setFontSize(22);
-      doc.text("RAPPORT D'AUDIT G-PIÈCES", 20, 20);
+      // --- HEADER ---
+      doc.setFillColor(13, 148, 136); // Teal primary color
+      doc.rect(0, 0, 210, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(24);
+      doc.text("G-PIÈCES", 20, 20);
+      
       doc.setFontSize(14);
-      doc.text(`Date: ${new Date().toLocaleString()}`, 20, 30);
-      doc.text(`Contrôleur: ${this.profil?.nom || ''} ${this.profil?.prenom || ''}`, 20, 40);
-
-      let y = 60;
+      doc.setFont('helvetica', 'normal');
+      doc.text("RAPPORT D'AUDIT DE STOCK", 20, 30);
+      
       doc.setFontSize(10);
-      doc.text("REFERENCE | DESIGNATION | SYSTEME | REEL | ECART", 20, y);
-      doc.line(20, y + 2, 190, y + 2);
+      doc.text(`ID Rapport: #${reportId}`, 150, 20);
+      doc.text(`Généré le: ${dateStr}`, 150, 28);
 
-      this.piecesReport.forEach(p => {
-        y += 10;
-        if (y > 270) { doc.addPage(); y = 20; }
-        doc.text(`${p.reference} | ${p.designation.substring(0, 20)} | ${p.quantiteStock} | ${p.quantiteReelle} | ${p.ecart}`, 20, y);
+      // --- INFO SECTION ---
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Informations Générales", 20, 55);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(`Contrôleur : ${this.profil?.nom || ''} ${this.profil?.prenom || ''}`, 20, 65);
+      doc.text(`Email : ${this.profil?.email || ''}`, 20, 72);
+      doc.text(`Nombre d'articles : ${this.piecesReport.length}`, 140, 65);
+      
+      const conforme = this.piecesReport.every(p => p.ecart === 0);
+      doc.setTextColor(conforme ? 22 : 220, conforme ? 163 : 38, conforme ? 74 : 38);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`État Global : ${conforme ? 'CONFORME' : 'ANOMALIES DÉTECTÉES'}`, 140, 72);
+
+      // --- TABLE ---
+      autoTable(doc, {
+        startY: 85,
+        head: [['RÉFÉRENCE', 'DÉSIGNATION', 'SYSTÈME', 'RÉEL', 'ÉCART', 'OBSERVATION']],
+        body: this.piecesReport.map(p => [
+          p.reference,
+          p.designation,
+          p.quantiteStock.toString(),
+          p.quantiteReelle.toString(),
+          { content: (p.ecart > 0 ? '+' : '') + p.ecart, styles: { fontStyle: 'bold', textColor: p.ecart === 0 ? [30, 41, 59] : (p.ecart > 0 ? [22, 163, 74] : [220, 38, 38]) } },
+          p.observation || (p.ecart === 0 ? 'Conforme' : 'Anomalie')
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [13, 148, 136], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        margin: { top: 20 },
+        styles: { fontSize: 9, cellPadding: 4 }
       });
 
-      doc.save(`Rapport_Audit_${Date.now()}.pdf`);
-      this.toastService.show("PDF généré avec succès !");
+      // --- FOOTER ---
+      const pageCount = (doc as any).internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`Document généré automatiquement par G-PIÈCES - Page ${i} / ${pageCount}`, 105, 285, { align: 'center' });
+      }
+
+      doc.save(`G-Pieces_Audit_${reportId}.pdf`);
+      this.toastService.show("Rapport PDF généré avec succès !", "success");
     } catch (err) {
-      this.toastService.show("Erreur PDF.", "error");
+      console.error("Erreur PDF:", err);
+      this.toastService.show("Erreur lors de la génération du PDF.", "error");
     }
   }
 
@@ -374,7 +424,8 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
         quantite_reelle: p.quantiteReelle,
         quantitePhysique: p.quantiteReelle,
         quantite_physique: p.quantiteReelle,
-        ecart: p.ecart
+        ecart: p.ecart,
+        observation: p.observation
       }))
     };
 
@@ -418,7 +469,7 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
         ecart: 0
       }));
 
-      if (id) {
+      if (id !== undefined) {
         this.inventaireService.updateInventaire(id, { lignes: lignes } as any).subscribe(() => {
           this.broadcastNotification(`${msg} (ID: #${id})`, this.alertCount > 0 ? 'warning' : 'AUDIT_REPORT');
           this.loadInventaires(); // Refresh local list

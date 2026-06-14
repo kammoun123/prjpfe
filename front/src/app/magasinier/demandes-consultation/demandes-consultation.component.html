@@ -12,34 +12,37 @@
   <!-- Main Card -->
   <div class="demandes-card">
     <div class="card-header">
-       <div class="title-with-icon">
-          <i class="bi class-icon" [ngClass]="activeTab() === 'attente' ? 'bi-inbox text-warning' : 'bi-archive text-secondary'"></i>
-          <h3>{{ activeTab() === 'attente' ? 'Demandes en attente' : 'Historique des demandes' }}</h3>
-       </div>
+      <div class="title-with-icon">
+        <i class="bi class-icon"
+          [ngClass]="activeTab() === 'attente' ? 'bi-inbox text-warning' : 'bi-archive text-secondary'"></i>
+        <h3>{{ activeTab() === 'attente' ? 'Demandes en attente' : 'Historique des demandes' }}</h3>
+      </div>
     </div>
 
     <!-- NEW FILTER BAR -->
     <div class="demande-filters">
-       <div class="filter-group">
-          <label>DU (DÉBUT)</label>
-          <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)">
-       </div>
-       <div class="filter-group">
-          <label>AU (FIN)</label>
-          <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)">
-       </div>
-       <div class="filter-group-wide">
-          <label>PIÈCE / PRODUIT</label>
-          <div class="search-wrapper">
-             <i class="bi bi-search"></i>
-             <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" placeholder="Rechercher une pièce...">
-          </div>
-       </div>
-       <div class="filter-actions">
-          <button class="btn-reset" (click)="startDate.set(''); endDate.set(''); searchTerm.set('')" title="Réinitialiser">
-             <i class="bi bi-x-circle"></i>
-          </button>
-       </div>
+      <div class="filter-group">
+        <label>DU (DÉBUT)</label>
+        <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)">
+      </div>
+      <div class="filter-group">
+        <label>AU (FIN)</label>
+        <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)">
+      </div>
+      <div class="filter-group-wide">
+        <label>PIÈCE / PRODUIT</label>
+        <div class="search-wrapper">
+          <i class="bi bi-search"></i>
+          <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+            placeholder="Rechercher une pièce...">
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-reset" (click)="startDate.set(''); endDate.set(''); searchTerm.set('')"
+          title="Réinitialiser">
+          <i class="bi bi-x-circle"></i>
+        </button>
+      </div>
     </div>
 
     <div class="table-responsive">
@@ -54,34 +57,50 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let d of filteredDemandes()">
-            <td class="date-col">{{ d.dateDemande | date:'MMM d, yyyy' }}</td>
-            <td class="piece-col">{{ getPieceName(d.produitId) || d.produit?.designation || 'Pièce Inconnue' }}</td>
-            <td class="text-center">
-               <span class="qty-badge">{{ $any(d).quantiteDemandee || $any(d).quantite }}</span>
+          <tr *ngFor="let row of filteredDemandes()" class="align-middle">
+            <td class="date-col">{{ row.demande.dateDemande | date:'MMM d, yyyy' }}</td>
+            <td class="piece-col">
+              <div *ngIf="row.pieces.length > 0; else noPiece">
+                <div *ngFor="let piece of row.pieces"
+                  class="d-inline-flex align-items-center mb-1 me-2 border rounded px-2 py-1 bg-light">
+                  <span class="text-dark fw-medium me-2">{{ piece.name }}</span>
+                  <span class="badge bg-secondary me-2">Qté: {{ piece.quantite }}</span>
+                  <span *ngIf="piece.observation" class="small text-muted fst-italic">({{ piece.observation }})</span>
+                </div>
+              </div>
+              <ng-template #noPiece>
+                <span class="badge bg-light text-dark">Aucune pièce</span>
+              </ng-template>
+            </td>
+            <td class="text-center fw-bold">
+              <span class="qty-badge" *ngIf="row.totalQuantite > 0">{{ row.totalQuantite }}</span>
+              <span class="text-muted" *ngIf="row.totalQuantite === 0">-</span>
             </td>
             <td class="text-center motif-col">
-               {{ $any(d).motif || 'Aucun motif' }}
+              {{ row.motif || 'Aucun motif' }}
             </td>
-            
+
             <td class="text-center">
               <!-- Actions for Pending -->
               <div class="action-buttons" *ngIf="activeTab() === 'attente'">
-                <button class="btn-icon btn-approve" (click)="validerDemande($any(d), 'VALIDATED')" title="Valider">
+                <button class="btn-icon btn-approve" (click)="validerDemande($any(row.demande), 'VALIDATED')"
+                  title="Valider">
                   <i class="bi bi-check2"></i>
                 </button>
-                <button class="btn-icon btn-forward" (click)="transfererAdmin($any(d))" title="Transférer à l'Admin">
+                <button class="btn-icon btn-forward" (click)="transfererAdmin($any(row.demande))"
+                  title="Transférer à l'Admin">
                   <i class="bi bi-send-fill" style="transform: rotate(45deg); font-size: 0.9rem;"></i>
                 </button>
-                <button class="btn-icon btn-reject" (click)="validerDemande($any(d), 'Refusé')" title="Refuser">
+                <button class="btn-icon btn-reject" (click)="validerDemande($any(row.demande), 'Refusé')"
+                  title="Refuser">
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
               <!-- Status Pill for History -->
               <div *ngIf="activeTab() === 'historique'">
-                <span class="status-pill" [ngClass]="getStatusClass(d.statut)">
-                  <i [class]="getStatusIcon(d.statut)"></i>
-                  {{ formatStatut(d.statut) }}
+                <span class="status-pill" [ngClass]="getStatusClass(row.demande.statut)">
+                  <i [class]="getStatusIcon(row.demande.statut)"></i>
+                  {{ formatStatut(row.demande.statut) }}
                 </span>
               </div>
             </td>
@@ -92,9 +111,10 @@
             <td colspan="5">
               <div class="empty-state-wrapper">
                 <div class="check-marks">
-                   <i class="bi bi-check2"></i><i class="bi bi-check2 double-check"></i>
+                  <i class="bi bi-check2"></i><i class="bi bi-check2 double-check"></i>
                 </div>
-                <p>{{ activeTab() === 'attente' ? 'Aucune demande en attente. Tout est à jour !' : 'Aucun historique disponible.' }}</p>
+                <p>{{ activeTab() === 'attente' ? 'Aucune demande en attente. Tout est à jour !' : 'Aucun historique
+                  disponible.' }}</p>
               </div>
             </td>
           </tr>

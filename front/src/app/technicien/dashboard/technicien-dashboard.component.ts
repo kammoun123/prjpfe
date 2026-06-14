@@ -6,6 +6,17 @@ import { DemandePieceService } from '../../Services/demande-piece.service';
 import { Produit as Piece } from '../../models/produit.model';
 import { ToastService } from '../../Services/toast.service';
 
+// Interface pour les lignes du tableau (une ligne par pièce)
+interface DemandeLigneRow {
+  demande: DemandeProduit;
+  pieceName: string;
+  quantite: number;
+  motif: string;
+  dateCommande: Date | undefined;
+  statut: string;
+  idDemande: number;
+}
+
 @Component({
   selector: 'app-technicien-dashboard',
   standalone: true,
@@ -15,8 +26,10 @@ import { ToastService } from '../../Services/toast.service';
 })
 export class TechnicienDashboardComponent implements OnInit {
     demandes: DemandeProduit[] = [];
-    filteredDemandes: DemandeProduit[] = [];
+    filteredDemandes: DemandeLigneRow[] = [];
     allPieces: Piece[] = [];
+    selectedDemande: DemandeProduit | null = null;
+    showDetailsModal = false;
     searchTerm = '';
     filterStatut = 'All';
     filterDate = '';
@@ -117,34 +130,86 @@ export class TechnicienDashboardComponent implements OnInit {
     }
 
     getPieceReference(demande: DemandeProduit): string {
-        if (demande.produit && demande.produit.designation) {
-            return demande.produit.designation;
-        }
+        if (!demande.lignes || demande.lignes.length === 0) return '-';
         
-        const pieceId = demande.produitId;
-        if (!pieceId) return '-';
+        // Get all piece references from lignes
+        const references = demande.lignes.map(ligne => {
+            if (ligne.produit && ligne.produit.designation) {
+                return ligne.produit.designation;
+            }
+            const pieceId = ligne.produitId;
+            if (!pieceId) return '-';
+            const piece = this.allPieces.find(p => p.idProduit === pieceId);
+            return piece ? piece.designation : `Pièce ID #${pieceId}`;
+        }).filter(ref => ref !== '-');
         
-        const piece = this.allPieces.find(p => p.idProduit === pieceId);
-        return piece ? piece.designation : `Pièce ID #${pieceId}`;
+        return references.length > 0 ? references.join(', ') : '-';
+    }
+
+    getTotalQuantite(demande: DemandeProduit): number {
+        if (!demande.lignes || demande.lignes.length === 0) return 0;
+        return demande.lignes.reduce((sum, ligne) => sum + (ligne.quantite || 0), 0);
+    }
+
+    getFirstMotif(demande: DemandeProduit): string {
+        if (!demande.lignes || demande.lignes.length === 0) return '';
+        return demande.lignes[0].motif || '';
     }
 
     applyFilter(): void {
-        this.filteredDemandes = this.demandes.filter(d => {
-            const pieceRef = this.getPieceReference(d).toLowerCase();
-            const motifStr = (d.motif || '').toLowerCase();
-            
-            const matchesSearch = motifStr.includes(this.searchTerm.toLowerCase()) ||
-                pieceRef.includes(this.searchTerm.toLowerCase());
+        // Créer un tableau "flattened" : une ligne pour chaque pièce
+        const flattenedRows: DemandeLigneRow[] = [];
 
-            const matchesStatus = this.filterStatut === 'All' || d.statut === this.filterStatut;
+        this.demandes.forEach(d => {
+            if (!d.lignes || d.lignes.length === 0) {
+                // Si pas de lignes, créer une ligne vide
+                flattenedRows.push({
+                    demande: d,
+                    pieceName: '-',
+                    quantite: 0,
+                    motif: '',
+                    dateCommande: d.dateDemande,
+                    statut: d.statut,
+                    idDemande: d.id || 0
+                });
+            } else {
+                // Une ligne pour chaque pièce
+                d.lignes.forEach(ligne => {
+                    const pieceName = ligne.produit?.designation || 
+                        this.allPieces.find(p => p.idProduit === ligne.produitId)?.designation || 
+                        `Pièce ID #${ligne.produitId}`;
+                    
+                    flattenedRows.push({
+                        demande: d,
+                        pieceName: pieceName,
+                        quantite: ligne.quantite || 0,
+                        motif: ligne.motif || '',
+                        dateCommande: d.dateDemande,
+                        statut: d.statut,
+                        idDemande: d.id || 0
+                    });
+                });
+            }
+        });
+
+        // Appliquer les filtres
+        this.filteredDemandes = flattenedRows.filter(row => {
+            const matchesSearch = row.pieceName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                                 row.motif.toLowerCase().includes(this.searchTerm.toLowerCase());
+
+            const matchesStatus = this.filterStatut === 'All' || row.statut === this.filterStatut;
 
             let matchesDate = true;
-            if (this.filterDate && d.dateDemande) {
-                const dDate = new Date(d.dateDemande).toISOString().split('T')[0];
+            if (this.filterDate && row.dateCommande) {
+                const dDate = new Date(row.dateCommande).toISOString().split('T')[0];
                 matchesDate = dDate === this.filterDate;
             }
 
             return matchesSearch && matchesStatus && matchesDate;
+        }).sort((a, b) => {
+            const dateA = a.dateCommande ? new Date(a.dateCommande).getTime() : 0;
+            const dateB = b.dateCommande ? new Date(b.dateCommande).getTime() : 0;
+            return dateB - dateA;
         });
     }
 
@@ -174,6 +239,20 @@ export class TechnicienDashboardComponent implements OnInit {
                 this.toastService.show('Erreur lors de la suppression', 'error');
             }
         });
+    }
+
+    openDetails(demande: DemandeProduit): void {
+        this.selectedDemande = demande;
+        this.showDetailsModal = true;
+    }
+
+    closeDetailsModal(): void {
+        this.showDetailsModal = false;
+        this.selectedDemande = null;
+    }
+
+    getPieceName(pieceName: string): string {
+        return pieceName || 'Pièce Inconnue';
     }
 
     formatStatut(statut: string | undefined): string {

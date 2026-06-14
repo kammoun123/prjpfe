@@ -32,6 +32,9 @@ import { Notification } from '../../models/notification.model';
             <a routerLink="/magasinier/stock" routerLinkActive="active" class="nav-link">
               <i class="bi bi-search"></i> <span>Consultation Stock</span>
             </a>
+            <a routerLink="/magasinier/mouvements" routerLinkActive="active" class="nav-link">
+              <i class="bi bi-arrow-down-up"></i> <span>Mouvements Stock</span>
+            </a>
             <a routerLink="/magasinier/audit" routerLinkActive="active" class="nav-link">
               <i class="bi bi-file-earmark-text"></i> <span>Rapports d'Audit</span>
             </a>
@@ -106,14 +109,7 @@ import { Notification } from '../../models/notification.model';
                </div>
             </div>
 
-            <div class="action-btn">
-               <i class="bi bi-question-circle"></i>
-            </div>
-            <div class="user-initial-circle">K</div>
-            <button class="btn-gestion-pro">
-              <i class="bi bi-gear-fill"></i>
-              <span>Gestion Pro</span>
-            </button>
+
           </div>
         </header>
 

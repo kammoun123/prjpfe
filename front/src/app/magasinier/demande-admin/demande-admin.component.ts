@@ -20,14 +20,30 @@ export class DemandeAdminComponent implements OnInit {
   private demandeService = inject(DemandeProduitService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
-  
+
   pieces = signal<Produit[]>([]);
   sending = signal(false);
   showFilters = signal(false);
-  
+
   selectedPieceId: number | null = null;
   quantity: number = 0;
-  
+
+  lignes: { produitId: number | null, quantite: number }[] = [{ produitId: null, quantite: 0 }];
+
+  get isFormValid(): boolean {
+    return this.lignes.some(l => l.produitId && l.quantite > 0);
+  }
+
+  addLine() {
+    this.lignes.push({ produitId: null, quantite: 0 });
+  }
+
+  removeLine(index: number) {
+    if (this.lignes.length > 1) {
+      this.lignes.splice(index, 1);
+    }
+  }
+
   historique = signal<any[]>([]);
 
   // Filtering Signals
@@ -60,13 +76,29 @@ export class DemandeAdminComponent implements OnInit {
 
   loadHistory() {
     this.demandeService.getDemandes().subscribe(data => {
-      const mapped = data.map(d => ({
-        id: d.id,
-        date: d.dateDemande,
-        piece: d.produit ? d.produit.designation : 'Pièce Inconnue',
-        quantite: d.quantite,
-        statut: d.statut
-      }));
+      const mapped: any[] = [];
+      data.forEach(d => {
+        if (d.lignes && d.lignes.length > 0) {
+          d.lignes.forEach(l => {
+            const pieceName = (l.produit && l.produit.designation) ? l.produit.designation : ('Pièce #' + l.produitId);
+            mapped.push({
+              id: d.id,
+              date: d.dateDemande,
+              piece: pieceName,
+              quantite: l.quantite || 0,
+              statut: d.statut
+            });
+          });
+        } else {
+          mapped.push({
+            id: d.id,
+            date: d.dateDemande,
+            piece: 'Demande vide',
+            quantite: 0,
+            statut: d.statut
+          });
+        }
+      });
 
       // Sort by date descending (newest first)
       mapped.sort((a, b) => {
@@ -80,26 +112,30 @@ export class DemandeAdminComponent implements OnInit {
   }
 
   submit() {
-    if (!this.selectedPieceId || this.quantity <= 0) return;
-    
+    const validLines = this.lignes.filter(l => l.produitId && l.quantite > 0);
+    if (validLines.length === 0) return;
+
     this.sending.set(true);
     const currentUser = this.authService.getCurrentUser();
-    
+
+    // Create demand with multiple lignes
     const demande: DemandeProduit = {
-      produitId: Number(this.selectedPieceId),
-      quantite: this.quantity,
       statut: 'EN_ATTENTE',
-      motif: 'Demande d\'achat Magasinier',
       technicienId: currentUser?.idUtilisateur || 0,
-      dateDemande: new Date()
+      dateDemande: new Date(),
+      lignes: validLines.map(l => ({
+        produitId: Number(l.produitId),
+        quantite: l.quantite,
+        motif: 'Demande d\'achat Magasinier',
+        statut: 'EN_ATTENTE'
+      })) as any
     };
 
     this.demandeService.createDemande(demande).subscribe({
       next: (res) => {
         this.toastService.show('Demande envoyée avec succès !', 'success');
         this.loadHistory();
-        this.selectedPieceId = null;
-        this.quantity = 0;
+        this.lignes = [{ produitId: null, quantite: 0 }];
         this.sending.set(false);
       },
       error: (err) => {

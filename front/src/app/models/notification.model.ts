@@ -1,5 +1,6 @@
 export interface Notification {
-    idNotification?: number;
+    id?: number;            // backend returns 'id'
+    idNotification?: number; // alias kept for compatibility
     titre?: string;
     produitId: number;
     message: string;

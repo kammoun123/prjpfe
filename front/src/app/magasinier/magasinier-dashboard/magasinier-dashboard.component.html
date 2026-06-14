@@ -10,7 +10,7 @@
       <div class="stat-main">
         <div class="stat-info">
           <span class="stat-label">TOTAL STOCK</span>
-          <h2 class="stat-number">{{ totalStock() }} <span class="unit">unités</span></h2>
+          <h2 class="stat-number">{{ totalStock() }} <span class="unit">références</span></h2>
         </div>
         <div class="stat-icon green-bg">
           <i class="bi bi-box-seam"></i>
@@ -58,16 +58,17 @@
   <!-- Activity Section -->
   <section class="activity-section">
     <div class="section-header">
-       <div class="title-with-subtitle">
-         <h3>Tendances d'Activité</h3>
-         <p>Évolution des demandes sur les 7 derniers jours</p>
-       </div>
-       <div class="toggle-buttons">
-          <button (click)="switchPeriod('Hebdomadaire')" [class.active]="currentPeriod() === 'Hebdomadaire'">Hebdomadaire</button>
-          <button (click)="switchPeriod('Mensuel')" [class.active]="currentPeriod() === 'Mensuel'">Mensuel</button>
-       </div>
+      <div class="title-with-subtitle">
+        <h3>Tendances d'Activité</h3>
+        <p>Évolution des demandes sur les 7 derniers jours</p>
+      </div>
+      <div class="toggle-buttons">
+        <button (click)="switchPeriod('Hebdomadaire')"
+          [class.active]="currentPeriod() === 'Hebdomadaire'">Hebdomadaire</button>
+        <button (click)="switchPeriod('Mensuel')" [class.active]="currentPeriod() === 'Mensuel'">Mensuel</button>
+      </div>
     </div>
-    
+
     <div class="chart-container">
       <div class="bar-chart">
         <div class="bar-wrapper" *ngFor="let day of activityData()">

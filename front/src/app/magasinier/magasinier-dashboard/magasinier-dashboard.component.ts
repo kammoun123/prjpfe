@@ -44,7 +44,7 @@ export class MagasinierDashboardComponent implements OnInit {
   ngOnInit() {
     this.activityData.set(this.weekData);
     this.pieceService.getPieces().subscribe(pieces => {
-      this.totalStock.set(pieces.reduce((acc, p) => acc + p.quantiteStock, 0));
+      this.totalStock.set(pieces.length);
       this.criticalStock.set(pieces.filter(p => p.quantiteStock <= (p.seuilAlerte || 5)).slice(0, 5));
     });
 
