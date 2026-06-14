@@ -5,196 +5,296 @@
         <i class="bi bi-clipboard-check-fill"></i>
       </div>
       <div class="header-text">
-        <h1>Gestion des Demandes</h1>
-        <p>Validez ou refusez les demandes d'achat et de réapprovisionnement.</p>
+        <h1>Gestion des Opérations</h1>
+        <p>Suivi complet : Demandes, Commandes et Réceptions.</p>
       </div>
     </div>
-    <div class="header-actions">
-      <button class="btn-refresh" (click)="loadDemandes()">
-        <i class="bi bi-arrow-clockwise"></i> Actualiser
+    <div class="header-actions" style="display: flex; gap: 12px; align-items: center;">
+      <button class="btn-new-order" (click)="openDirectOrderModal()">
+        <i class="bi bi-cart-plus flex-shrink-0"></i> Nouvelle Commande
+      </button>
+      <button class="btn-refresh" (click)="loadDemandes(); loadActiveOrders()">
+        <i class="bi bi-arrow-clockwise flex-shrink-0"></i> Actualiser
       </button>
     </div>
   </header>
 
-  <!-- Filter/Tabs Section -->
+  <!-- Navigation Tabs -->
   <div class="admin-tabs">
     <button class="tab-btn" [class.active]="activeTab === 'pending'" (click)="activeTab = 'pending'">
-      En attente <span class="badge" *ngIf="pendingCount() > 0">{{ pendingCount() }}</span>
+      À Commander (Demandes) <span class="badge" *ngIf="pendingCount() > 0">{{ pendingCount() }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'orders'" (click)="activeTab = 'orders'">
+      Commandes en cours <span class="badge bg-blue" *ngIf="activeOrdersCount() > 0">{{ activeOrdersCount() }}</span>
     </button>
     <button class="tab-btn" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">
       Historique Récent
     </button>
   </div>
 
-  <!-- Main Content Card -->
+  <!-- FILTER BAR -->
+  <div class="filter-bar animate-slide-down"
+    style="padding: 1rem; margin-bottom: 1rem; background: var(--bg-card, #fff); border-radius: 8px; display: flex; gap: 1rem; align-items: flex-end; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <div class="filter-group" style="flex-grow: 1;">
+      <label style="font-size: 0.8rem; font-weight: 600; color: #6c757d; margin-bottom: 4px; display: block;">Rechercher
+        un produit</label>
+      <div class="search-input-wrapper" style="position: relative;">
+        <i class="bi bi-search" style="position: absolute; left: 12px; top: 10px; color: #6c757d;"></i>
+        <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" placeholder="Recherche..."
+          style="width: 100%; padding: 8px 12px 8px 36px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: #1e293b;">
+      </div>
+    </div>
+    <div class="filter-group">
+      <label style="font-size: 0.8rem; font-weight: 600; color: #6c757d; margin-bottom: 4px; display: block;">Du</label>
+      <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)"
+        style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: #1e293b;">
+    </div>
+    <div class="filter-group">
+      <label style="font-size: 0.8rem; font-weight: 600; color: #6c757d; margin-bottom: 4px; display: block;">Au</label>
+      <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)"
+        style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: #1e293b;">
+    </div>
+    <div class="filter-actions">
+      <button class="btn-reset" (click)="searchTerm.set(''); startDate.set(''); endDate.set('')" title="Réinitialiser"
+        style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: #1e293b; cursor: pointer;">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- TABLE VIEW -->
   <div class="demandes-main-card shadow-sm">
     <div class="table-responsive">
-      <table class="premium-table">
+      <!-- TABLE FOR DEMANDS (PENDING) -->
+      <table class="premium-table" *ngIf="activeTab === 'pending'">
         <thead>
           <tr>
             <th>DATE</th>
-            <th>DEMANDEUR</th>
             <th>PRODUIT</th>
             <th class="text-center">QUANTITÉ</th>
-            <th>MOTIF</th>
             <th class="text-center">STATUT</th>
             <th class="text-end">ACTIONS</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let d of filteredDemandes()">
-            <td class="date-cell">
-              <span class="d-block">{{ d.dateDemande | date:'dd/MM/yyyy' }}</span>
-              <span class="text-muted smaller">{{ d.dateDemande | date:'HH:mm' }}</span>
-            </td>
-            <td class="user-cell">
-              <div class="d-flex align-items-center gap-2">
-                <div class="user-avatar-mini">{{ getInitial($any(d).technicien) }}</div>
-                <div class="user-info">
-                    <span class="fw-bold d-block">{{ $any(d).technicien?.prenom }} {{ $any(d).technicien?.nom }}</span>
-                    <span class="badge-role">{{ $any(d).technicien?.role || 'MAGASINIER' }}</span>
-                </div>
+          <tr *ngFor="let row of getFilteredDemandesFlattened()">
+            <td>{{ row.demande.dateDemande | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="fw-bold">{{ row.pieceName }}</span>
+              <div class="small text-muted" *ngIf="row.demande.lignes && row.demande.lignes.length > 0"
+                style="margin-top: 4px;">
+                <i class="bi bi-archive"></i> Dem. #{{ row.demande.id }}
               </div>
             </td>
-            <td class="product-cell">
-              <span class="fw-bold">{{ d.produit?.designation || 'Produit Inconnu' }}</span>
-              <div class="text-muted smaller">REF: {{ d.produit?.reference }}</div>
+            <td class="text-center">
+              <span class="qty-badge">{{ row.quantite }}</span>
             </td>
             <td class="text-center">
-              <span class="qty-badge">{{ d.quantite }}</span>
-            </td>
-            <td class="motif-cell">
-              <span class="text-truncate d-inline-block" style="max-width: 150px;" [title]="d.motif">
-                {{ d.motif || '---' }}
-              </span>
-            </td>
-            <td class="text-center">
-              <span class="status-pill" [ngClass]="getStatusClass(d.statut)">
-                {{ formatStatut(d.statut) }}
+              <span class="status-pill" [ngClass]="getStatusClass(row.demande.statut)">
+                {{ formatStatut(row.demande.statut) }}
               </span>
             </td>
             <td class="text-end">
-              <div class="action-btns" *ngIf="getStatusClass(d.statut) === 'EN_ATTENTE'">
-                <button class="btn-action approve" (click)="updateStatus(d, 'VALIDATED')" title="Approuver (Interne)">
+              <div class="action-btns"
+                *ngIf="row.demande.statut !== 'VALIDATED' && row.demande.statut !== 'TRAITEE' && row.demande.statut !== 'REFUSED' && row.demande.statut !== 'COMMANDEE'">
+                <button class="btn-action approve" (click)="updateStatus(row.demande, 'VALIDATED')"
+                  title="Approuver (Interne)">
                   <i class="bi bi-check-lg"></i>
                 </button>
-                <button class="btn-action order" (click)="openOrderModal(d)" title="Commander chez un fournisseur">
+                <button class="btn-action order" (click)="openOrderModal(row.demande)"
+                  title="Commander chez un fournisseur">
                   <i class="bi bi-truck"></i>
                 </button>
-                <button class="btn-action reject" (click)="updateStatus(d, 'REFUSED')" title="Refuser">
+                <button class="btn-action reject" (click)="updateStatus(row.demande, 'REFUSED')" title="Refuser">
                   <i class="bi bi-x-lg"></i>
-                </button>
-              </div>
-
-              <div class="action-btns" *ngIf="getStatusClass(d.statut) !== 'EN_ATTENTE'">
-                <button class="btn-action-view" disabled>
-                   <i class="bi bi-dash-circle"></i>
                 </button>
               </div>
             </td>
           </tr>
-          <tr *ngIf="filteredDemandes().length === 0">
-            <td colspan="7" class="empty-state">
-               <i class="bi bi-inbox opacity-25 d-block mb-3" style="font-size: 3rem;"></i>
-               <p>Aucune demande trouvée dans cette catégorie.</p>
+        </tbody>
+      </table>
+
+      <!-- TABLE FOR SUPPLIER ORDERS -->
+      <table class="premium-table" *ngIf="activeTab === 'orders'">
+        <thead>
+          <tr>
+            <th>DATE COMMANDE</th>
+            <th>FOURNISSEUR</th>
+            <th>PRODUIT</th>
+            <th class="text-center">QTY</th>
+            <th class="text-center">LIVRAISON PRÉVUE</th>
+            <th class="text-end">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of getFilteredCommandesFlattened()">
+            <td>{{ row.commande.dateCommande | date:'dd/MM/yyyy' }}</td>
+            <td>{{ row.commande.fournisseur?.nom }}</td>
+            <td>
+              <span class="fw-bold">{{ row.pieceName }}</span>
+              <div class="small text-muted" style="margin-top: 4px;">
+                <i class="bi bi-hash"></i> Cmd. #{{ row.commande.id }}
+                <span *ngIf="row.commande.idDemandeOrigine"> | Dem. #{{ row.commande.idDemandeOrigine }}</span>
+              </div>
             </td>
+            <td class="text-center"><span class="qty-badge">{{ row.quantite }}</span></td>
+            <td class="text-center">{{ row.commande.dateReceptionPrevue || 'Non définie' }}</td>
+            <td class="text-end">
+              <button class="btn-action-reception" *ngIf="row.commande.statut === 'EN_COURS'"
+                (click)="receptionner(row.commande)">
+                <i class="bi bi-box-seam"></i> Réceptionner
+              </button>
+              <span *ngIf="row.commande.statut === 'LIVREE'" class="text-success small fw-bold">
+                <i class="bi bi-check-circle"></i> RÉCEPTIONNÉE
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="activeOrders().length === 0">
+            <td colspan="6" class="text-center py-5 text-muted">Aucune commande active.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- TABLE FOR HISTORY -->
+      <table class="premium-table" *ngIf="activeTab === 'history'">
+        <thead>
+          <tr>
+            <th>DATE</th>
+            <th>PRODUIT</th>
+            <th class="text-center">QUANTITÉ</th>
+            <th class="text-center">STATUT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of getHistoryFlattened()">
+            <td>{{ row.dateObj | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="fw-bold">{{ row.pieceName }}</span>
+              <div class="small text-muted" style="margin-top: 4px;">
+                <i class="bi" [class]="row.typeRow === 'DEMANDE' ? 'bi-archive' : 'bi-hash'"></i>
+                {{ row.typeRow === 'DEMANDE' ? 'Dem.' : 'Cmd.' }} #{{ row.originalRef.id }}
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="qty-badge">{{ row.quantite }}</span>
+            </td>
+            <td class="text-center">
+              <span class="status-pill" [ngClass]="getStatusClass(row.statut)">
+                {{ formatStatut(row.statut) }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="getHistoryFlattened().length === 0">
+            <td colspan="4" class="text-center py-5 text-muted">Aucun historique récent.</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Summary Stats -->
-  <div class="stats-mini-grid mt-4">
-    <div class="stat-mini-card">
-       <span class="label">Total Demandes</span>
-       <span class="value">{{ demandes().length }}</span>
-    </div>
-    <div class="stat-mini-card">
-        <span class="label">En Attente</span>
-        <span class="value text-warning">{{ pendingCount() }}</span>
-     </div>
-     <div class="stat-mini-card">
-        <span class="label">Approuvées</span>
-        <span class="value text-success">{{ validatedCount() }}</span>
-     </div>
-  </div>
-
-  <!-- ORDER MODAL (FOURNISSEUR) -->
+  <!-- ORDER MODAL -->
   <div class="modal-overlay" *ngIf="showOrderModal()" (click)="closeOrderModal()">
     <div class="modal-premium animate-zoom" (click)="$event.stopPropagation()">
-      <div class="modal-hdr" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
-        <div class="modal-hdr-left">
-          <div class="modal-icon-wrap" style="background: rgba(255,255,255,0.2);">
-            <i class="bi bi-truck text-white"></i>
-          </div>
-          <div>
-            <h2 class="modal-hdr-title text-white">Commander chez un Fournisseur</h2>
-            <p class="modal-hdr-sub text-white-50">Transférer cette demande à un partenaire externe</p>
-          </div>
-        </div>
-        <button class="modal-close-btn text-white" (click)="closeOrderModal()">
-          <i class="bi bi-x-lg"></i>
-        </button>
+      <div class="modal-hdr">
+        <h2 class="text-white">Nouvelle Commande</h2>
+        <button class="modal-close-btn" (click)="closeOrderModal()">×</button>
       </div>
-
       <div class="modal-body-new p-4">
-        <!-- Order Summary -->
-        <div class="order-summary-box mb-4 p-3 rounded" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
-          <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-            <span class="text-muted small fw-bold">PRODUIT</span>
-            <span class="fw-bold text-dark">{{ selectedDemandeForOrder()?.produit?.designation || 'Inconnu' }}</span>
-          </div>
-          <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-            <span class="text-muted small fw-bold">RÉFÉRENCE</span>
-            <span class="text-dark">{{ selectedDemandeForOrder()?.produit?.reference || 'N/A' }}</span>
-          </div>
-          <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-            <span class="text-muted small fw-bold">QUANTITÉ REQUISE</span>
-            <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ selectedDemandeForOrder()?.quantite }}</span>
-          </div>
-          <div class="d-flex flex-column pt-1">
-            <span class="text-muted small fw-bold mb-1">MOTIF / NOTE IMPORTANTE</span>
-            <span class="text-dark fst-italic">{{ selectedDemandeForOrder()?.motif || 'Aucun motif fourni' }}</span>
-          </div>
+        <p class="text-muted small">Produits : {{ getProduitDesignation(selectedDemandeForOrder()!) }}</p>
+
+        <div class="field-group mb-3">
+          <label>Sélectionner un Fournisseur</label>
+          <select class="field-input" [(ngModel)]="selectedFournisseurId">
+            <option *ngFor="let f of fournisseurs()" [value]="f.idFournisseur">{{ f.nom }}</option>
+          </select>
         </div>
 
-        <div class="section-label mb-3"><span class="section-num">1</span> Paramètres de la Commande</div>
-        
-        <div class="field-group mb-4">
-          <label class="field-label">Sélectionnez un Fournisseur Actif <span class="text-danger">*</span></label>
-          <div class="field-input-wrap">
-            <i class="field-icon bi bi-building"></i>
-            <select class="field-input with-icon" [ngModel]="selectedFournisseurId()" (ngModelChange)="selectedFournisseurId.set($event)">
-              <option [ngValue]="null" disabled>-- Choisir un fournisseur --</option>
-              <option *ngFor="let f of fournisseurs()" [ngValue]="f.idFournisseur">
-                {{ f.nom }} ({{ f.email }})
-              </option>
-            </select>
-          </div>
-          <div class="form-text text-muted small mt-1">
-            Un email officiel de commande sera envoyé à l'adresse de ce fournisseur.
-          </div>
+        <div class="field-group mb-3">
+          <label>Date de réception prévue</label>
+          <input type="date" class="field-input" [(ngModel)]="selectedDateLivraison" [min]="todayDate">
         </div>
 
-        <div class="field-group mb-4">
-          <label class="field-label">Date de Livraison Prévue <span class="text-muted fw-normal">(Optionnel)</span></label>
-          <div class="field-input-wrap">
-            <i class="field-icon bi bi-calendar-event"></i>
-            <input type="date" class="field-input with-icon" [ngModel]="selectedDateLivraison()" (ngModelChange)="selectedDateLivraison.set($event)">
-          </div>
+        <div class="field-group mb-3">
+          <label>Observation (Note pour le fournisseur)</label>
+          <textarea class="field-input" [(ngModel)]="observationOrder" placeholder="Ex: Livraison au quai B, urgent..."
+            rows="2"></textarea>
         </div>
 
-        <div class="modal-footer-new mt-4 pt-3 border-top d-flex justify-content-end gap-2">
-          <button type="button" class="btn-cancel-new" (click)="closeOrderModal()" [disabled]="orderLoading()">
-            Annuler
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button class="btn-cancel-new" (click)="closeOrderModal()">Annuler</button>
+          <button class="btn-submit-new" (click)="submitOrder()"
+            [disabled]="!selectedFournisseurId() || orderLoading()">
+            {{ orderLoading() ? 'Envoi...' : 'Passer la commande' }}
           </button>
-          <button type="button" class="btn-submit-new d-flex align-items-center gap-2" 
-                  [disabled]="!selectedFournisseurId() || orderLoading()" 
-                 (click)="submitOrder()" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
-            <span *ngIf="!orderLoading()"><i class="bi bi-send-fill"></i> Envoyer la Commande</span>
-            <span *ngIf="orderLoading()" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            <span *ngIf="orderLoading()">Envoi en cours...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIRECT ORDER MODAL -->
+  <div class="modal-overlay" *ngIf="showDirectOrderModal()" (click)="closeDirectOrderModal()">
+    <div class="modal-premium animate-zoom" (click)="$event.stopPropagation()">
+      <div class="modal-hdr">
+        <h2 class="text-white">Commande Directe</h2>
+        <button class="modal-close-btn" (click)="closeDirectOrderModal()">×</button>
+      </div>
+      <div class="modal-body-new p-4">
+        <p class="text-muted small mb-3">Commander plusieurs pièces manuellement en cas de rupture de stock.</p>
+
+        <div class="direct-items-container mb-4">
+          <div class="direct-item-header d-flex gap-2 mb-2">
+            <span class="flex-grow-1 small fw-bold text-muted">Pièce</span>
+            <span class="small fw-bold text-muted text-center" style="width: 80px;">Quantité</span>
+            <span style="width: 32px;"></span>
+          </div>
+
+          <div class="direct-item-row d-flex gap-2 mb-3 align-items-center"
+            *ngFor="let item of directOrderItems(); let i = index">
+            <div class="flex-grow-1">
+              <select class="field-input" [(ngModel)]="item.produitId">
+                <option [ngValue]="null" disabled>Sélectionner...</option>
+                <option *ngFor="let p of pieces()" [value]="p.idProduit">
+                  {{ p.designation }} (Stock: {{ p.quantiteStock }})
+                </option>
+              </select>
+            </div>
+            <div style="width: 80px;">
+              <input type="number" class="field-input text-center" [(ngModel)]="item.quantite" min="1">
+            </div>
+            <button class="btn-remove-line" (click)="removeDirectOrderLine(i)" *ngIf="directOrderItems().length > 1">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+
+          <button class="btn-add-line" (click)="addDirectOrderLine()">
+            <i class="bi bi-plus-lg"></i> Ajouter une pièce
+          </button>
+        </div>
+
+        <div class="field-group mb-3">
+          <label>Sélectionner un Fournisseur</label>
+          <select class="field-input" [(ngModel)]="selectedFournisseurId">
+            <option [ngValue]="null" disabled>Choisir un fournisseur...</option>
+            <option *ngFor="let f of fournisseurs()" [value]="f.idFournisseur">{{ f.nom }}</option>
+          </select>
+        </div>
+
+        <div class="field-group mb-3">
+          <label>Date de réception prévue</label>
+          <input type="date" class="field-input" [(ngModel)]="selectedDateLivraison" [min]="todayDate">
+        </div>
+
+        <div class="field-group mb-3">
+          <label>Observation (Note pour le fournisseur)</label>
+          <textarea class="field-input" [(ngModel)]="observationDirect" placeholder="Instructions particulières..."
+            rows="2"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button class="btn-cancel-new" (click)="closeDirectOrderModal()">Annuler</button>
+          <button class="btn-submit-new" (click)="submitDirectOrder()"
+            [disabled]="!selectedFournisseurId() || orderLoading()">
+            {{ orderLoading() ? 'Envoi...' : 'Passer la commande' }}
           </button>
         </div>
       </div>

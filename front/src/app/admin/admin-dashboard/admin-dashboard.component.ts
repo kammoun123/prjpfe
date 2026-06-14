@@ -5,6 +5,7 @@ import { ProduitService } from '../../Services/produit.service';
 import { CategorieService } from '../../Services/categorie.service';
 import { MouvementStockService } from '../../Services/mouvement-stock.service';
 import { AuthService } from '../../Services/auth.service';
+import { FournisseurService } from '../../Services/fournisseur.service';
 import { MouvementStock } from '../../models/mouvement-stock.model';
 import { Produit } from '../../models/produit.model';
 import { Utilisateur } from '../../models/utilisateur.model';
@@ -23,11 +24,13 @@ export class AdminDashboardComponent implements OnInit {
         totalProducts: 0,
         totalCategories: 0,
         lowStockAlerts: 0,
-        recentMovements: 0
+        recentMovements: 0,
+        totalFournisseurs: 0,
+        totalUsers: 0
     };
 
     recentMovements: MouvementStock[] = [];
-    pendingUsers: Utilisateur[] = [];
+    pendingUsers: any[] = [];
     lowStockItems: Produit[] = [];
     loading: boolean = true;
     loadingUsers: boolean = true;
@@ -36,7 +39,8 @@ export class AdminDashboardComponent implements OnInit {
         private produitService: ProduitService,
         private categorieService: CategorieService,
         private mouvementService: MouvementStockService,
-        private authService: AuthService
+        private authService: AuthService,
+        private fournisseurService: FournisseurService
     ) { }
 
     ngOnInit(): void {
@@ -61,6 +65,11 @@ export class AdminDashboardComponent implements OnInit {
             error: () => { }
         });
 
+        this.fournisseurService.getAllFournisseurs().subscribe({
+            next: (fours) => this.stats.totalFournisseurs = fours.length,
+            error: () => { }
+        });
+
         this.mouvementService.getAllMouvements().subscribe({
             next: (mvs: MouvementStock[]) => {
                 this.stats.recentMovements = mvs.length;
@@ -75,22 +84,29 @@ export class AdminDashboardComponent implements OnInit {
 
     loadPendingUsers(): void {
         this.loadingUsers = true;
+        // Load total users count
         this.authService.getUsers().subscribe({
-            next: (users) => {
-                this.pendingUsers = users.filter(u => u.statut === 'PENDING');
+            next: (users) => { this.stats.totalUsers = users.length; },
+            error: () => { }
+        });
+        // Load pending registration requests from demandes-inscription
+        this.authService.getRegistrationRequests().subscribe({
+            next: (demandes) => {
+                this.pendingUsers = demandes;
                 this.loadingUsers = false;
             },
             error: () => { this.loadingUsers = false; }
         });
     }
 
-    approveUser(user: Utilisateur): void {
-        if (!user.idUtilisateur) return;
-        this.authService.updateUserStatus(user.idUtilisateur, 'ACTIVE').subscribe({
+    approveUser(user: any): void {
+        if (!user.id) return;
+        this.authService.accepterDemande(user.id).subscribe({
             next: () => {
                 this.loadPendingUsers();
+                this.loadStats(); // refresh user count
             },
-            error: (err) => console.error('Error approving user', err)
+            error: (err: any) => console.error('Error approving user', err)
         });
     }
 

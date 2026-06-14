@@ -16,13 +16,16 @@ export class UserManagementComponent implements OnInit {
   searchTerm: string = '';
   error = '';
   success = '';
+  loadingDemandes = false;
+  demandes: any[] = [];
+  activeTab: 'users' | 'requests' = 'users';
 
   get filteredUsers() {
     if (!this.searchTerm) return this.users;
     const search = this.searchTerm.toLowerCase();
-    return this.users.filter(user => 
-      user.nom.toLowerCase().includes(search) || 
-      user.prenom.toLowerCase().includes(search) || 
+    return this.users.filter(user =>
+      user.nom.toLowerCase().includes(search) ||
+      user.prenom.toLowerCase().includes(search) ||
       user.email.toLowerCase().includes(search)
     );
   }
@@ -33,10 +36,11 @@ export class UserManagementComponent implements OnInit {
     nom: '', prenom: '', email: '', role: '', statut: '', newPassword: ''
   };
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   ngOnInit(): void {
     this.loadUsers();
+    this.loadDemandes();
   }
 
   get stats() {
@@ -58,6 +62,47 @@ export class UserManagementComponent implements OnInit {
         this.error = `Erreur (${err.status}): ${err.message || 'Serveur inaccessible'}`;
       }
     });
+  }
+
+  loadDemandes(): void {
+    this.loadingDemandes = true;
+    this.authService.getRegistrationRequests().subscribe({
+      next: (data) => {
+        this.demandes = data;
+        this.loadingDemandes = false;
+      },
+      error: (err) => {
+        console.error('Error loading registration requests', err);
+        this.loadingDemandes = false;
+      }
+    });
+  }
+
+  approveDemande(id: number): void {
+    if (confirm('Voulez-vous accepter cette inscription ?')) {
+      this.authService.accepterDemande(id).subscribe({
+        next: () => {
+          this.success = 'Compte utilisateur créé avec succès !';
+          this.loadDemandes();
+          this.loadUsers();
+          setTimeout(() => this.success = '', 3000);
+        },
+        error: (err) => this.error = 'Erreur lors de l’acceptation'
+      });
+    }
+  }
+
+  rejectDemande(id: number): void {
+    if (confirm('Voulez-vous refuser et supprimer cette demande ?')) {
+      this.authService.refuserDemande(id).subscribe({
+        next: () => {
+          this.success = 'Demande refusée et supprimée';
+          this.loadDemandes();
+          setTimeout(() => this.success = '', 3000);
+        },
+        error: (err) => this.error = 'Erreur lors du refus'
+      });
+    }
   }
 
   openEdit(user: Utilisateur): void {

@@ -9,7 +9,6 @@ export interface Utilisateur {
   ville?: string;
   gouvernorat?: string;
   telephone?: string;
-  departement?: string;
   photo?: string;
 }
 

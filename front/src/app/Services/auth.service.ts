@@ -6,11 +6,11 @@ import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, inject, Injectable } from '@angular/core';
 
 export interface Profil extends Utilisateur {
-    id?: string;
-    departement?: string;
-    dateAdhesion?: string;
-    notificationsEmail?: boolean;
-    modeSombre?: boolean;
+  id?: string;
+  departement?: string;
+  dateAdhesion?: string;
+  notificationsEmail?: boolean;
+  modeSombre?: boolean;
 }
 
 @Injectable({
@@ -47,6 +47,14 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, { token, newPassword });
+  }
+
   updateSession(user: Utilisateur) {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('currentUser', JSON.stringify(user));
@@ -76,14 +84,7 @@ export class AuthService {
   private getUserFromStorage(): Utilisateur | null {
     if (isPlatformBrowser(this.platformId)) {
       const user = localStorage.getItem('currentUser');
-      if (user && user !== 'undefined' && user !== 'null') {
-        try {
-          return JSON.parse(user);
-        } catch (e) {
-          console.error('Error parsing user from storage', e);
-          localStorage.removeItem('currentUser');
-        }
-      }
+      return user ? JSON.parse(user) : null;
     }
     return null;
   }
@@ -112,5 +113,18 @@ export class AuthService {
 
   updateProfil(id: string, profil: Partial<Profil>): Observable<Profil> {
     return this.http.put<Profil>(`${environment.apiUrl}/users/${id}`, profil);
+  }
+
+  // Registration Requests Management
+  getRegistrationRequests(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/admin/demandes-inscription`);
+  }
+
+  accepterDemande(id: number): Observable<Utilisateur> {
+    return this.http.post<Utilisateur>(`${environment.apiUrl}/admin/demandes-inscription/${id}/accepter`, {});
+  }
+
+  refuserDemande(id: number): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/admin/demandes-inscription/${id}/refuser`, {});
   }
 }

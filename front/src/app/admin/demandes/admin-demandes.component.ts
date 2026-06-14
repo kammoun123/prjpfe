@@ -6,7 +6,26 @@ import { ToastService } from '../../Services/toast.service';
 import { DemandeProduit } from '../../models/demande-produit.model';
 import { FournisseurService } from '../../Services/fournisseur.service';
 import { Fournisseur } from '../../models/fournisseur.model';
+import { Commande } from '../../models/commande.model';
+import { Produit } from '../../models/produit.model';
+import { PieceService } from '../../Services/piece.service';
 import { FormsModule } from '@angular/forms';
+import { CommandeFournisseurService } from '../../Services/commande-fournisseur.service';
+
+// Interface pour les lignes flattened (une ligne par pièce)
+interface DemandeLigneRow {
+  demande: DemandeProduit;
+  pieceName: string;
+  quantite: number;
+  produitId: number | undefined;
+}
+
+interface CommandeLigneRow {
+  commande: Commande;
+  pieceName: string;
+  quantite: number;
+  produitId: number | undefined;
+}
 
 @Component({
   selector: 'app-admin-demandes',
@@ -20,37 +39,63 @@ export class AdminDemandesComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private toastService = inject(ToastService);
   private fournisseurService = inject(FournisseurService);
+  private pieceService = inject(PieceService);
+  private commandeFournisseurService = inject(CommandeFournisseurService);
 
   demandes = signal<DemandeProduit[]>([]);
-  activeTab: 'pending' | 'history' = 'pending';
+  pieces = signal<Produit[]>([]);
+  activeOrders = signal<Commande[]>([]);
+  activeTab: 'pending' | 'orders' | 'history' = 'pending';
 
   fournisseurs = signal<Fournisseur[]>([]);
+  // Variables for Indirect Order (from demand)
   showOrderModal = signal(false);
   selectedDemandeForOrder = signal<DemandeProduit | null>(null);
+  observationOrder = signal<string>('');
+
+  // Variables for Direct Order (Admin)
+  showDirectOrderModal = signal(false);
+  directOrderItems = signal<{ produitId: number | null, quantite: number }[]>([{ produitId: null, quantite: 1 }]);
+  observationDirect = signal<string>('');
+
+  // Common order variables
   selectedFournisseurId = signal<number | null>(null);
   selectedDateLivraison = signal<string>('');
   orderLoading = signal(false);
 
+  // Filters
+  searchTerm = signal('');
+  startDate = signal('');
+  endDate = signal('');
+
+  todayDate: string = new Date().toISOString().split('T')[0];
+
   pendingCount = computed(() => {
     return this.demandes().filter(d => {
       const s = (d.statut || '').toUpperCase().trim();
-      return s !== 'VALIDATED' && s !== 'REFUSED' && s !== 'REFUSÉ';
+      return s === 'EN_ATTENTE' || s === 'EN_ATTENTE_COMMANDE' || s.includes('ADMIN');
     }).length;
   });
 
-  validatedCount = computed(() =>
-    this.demandes().filter(d => (d.statut || '').toUpperCase() === 'VALIDATED').length
-  );
+  activeOrdersCount = computed(() => this.activeOrders().filter(c => c.statut === 'EN_COURS').length);
 
   ngOnInit() {
     this.loadDemandes();
+    this.loadPieces();
     this.loadFournisseurs();
+    this.loadActiveOrders();
+  }
+
+  loadPieces() {
+    this.pieceService.getPieces().subscribe({
+      next: (data) => this.pieces.set(data),
+      error: (err) => console.error('Erreur chargement pièces', err)
+    });
   }
 
   loadFournisseurs() {
     this.fournisseurService.getAllFournisseurs().subscribe({
       next: (data) => {
-        // Garder uniquement les fournisseurs actifs
         this.fournisseurs.set(data.filter(f => f.statut === 'ACTIF'));
       },
       error: (err) => console.error('Erreur chargement fournisseurs', err)
@@ -60,7 +105,6 @@ export class AdminDemandesComponent implements OnInit {
   loadDemandes() {
     this.demandeService.getDemandes().subscribe({
       next: (data) => {
-        // Sort by newest first
         this.demandes.set(data.reverse());
       },
       error: (err) => {
@@ -70,84 +114,233 @@ export class AdminDemandesComponent implements OnInit {
     });
   }
 
+  loadActiveOrders() {
+    this.commandeFournisseurService.getAllCommandes().subscribe({
+      next: (data) => {
+        // Convertir les dates string en Date
+        const convertedData = data.map(c => ({
+          ...c,
+          dateCommande: c.dateCommande ? new Date(c.dateCommande) : undefined,
+          dateReceptionPrevue: c.dateReceptionPrevue ? new Date(c.dateReceptionPrevue) : undefined
+        }));
+        this.activeOrders.set(convertedData.reverse());
+      },
+      error: (err) => console.error('Erreur chargement commandes', err)
+    });
+  }
+
   filteredDemandes() {
     const list = this.demandes();
     if (this.activeTab === 'pending') {
       return list.filter(d => {
         const s = (d.statut || '').toUpperCase().trim();
-        return s !== 'VALIDATED' && s !== 'REFUSED' && s !== 'REFUSÉ';
+        return s === 'EN_ATTENTE' || s === 'EN_ATTENTE_COMMANDE' || s.includes('ADMIN');
       });
-    } else {
+    } else if (this.activeTab === 'history') {
       return list.filter(d => {
         const s = (d.statut || '').toUpperCase().trim();
-        return s === 'VALIDATED' || s === 'REFUSED' || s === 'REFUSÉ';
+        return s === 'VALIDATED' || s === 'REFUSED' || s === 'TRAITEE';
       });
     }
+    return [];
+  }
+
+  getFilteredDemandesFlattened(): DemandeLigneRow[] {
+    // Créer un tableau flattened : une ligne pour chaque pièce
+    const flattenedRows: DemandeLigneRow[] = [];
+
+    this.filteredDemandes().forEach(d => {
+      if (!d.lignes || d.lignes.length === 0) {
+        // Si pas de lignes, créer une ligne vide
+        flattenedRows.push({
+          demande: d,
+          pieceName: '-',
+          quantite: 0,
+          produitId: undefined
+        });
+      } else {
+        // UNE LIGNE PAR PIÈCE - complètement indépendante
+        d.lignes.forEach(ligne => {
+          // Essayer d'obtenir le nom : d'abord le produit, puis la liste, puis l'ID
+          let pieceName = 'Pièce Inconnue';
+
+          if (ligne.produit && ligne.produit.designation) {
+            pieceName = ligne.produit.designation;
+          } else if (ligne.produitId) {
+            const piece = this.pieces().find(p => p.idProduit === ligne.produitId);
+            if (piece && piece.designation) {
+              pieceName = piece.designation;
+            } else {
+              pieceName = `Pièce #${ligne.produitId}`;
+            }
+          }
+
+          // Créer une ligne complètement indépendante pour cette pièce
+          flattenedRows.push({
+            demande: d,
+            pieceName: pieceName,
+            quantite: ligne.quantite || 0,
+            produitId: ligne.produitId
+          });
+        });
+      }
+    });
+
+    return this.applyFilters(flattenedRows, row => row.pieceName, row => row.demande.dateDemande ? new Date(row.demande.dateDemande) : new Date());
+  }
+
+  getFilteredCommandesFlattened(): CommandeLigneRow[] {
+    const flattenedRows: CommandeLigneRow[] = [];
+
+    this.activeOrders().forEach(c => {
+      // Only "EN_COURS" in active orders tab
+      if (c.statut !== 'EN_COURS') return;
+      if (!c.lignes || c.lignes.length === 0) {
+        flattenedRows.push({
+          commande: c,
+          pieceName: '-',
+          quantite: 0,
+          produitId: undefined
+        });
+      } else {
+        c.lignes.forEach(ligne => {
+          let pieceName = 'Pièce Inconnue';
+          if (ligne.produit && ligne.produit.designation) {
+            pieceName = ligne.produit.designation;
+          } else if (ligne.produitId) {
+            const piece = this.pieces().find(p => p.idProduit === ligne.produitId);
+            if (piece && piece.designation) {
+              pieceName = piece.designation;
+            } else {
+              pieceName = `Pièce #${ligne.produitId}`;
+            }
+          }
+
+          flattenedRows.push({
+            commande: c,
+            pieceName: pieceName,
+            quantite: ligne.quantite || 0,
+            produitId: ligne.produitId
+          });
+        });
+      }
+    });
+
+    return this.applyFilters(flattenedRows, row => row.pieceName, row => row.commande.dateCommande ? new Date(row.commande.dateCommande) : new Date());
+  }
+
+  getHistoryFlattened() {
+    let historyRows: any[] = [];
+
+    // Add DEMANDES history
+    const demandesHistory = this.demandes().filter(d => {
+      const s = (d.statut || '').toUpperCase().trim();
+      return s === 'VALIDATED' || s === 'REFUSED' || s === 'TRAITEE';
+    });
+
+    demandesHistory.forEach(d => {
+      if (!d.lignes || d.lignes.length === 0) {
+        historyRows.push({
+          typeRow: 'DEMANDE',
+          originalRef: d,
+          pieceName: '-',
+          quantite: 0,
+          dateObj: d.dateDemande ? new Date(d.dateDemande) : new Date(),
+          statut: d.statut
+        });
+      } else {
+        d.lignes.forEach(ligne => {
+          let pieceName = 'Pièce Inconnue';
+          if (ligne.produit && ligne.produit.designation) {
+            pieceName = ligne.produit.designation;
+          } else if (ligne.produitId) {
+            const piece = this.pieces().find(p => p.idProduit === ligne.produitId);
+            pieceName = piece?.designation || `Pièce #${ligne.produitId}`;
+          }
+          historyRows.push({
+            typeRow: 'DEMANDE',
+            originalRef: d,
+            pieceName: pieceName,
+            quantite: ligne.quantite || 0,
+            dateObj: d.dateDemande ? new Date(d.dateDemande) : new Date(),
+            statut: d.statut
+          });
+        });
+      }
+    });
+
+    // Add DIRECT COMMANDS history (LIVREE and no idDemandeOrigine)
+    const directCommandesHistory = this.activeOrders().filter(c => c.statut === 'LIVREE' && !c.idDemandeOrigine);
+    directCommandesHistory.forEach(c => {
+      if (!c.lignes || c.lignes.length === 0) {
+        historyRows.push({
+          typeRow: 'COMMANDE',
+          originalRef: c,
+          pieceName: '-',
+          quantite: 0,
+          dateObj: c.dateCommande ? new Date(c.dateCommande) : new Date(),
+          statut: 'LIVREE'
+        });
+      } else {
+        c.lignes.forEach(ligne => {
+          let pieceName = 'Pièce Inconnue';
+          if (ligne.produit && ligne.produit.designation) {
+            pieceName = ligne.produit.designation;
+          } else if (ligne.produitId) {
+            const piece = this.pieces().find(p => p.idProduit === ligne.produitId);
+            pieceName = piece?.designation || `Pièce #${ligne.produitId}`;
+          }
+          historyRows.push({
+            typeRow: 'COMMANDE',
+            originalRef: c,
+            pieceName: pieceName,
+            quantite: ligne.quantite || 0,
+            dateObj: c.dateCommande ? new Date(c.dateCommande) : new Date(),
+            statut: 'LIVREE'
+          });
+        });
+      }
+    });
+
+    // Apply sorting
+    historyRows.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
+
+    return this.applyFilters(historyRows, row => row.pieceName, row => row.dateObj);
+  }
+
+  private applyFilters<T>(rows: T[], getName: (row: T) => string, getDate: (row: T) => any): T[] {
+    const search = this.searchTerm().toLowerCase();
+    const start = this.startDate();
+    const end = this.endDate();
+
+    return rows.filter(row => {
+      const name = getName(row).toLowerCase();
+      let matchesSearch = true;
+      if (search) {
+        matchesSearch = name.includes(search);
+      }
+
+      let matchesDate = true;
+      const dateVal = getDate(row);
+      if (dateVal && (start || end)) {
+        const rowDate = (dateVal instanceof Date ? dateVal : new Date(dateVal as string | number | Date)).toISOString().split('T')[0];
+        if (start && rowDate < start) matchesDate = false;
+        if (end && rowDate > end) matchesDate = false;
+      }
+
+      return matchesSearch && matchesDate;
+    });
   }
 
   updateStatus(demande: DemandeProduit, newStatut: string) {
     if (!demande.id) return;
-
     this.demandeService.updateStatutDemande(demande.id, newStatut).subscribe({
       next: () => {
-        this.toastService.show(`Demande ${newStatut === 'VALIDATED' ? 'approuvée' : 'refusée'} avec succès`, 'success');
-
-        // Notification back to the Magasinier (Technician in models)
-        if (demande.technicienId) {
-          this.notificationService.createNotification({
-            message: `Votre demande pour ${demande.produit?.designation || 'produit'} a été ${newStatut === 'VALIDATED' ? 'APPROUVÉE' : 'REFUSÉE'} par l'Administrateur.`,
-            typeNotification: newStatut === 'VALIDATED' ? 'SUCCESS' : 'ALERT',
-            roleCible: 'MAGASINIER',
-            dateCreation: new Date().toISOString(),
-            statut: 'NON_LUE'
-          }).subscribe();
-        }
-
+        this.toastService.show(`Demande mise à jour vers ${newStatut}`, 'success');
         this.loadDemandes();
       },
-      error: (err) => {
-        console.error('Erreur MAJ statut', err);
-        this.toastService.show('Erreur lors de la mise à jour', 'error');
-      }
+      error: (err) => this.toastService.show('Erreur de mise à jour', 'error')
     });
-  }
-
-  getInitial(user: any): string {
-    if (user && user.prenom) return user.prenom.charAt(0).toUpperCase();
-    return 'M';
-  }
-
-  getStatusClass(statut: string | undefined): string {
-    if (!statut) return 'EN_ATTENTE';
-    const s = statut.toUpperCase().trim();
-    if (s === 'VALIDATED' || s === 'VALIDÉ' || s === 'VALIDÉE') return 'VALIDATED';
-    if (s === 'REFUSED' || s === 'REFUSÉ') return 'REFUSED';
-    return 'EN_ATTENTE';
-  }
-
-  formatStatut(statut: string | undefined): string {
-    if (!statut) return 'En attente';
-    const s = statut.toUpperCase().trim();
-    if (s === 'VALIDATED' || s === 'VALIDÉ' || s === 'VALIDÉE' || s === 'VALIDE') return 'VALIDE';
-    if (s === 'REFUSED' || s === 'REFUSÉ' || s === 'REFUSE') return 'REFUSÉ';
-    if (s === 'TRANSFÉRÉ_ADMIN' || s.includes('ADMIN')) return 'En attente Admin';
-    return statut;
-  }
-
-  // --- ORDER MODAL LOGIC ---
-  openOrderModal(demande: DemandeProduit) {
-    this.selectedDemandeForOrder.set(demande);
-    this.selectedFournisseurId.set(null);
-    this.selectedDateLivraison.set('');
-    this.showOrderModal.set(true);
-  }
-
-  closeOrderModal() {
-    this.showOrderModal.set(false);
-    this.selectedDemandeForOrder.set(null);
-    this.selectedFournisseurId.set(null);
-    this.selectedDateLivraison.set('');
-    this.orderLoading.set(false);
   }
 
   submitOrder() {
@@ -161,27 +354,145 @@ export class AdminDemandesComponent implements OnInit {
     }
 
     this.orderLoading.set(true);
-    this.demandeService.orderFromSupplier(demande.id, fournisseurId, dateLivraison).subscribe({
+    this.commandeFournisseurService.creerCommande(demande.id, fournisseurId, dateLivraison, this.observationOrder()).subscribe({
       next: () => {
-        this.toastService.show('Commande envoyée au fournisseur avec succès', 'success');
-        
-        // Notify the requester
-        if (demande.technicienId) {
-          this.notificationService.createNotification({
-            message: `Votre demande pour ${demande.produit?.designation} a été commandée chez un fournisseur externe.`,
-            typeNotification: 'INFO',
-            roleCible: 'MAGASINIER',
-            dateCreation: new Date().toISOString(),
-            statut: 'NON_LUE'
-          }).subscribe();
-        }
-
+        this.toastService.show('Commande créée avec succès (Statut: COMMANDEE)', 'success');
         this.loadDemandes();
+        this.loadActiveOrders();
         this.closeOrderModal();
       },
       error: (err) => {
-        console.error('Erreur commande fournisseur', err);
-        this.toastService.show('Erreur lors de l\'envoi de la commande', 'error');
+        this.toastService.show('Erreur lors de la commande', 'error');
+        this.orderLoading.set(false);
+      }
+    });
+  }
+
+  receptionner(commande: Commande) {
+    if (!commande.id) return;
+    this.commandeFournisseurService.receptionnerCommande(commande.id).subscribe({
+      next: () => {
+        this.toastService.show('Livraison réceptionnée ! Stock mis à jour et demande terminée.', 'success');
+        this.loadDemandes();
+        this.loadActiveOrders();
+      },
+      error: (err) => this.toastService.show('Erreur lors de la réception', 'error')
+    });
+  }
+
+  getInitial(user: any): string {
+    if (user && user.prenom) return user.prenom.charAt(0).toUpperCase();
+    return 'M';
+  }
+
+  getStatusClass(statut: string | undefined): string {
+    if (!statut) return 'EN_ATTENTE';
+    const s = statut.toUpperCase().trim();
+    if (s === 'VALIDATED' || s === 'TRAITEE') return 'VALIDATED';
+    if (s === 'REFUSED') return 'REFUSED';
+    if (s === 'COMMANDEE') return 'COMMANDE';
+    return 'EN_ATTENTE';
+  }
+
+  formatStatut(statut: string | undefined): string {
+    if (!statut) return 'En attente';
+    const s = statut.toUpperCase().trim();
+    if (s === 'VALIDATED' || s === 'VALIDE') return 'VALIDÉE (STOCK)';
+    if (s === 'TRAITEE') return 'TRAITÉE (LIVRÉE)';
+    if (s === 'REFUSED') return 'REFUSÉE';
+    if (s === 'COMMANDEE') return 'COMMANDE';
+    if (s === 'EN_ATTENTE_COMMANDE' || s.includes('ADMIN')) return 'À COMMANDER';
+    return statut;
+  }
+
+  getProduitDesignation(demande: DemandeProduit): string {
+    if (!demande.lignes || demande.lignes.length === 0) return 'N/A';
+    return demande.lignes.map((l: any) => l.produit?.designation || 'Produit').join(', ');
+  }
+
+  getTotalQuantite(demande: DemandeProduit): number {
+    if (!demande.lignes || demande.lignes.length === 0) return 0;
+    return demande.lignes.reduce((sum: number, ligne: any) => sum + (ligne.quantite || 0), 0);
+  }
+
+  getCommandeProduitDesignation(commande: Commande): string {
+    if (!commande.lignes || commande.lignes.length === 0) return 'N/A';
+    return commande.lignes.map((l: any) => l.produit?.designation || 'Produit').join(', ');
+  }
+
+  getCommandeTotalQuantite(commande: Commande): number {
+    if (!commande.lignes || commande.lignes.length === 0) return 0;
+    return commande.lignes.reduce((sum: number, ligne: any) => sum + (ligne.quantite || 0), 0);
+  }
+
+  openOrderModal(demande: DemandeProduit) {
+    this.selectedDemandeForOrder.set(demande);
+    this.selectedFournisseurId.set(null);
+    this.selectedDateLivraison.set('');
+    this.observationOrder.set('');
+    this.showOrderModal.set(true);
+  }
+
+  closeOrderModal() {
+    this.showOrderModal.set(false);
+    this.selectedDemandeForOrder.set(null);
+    this.selectedFournisseurId.set(null);
+    this.selectedDateLivraison.set('');
+    this.observationOrder.set('');
+    this.orderLoading.set(false);
+  }
+
+  openDirectOrderModal() {
+    this.directOrderItems.set([{ produitId: null, quantite: 1 }]);
+    this.selectedFournisseurId.set(null);
+    this.selectedDateLivraison.set('');
+    this.observationDirect.set('');
+    this.showDirectOrderModal.set(true);
+  }
+
+  closeDirectOrderModal() {
+    this.showDirectOrderModal.set(false);
+    this.directOrderItems.set([{ produitId: null, quantite: 1 }]);
+    this.selectedFournisseurId.set(null);
+    this.selectedDateLivraison.set('');
+    this.observationDirect.set('');
+    this.orderLoading.set(false);
+  }
+
+  addDirectOrderLine() {
+    this.directOrderItems.update(items => [...items, { produitId: null, quantite: 1 }]);
+  }
+
+  removeDirectOrderLine(index: number) {
+    this.directOrderItems.update(items => items.filter((_, i) => i !== index));
+    if (this.directOrderItems().length === 0) {
+      this.addDirectOrderLine();
+    }
+  }
+
+  submitDirectOrder() {
+    const items = this.directOrderItems();
+    const fournisseurId = this.selectedFournisseurId();
+    const dateLivraison = this.selectedDateLivraison();
+    const observation = this.observationDirect();
+
+    const validItems = items.filter(item => item.produitId && item.quantite > 0);
+
+    if (validItems.length === 0 || !fournisseurId) {
+      this.toastService.show('Veuillez sélectionner au moins un produit et un fournisseur.', 'warning');
+      return;
+    }
+
+    this.orderLoading.set(true);
+    this.commandeFournisseurService.creerCommandeDirecte(validItems, fournisseurId, dateLivraison, observation).subscribe({
+      next: () => {
+        this.toastService.show('Commande directe créée avec succès !', 'success');
+        this.activeTab = 'orders';
+        this.loadActiveOrders();
+        this.closeDirectOrderModal();
+      },
+      error: (err) => {
+        this.toastService.show('Erreur lors de la commande directe', 'error');
         this.orderLoading.set(false);
       }
     });

@@ -7,4 +7,5 @@ export interface Produit {
     seuilAlerte: number;
     idCategorie?: number;
     photoUrl?: string;
+    qrCode?: string;
 }

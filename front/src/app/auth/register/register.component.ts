@@ -19,8 +19,7 @@ export class RegisterComponent {
     email: '',
     motDePasse: '',
     role: 'TECHNICIEN',
-    statut: 'PENDING',
-    departement: ''
+    statut: 'PENDING'
   };
   error = '';
   success = '';
@@ -32,10 +31,10 @@ export class RegisterComponent {
 
   register() {
     this.authService.register(this.user).subscribe({
-      next: () => {
-        this.success = 'Compte créé avec succès ! Votre compte est en attente de validation par l\'administrateur.';
+      next: (response: any) => {
+        this.success = response.message || 'Compte créé avec succès ! Votre compte est en attente de validation par l\'administrateur.';
         this.error = '';
-        this.user = { nom: '', prenom: '', email: '', motDePasse: '', role: 'TECHNICIEN', statut: 'PENDING', departement: '' };
+        this.user = { nom: '', prenom: '', email: '', motDePasse: '', role: 'TECHNICIEN', statut: 'PENDING' };
       },
       error: (err) => {
         this.success = '';
