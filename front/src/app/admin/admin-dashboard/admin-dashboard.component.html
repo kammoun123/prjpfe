@@ -118,7 +118,7 @@
                         </div>
                     </div>
                     <div class="p-actions d-flex align-items-center gap-3">
-                        <span class="role-badge badge rounded-pill px-3 py-2" [ngClass]="user.role.toLowerCase()">{{
+                        <span class="role-badge badge rounded-pill px-3 py-2" [ngClass]="user.role?.toLowerCase() || ''">{{
                             user.role }}</span>
                         <button class="btn-action-approve btn btn-sm btn-light shadow-sm rounded-circle p-2"
                             (click)="approveUser(user)" title="Valider">
