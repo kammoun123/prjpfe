@@ -8,15 +8,6 @@ import { FormsModule } from '@angular/forms';
 import { Produit } from '../../models/produit.model';
 import { DemandeProduit } from '../../models/demande-produit.model';
 
-// Interface pour les lignes groupées (une ligne par demande)
-interface DemandeRow {
-  demande: DemandeProduit;
-  pieces: { name: string; quantite: number; observation?: string }[];
-  searchString: string;
-  totalQuantite: number;
-  motif: string;
-}
-
 @Component({
   selector: 'app-demandes-consultation',
   standalone: true,
@@ -29,7 +20,7 @@ export class DemandesConsultationComponent implements OnInit {
   private pieceService = inject(PieceService);
   private notifService = inject(NotificationService);
   private toastService = inject(ToastService);
-
+  
   demandes = signal<DemandeProduit[]>([]);
   pieces = signal<Produit[]>([]);
   activeTab = signal<'attente' | 'historique'>('attente');
@@ -55,86 +46,37 @@ export class DemandesConsultationComponent implements OnInit {
   }
 
   filteredDemandes() {
-    // Créer un tableau groupé : une ligne par demande
-    const groupedRows: DemandeRow[] = [];
-
-    this.demandes().forEach(d => {
-      // Ignore les demandes créées par le magasinier lui-même
-      const isMagasinierDemand = d.lignes?.some(l => l.motif === "Demande d'achat Magasinier");
-      if (isMagasinierDemand) return;
-
-      const pieces: { name: string; quantite: number; observation?: string }[] = [];
-      let searchArr: string[] = [];
-      let totalQty = 0;
-      let motifs: string[] = [];
-
-      if (!d.lignes || d.lignes.length === 0) {
-        pieces.push({ name: '-', quantite: 0 });
-      } else {
-        d.lignes.forEach(ligne => {
-          let pieceName = 'Pièce Inconnue';
-
-          if (ligne.produit && ligne.produit.designation) {
-            pieceName = ligne.produit.designation;
-          } else if (ligne.produitId) {
-            const piece = this.pieces().find(p => p.idProduit === ligne.produitId);
-            if (piece && piece.designation) {
-              pieceName = piece.designation;
-            } else {
-              pieceName = `Pièce #${ligne.produitId}`;
-            }
-          }
-
-          pieces.push({ name: pieceName, quantite: ligne.quantite || 0, observation: ligne.observation });
-          searchArr.push(pieceName.toLowerCase());
-          totalQty += (ligne.quantite || 0);
-          if (ligne.motif && ligne.motif.trim() !== '') {
-            motifs.push(ligne.motif);
-          }
-        });
-      }
-
-      groupedRows.push({
-        demande: d,
-        pieces: pieces,
-        searchString: searchArr.join(' '),
-        totalQuantite: totalQty,
-        motif: motifs.length > 0 ? motifs.join(' | ') : (d.observation || 'Aucun motif')
-      });
-    });
-
-    // Appliquer les filtres
-    let filtered = groupedRows;
+    let filtered = this.demandes();
 
     // 1. Tab Filter (Status)
     if (this.activeTab() === 'attente') {
-      filtered = filtered.filter(row =>
-        ['EN_ATTENTE', 'PENDING', 'En attente', 'EN ATTENTE'].includes(row.demande.statut?.toUpperCase() || '')
+      filtered = filtered.filter(d => 
+        ['EN_ATTENTE', 'PENDING', 'En attente', 'EN ATTENTE'].includes(d.statut?.toUpperCase() || '')
       );
     } else {
-      filtered = filtered.filter(row =>
-        !['EN_ATTENTE', 'PENDING', 'En attente', 'EN ATTENTE'].includes(row.demande.statut?.toUpperCase() || '')
+      filtered = filtered.filter(d => 
+        !['EN_ATTENTE', 'PENDING', 'En attente', 'EN ATTENTE'].includes(d.statut?.toUpperCase() || '')
       );
     }
 
     // 2. Date Filter
     if (this.startDate()) {
-      filtered = filtered.filter(row => row.demande.dateDemande && new Date(row.demande.dateDemande).toISOString().split('T')[0] >= this.startDate());
+      filtered = filtered.filter(d => d.dateDemande && new Date(d.dateDemande).toISOString().split('T')[0] >= this.startDate());
     }
     if (this.endDate()) {
-      filtered = filtered.filter(row => row.demande.dateDemande && new Date(row.demande.dateDemande).toISOString().split('T')[0] <= this.endDate());
+      filtered = filtered.filter(d => d.dateDemande && new Date(d.dateDemande).toISOString().split('T')[0] <= this.endDate());
     }
 
     // 3. Search Filter
     if (this.searchTerm()) {
       const search = this.searchTerm().toLowerCase();
-      filtered = filtered.filter(row => row.searchString.includes(search));
+      filtered = filtered.filter(d => this.getPieceName(d.produitId).toLowerCase().includes(search));
     }
 
     // Always sort filtered list by date descending (Newest First)
     return filtered.sort((a, b) => {
-      const dateA = a.demande.dateDemande ? new Date(a.demande.dateDemande).getTime() : 0;
-      const dateB = b.demande.dateDemande ? new Date(b.demande.dateDemande).getTime() : 0;
+      const dateA = a.dateDemande ? new Date(a.dateDemande).getTime() : 0;
+      const dateB = b.dateDemande ? new Date(b.dateDemande).getTime() : 0;
       return dateB - dateA;
     });
   }
@@ -143,16 +85,6 @@ export class DemandesConsultationComponent implements OnInit {
     if (!id) return '';
     const piece = this.pieces().find(p => p.idProduit === id);
     return piece ? piece.designation : '';
-  }
-
-  getDemandePiecesInfo(demande: DemandeProduit): string {
-    if (!demande.lignes || demande.lignes.length === 0) return 'Aucune pièce';
-    return demande.lignes.map((l: any) => this.getPieceName(l.produitId) || 'Pièce #' + l.produitId).join(', ');
-  }
-
-  getDemandeTotalQuantite(demande: DemandeProduit): number {
-    if (!demande.lignes || demande.lignes.length === 0) return 0;
-    return demande.lignes.reduce((sum: number, ligne: any) => sum + (ligne.quantite || 0), 0);
   }
 
   getStatusClass(statut: string) {
@@ -189,39 +121,39 @@ export class DemandesConsultationComponent implements OnInit {
         let type = 'info';
 
         if (statut === 'VALIDATED') {
-          msg = 'Votre demande de pièce a été validée par le Magasinier.';
-          type = 'success';
+           msg = 'Votre demande de pièce a été validée par le Magasinier.';
+           type = 'success';
         } else if (statut === 'Refusé') {
-          msg = 'Votre demande de pièce a été rejetée.';
-          type = 'alerte';
+           msg = 'Votre demande de pièce a été rejetée.';
+           type = 'alerte';
         } else if (statut === 'En Commande' || statut === 'TRANSFÉRÉ_ADMIN') {
-          role = 'ADMIN';
-          msg = `Le Magasinier a transféré une demande pour : ${this.getDemandePiecesInfo(demande)}.`;
-          type = 'warning';
+           role = 'ADMIN'; 
+           msg = `Le Magasinier a transféré une demande pour : ${this.getPieceName(demande.produitId)}.`;
+           type = 'warning';
         }
 
         this.notifService.createNotification({
-          produitId: demande.lignes && demande.lignes.length > 0 ? demande.lignes[0].produitId : null,
-          message: msg,
-          typeNotification: type,
-          dateCreation: new Date().toISOString(),
-          statut: 'NON_LUE',
-          roleCible: role
+           produitId: demande.produitId || null,
+           message: msg,
+           typeNotification: type,
+           dateCreation: new Date().toISOString(),
+           statut: 'NON_LUE',
+           roleCible: role
         }).subscribe();
 
         if (statut === 'VALIDATED') {
-          this.toastService.show('Demande validée avec succès !', 'success');
+            this.toastService.show('Demande validée avec succès !', 'success');
         } else if (statut === 'Refusé') {
-          this.toastService.show('Demande rejetée.', 'error');
+            this.toastService.show('Demande rejetée.', 'error');
         } else if (statut === 'En Commande') {
-          this.toastService.show('Demande transférée au service des achats.', 'info');
+            this.toastService.show('Demande transférée au service des achats.', 'info');
         }
 
         this.loadData();
       },
       error: (err) => {
-        console.error('Erreur lors de la mise à jour du statut', err);
-        this.toastService.show('Une erreur est survenue.', 'error');
+         console.error('Erreur lors de la mise à jour du statut', err);
+         this.toastService.show('Une erreur est survenue.', 'error');
       }
     });
   }

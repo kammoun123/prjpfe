@@ -9,8 +9,6 @@ import { ProductManagementComponent } from './admin/products/product-management.
 import { MouvementManagementComponent } from './admin/stock-movements/mouvement-management.component';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
-import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { authGuard } from './guards/auth.guard';
 import { ControleurDashboardComponent } from './controleur/controleur-dashboard.component';
 import { UserManagementComponent } from './admin/users/user-management.component';
@@ -28,13 +26,10 @@ import { AdminLayoutComponent } from './admin/layout/admin-layout.component';
 import { AdminDemandesComponent } from './admin/demandes/admin-demandes.component';
 import { FournisseurManagementComponent } from './admin/fournisseurs/fournisseur-management.component';
 import { ControleurLayoutComponent } from './controleur/layout/controleur-layout.component';
-import { SettingsComponent } from './admin/settings/settings.component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
-    { path: 'forgot-password', component: ForgotPasswordComponent },
-    { path: 'reset-password', component: ResetPasswordComponent },
 
     {
         path: 'admin',
@@ -42,7 +37,8 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { role: 'ADMIN' },
         children: [
-            { path: '', component: AdminDashboardComponent },
+            { path: '', component: AdminDashboardComponent, pathMatch: 'full' },
+            { path: 'dashboard', redirectTo: '' },
             { path: 'categories', component: CategorieManagementComponent },
             { path: 'products', component: ProductManagementComponent },
             { path: 'mouvements', component: MouvementManagementComponent },
@@ -50,8 +46,7 @@ export const routes: Routes = [
             { path: 'demandes', component: AdminDemandesComponent },
             { path: 'fournisseurs', component: FournisseurManagementComponent },
             { path: 'audit', component: AuditRapportComponent },
-            { path: 'profile', component: ProfileComponent },
-            { path: 'settings', component: SettingsComponent }
+            { path: 'profile', component: ProfileComponent }
         ]
     },
 
@@ -87,7 +82,6 @@ export const routes: Routes = [
         children: [
             { path: '', component: MagasinierDashboardComponent },
             { path: 'stock', component: ConsultationStockComponent },
-            { path: 'mouvements', component: MouvementManagementComponent },
             { path: 'demandes', component: DemandesConsultationComponent },
             { path: 'audit', component: AuditRapportComponent },
             { path: 'demande-admin', component: DemandeAdminComponent },
@@ -95,6 +89,9 @@ export const routes: Routes = [
         ]
     },
 
+
+    { path: 'admin/products', redirectTo: 'admin/products' },
+    { path: 'admin/audit', redirectTo: 'admin/audit' },
 
     { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];

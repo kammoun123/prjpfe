@@ -78,17 +78,6 @@ export class CategorieManagementComponent implements OnInit {
     saveCategorie() {
         if (!this.currentCategorie.nomCategorie) return;
 
-        // A1 (Catégorie déjà existante)
-        const categoryExists = this.categories.some(c => 
-            c.nomCategorie.toLowerCase().trim() === this.currentCategorie.nomCategorie.toLowerCase().trim() &&
-            c.idCategorie !== this.currentCategorie.idCategorie
-        );
-
-        if (categoryExists) {
-            alert('Cette catégorie existe déjà');
-            return;
-        }
-
         this.loading = true;
         this.categorieService.createCategorie(this.currentCategorie).subscribe({
             next: () => {
@@ -118,9 +107,7 @@ export class CategorieManagementComponent implements OnInit {
                 next: () => this.fetchCategories(),
                 error: (err) => {
                     console.error('Erreur lors de la suppression', err);
-                    // A2 (Catégorie liée à un produit) : Le backend renverra une erreur de contrainte (FK)
-                    alert('Impossible de supprimer cette catégorie');
-                    this.fetchCategories(); // Recharger pour s'assurer que la liste est à jour
+                    this.categories = this.categories.filter(c => c.idCategorie !== id);
                 }
             });
         }

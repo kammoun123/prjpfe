@@ -68,7 +68,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let cat of filteredCategories; let i = index" class="table-row"
+                    <tr *ngFor="let cat of filteredCategories; let i = index" 
+                        class="table-row" 
                         [style.animation-delay]="i * 0.05 + 's'">
                         <td>
                             <div class="category-info">
@@ -98,7 +99,7 @@
                     <tr *ngIf="filteredCategories.length === 0">
                         <td colspan="3">
                             <div class="empty-state">
-                                <i class="bi bi-search" style="font-size: 5rem; color: #a0aec0; margin-bottom: 1rem; display: inline-block;"></i>
+                                <img src="https://img.icons8.com/bubbles/200/search.png" alt="No data">
                                 <h3>Aucune catégorie trouvée</h3>
                                 <p>Essayez de modifier vos critères de recherche.</p>
                             </div>
@@ -114,8 +115,7 @@
         <div class="modal-container glass-premium" (click)="$event.stopPropagation()">
             <div class="modal-header-pro">
                 <div class="modal-title-group">
-                    <i class="bi" [class.bi-plus-circle]="formMode === 'add'"
-                        [class.bi-pencil-square]="formMode === 'edit'"></i>
+                    <i class="bi" [class.bi-plus-circle]="formMode === 'add'" [class.bi-pencil-square]="formMode === 'edit'"></i>
                     <h2>{{ formMode === 'add' ? 'Ajouter' : 'Modifier' }} une catégorie</h2>
                 </div>
                 <button class="btn-close" (click)="closeForm()">
@@ -128,14 +128,12 @@
                         <label>Nom de la catégorie</label>
                         <div class="input-wrapper">
                             <i class="bi bi-tag"></i>
-                            <input type="text" [(ngModel)]="currentCategorie.nomCategorie" name="nom" required
-                                placeholder="Ex: Pneumatiques">
+                            <input type="text" [(ngModel)]="currentCategorie.nomCategorie" name="nom" required placeholder="Ex: Pneumatiques">
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Description détaillée</label>
-                        <textarea [(ngModel)]="currentCategorie.description" name="desc" rows="4"
-                            placeholder="Décrivez l'usage de cette catégorie..."></textarea>
+                        <textarea [(ngModel)]="currentCategorie.description" name="desc" rows="4" placeholder="Décrivez l'usage de cette catégorie..."></textarea>
                     </div>
                 </div>
                 <div class="form-footer">
@@ -148,4 +146,4 @@
             </form>
         </div>
     </div>
-</div>
+</div>

@@ -56,10 +56,6 @@
                 <i class="bi bi-person-circle"></i> Profil
             </a>
 
-            <a class="nav-item-admin" routerLink="/admin/settings" routerLinkActive="active">
-                <i class="bi bi-gear-fill"></i> Paramètres
-            </a>
-
             <a (click)="logout()" class="nav-item-admin text-danger mt-3" style="cursor: pointer;">
                 <i class="bi bi-box-arrow-right"></i> Déconnexion
             </a>
@@ -128,9 +124,7 @@
                                 </div>
                                 <div class="flex-grow-1 overflow-hidden">
                                     <div class="fw-bold small mb-1 text-dark">{{ n.titre || n.typeNotification }}</div>
-                                    <div class="smaller text-muted"
-                                        style="white-space: normal; word-break: break-word; line-height: 1.5; margin-bottom: 4px;">
-                                        {{ n.message }}</div>
+                                    <div class="smaller text-muted text-truncate">{{ n.message }}</div>
                                     <div class="d-flex align-items-center justify-content-between mt-1">
                                         <div class="notif-time">{{ n.dateCreation | date:'shortTime' }}</div>
                                         <button *ngIf="isAuditNotification(n)"
@@ -146,7 +140,11 @@
                     </div>
                 </div>
 
-
+                <div class="vr mx-1"></div>
+                <button class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2"
+                    style="font-size: 0.85rem;">
+                    <i class="bi bi-lightning-charge-fill"></i> Support technique
+                </button>
             </div>
         </header>
 

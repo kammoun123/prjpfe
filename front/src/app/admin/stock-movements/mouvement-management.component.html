@@ -60,8 +60,7 @@
                     <div class="input-icon-group">
                         <i class="bi bi-box-seam"></i>
                         <select [(ngModel)]="newMouvement.produitId" name="produit" required>
-                            <option *ngFor="let p of produits" [value]="p.idProduit">{{ p.designation }} ({{ p.reference
-                                }})</option>
+                            <option *ngFor="let p of produits" [value]="p.idProduit">{{ p.designation }} ({{ p.reference }})</option>
                         </select>
                     </div>
                 </div>
@@ -70,13 +69,11 @@
                     <label>Nature du Mouvement</label>
                     <div class="type-toggle">
                         <label class="toggle-btn" [class.active]="newMouvement.typeMouvement === 'ENTREE'">
-                            <input type="radio" [(ngModel)]="newMouvement.typeMouvement" name="type" value="ENTREE"
-                                hidden>
+                            <input type="radio" [(ngModel)]="newMouvement.typeMouvement" name="type" value="ENTREE" hidden>
                             <i class="bi bi-arrow-down-left"></i> Entrée
                         </label>
                         <label class="toggle-btn" [class.active]="newMouvement.typeMouvement === 'SORTIE'">
-                            <input type="radio" [(ngModel)]="newMouvement.typeMouvement" name="type" value="SORTIE"
-                                hidden>
+                            <input type="radio" [(ngModel)]="newMouvement.typeMouvement" name="type" value="SORTIE" hidden>
                             <i class="bi bi-arrow-up-right"></i> Sortie
                         </label>
                     </div>
@@ -85,28 +82,13 @@
                 <div class="form-group-pro">
                     <label>Quantité</label>
                     <div class="qty-input">
-                        <button type="button"
-                            (click)="newMouvement.quantite = newMouvement.quantite > 1 ? newMouvement.quantite - 1 : 1">
+                        <button type="button" (click)="newMouvement.quantite = newMouvement.quantite > 1 ? newMouvement.quantite - 1 : 1">
                             <i class="bi bi-dash"></i>
                         </button>
                         <input type="number" [(ngModel)]="newMouvement.quantite" name="qty" required>
                         <button type="button" (click)="newMouvement.quantite = newMouvement.quantite + 1">
                             <i class="bi bi-plus"></i>
                         </button>
-                    </div>
-                </div>
-
-                <div class="form-group-pro">
-                    <label>Motif de l'opération</label>
-                    <div class="input-icon-group">
-                        <i class="bi bi-chat-left-dots"></i>
-                        <select [(ngModel)]="newMouvement.motif" name="motif" required>
-                            <option value="" disabled>Choisir un motif...</option>
-                            <option value="Casse / Dommage">Casse / Dommage</option>
-                            <option value="Retour Technicien">Retour Technicien</option>
-                            <option value="Ajustement d'Inventaire">Ajustement d'Inventaire</option>
-                            <option value="Autre">Autre</option>
-                        </select>
                     </div>
                 </div>
 
@@ -129,11 +111,10 @@
             </div>
             <div class="filter-tools">
                 <button class="btn-tool" (click)="showFilters = !showFilters" [class.active]="showFilters">
-                    <i class="bi bi-filter"></i>
+                    <i class="bi bi-filter"></i> 
                     {{ showFilters ? 'Masquer' : 'Filtrer' }}
                 </button>
-                <button class="btn-tool" (click)="initialiserPage()"><i class="bi bi-arrow-clockwise"></i>
-                    Actualiser</button>
+                <button class="btn-tool" (click)="initialiserPage()"><i class="bi bi-arrow-clockwise"></i> Actualiser</button>
             </div>
         </div>
 
@@ -164,8 +145,7 @@
                     </div>
                 </div>
                 <div class="filter-actions">
-                    <button class="btn-reset" (click)="filterType='ALL'; startDate=''; endDate=''; searchTerm=''"
-                        title="Réinitialiser">
+                    <button class="btn-reset" (click)="filterType='ALL'; startDate=''; endDate=''; searchTerm=''" title="Réinitialiser">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
@@ -184,7 +164,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let m of filteredMouvements; let i = index" class="table-row-animate"
+                    <tr *ngFor="let m of filteredMouvements; let i = index" 
+                        class="table-row-animate" 
                         [style.animation-delay]="i * 0.05 + 's'">
                         <td>
                             <div class="timestamp">
@@ -194,15 +175,13 @@
                         </td>
                         <td>
                             <div class="product-info-cell">
-                                <span class="product-name">{{ getNomPiece(resolveProduitId(m)) }}</span>
+                                <span class="product-name">{{ getNomPiece(m.produitId) }}</span>
                                 <span class="motif-text">{{ m.motif }}</span>
                             </div>
                         </td>
                         <td>
-                            <span class="badge-mouvement" [class.entry]="m.typeMouvement === 'ENTREE'"
-                                [class.exit]="m.typeMouvement === 'SORTIE'">
-                                <i class="bi" [class.bi-plus-circle]="m.typeMouvement === 'ENTREE'"
-                                    [class.bi-dash-circle]="m.typeMouvement === 'SORTIE'"></i>
+                            <span class="badge-mouvement" [class.entry]="m.typeMouvement === 'ENTREE'" [class.exit]="m.typeMouvement === 'SORTIE'">
+                                <i class="bi" [class.bi-plus-circle]="m.typeMouvement === 'ENTREE'" [class.bi-dash-circle]="m.typeMouvement === 'SORTIE'"></i>
                                 {{ m.typeMouvement }}
                             </span>
                         </td>
@@ -220,15 +199,7 @@
                     <tr *ngIf="filteredMouvements.length === 0 && !loading">
                         <td colspan="5">
                             <div class="empty-state">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24"
-                                    fill="none" stroke="#a0aec0" stroke-width="1" stroke-linecap="round"
-                                    stroke-linejoin="round" style="opacity:0.5">
-                                    <path
-                                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-                                    </path>
-                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                </svg>
+                                <img src="https://img.icons8.com/bubbles/200/empty-box.png" alt="Empty list">
                                 <h3>Aucun résultat</h3>
                                 <p>Ajustez vos filtres pour trouver ce que vous cherchez.</p>
                             </div>
@@ -238,4 +209,4 @@
             </table>
         </div>
     </section>
-</div>
+</div>

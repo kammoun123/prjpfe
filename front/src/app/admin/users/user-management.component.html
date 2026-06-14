@@ -42,9 +42,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-label">Sécurité & Rôles</span>
-                <h3 class="stat-value">{{ stats.controleurs }} <small>Ctrl</small> / {{ stats.techniciens }}
-                    <small>Tech</small>
-                </h3>
+                <h3 class="stat-value">{{ stats.controleurs }} <small>Ctrl</small> / {{ stats.techniciens }} <small>Tech</small></h3>
             </div>
         </div>
     </div>
@@ -57,15 +55,6 @@
                 <span class="badge-count">Accès et permissions</span>
             </div>
             <div class="filter-tools">
-                <div class="tabs-premium mb-0 me-3">
-                    <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
-                        <i class="bi bi-people-fill"></i> Utilisateurs
-                    </button>
-                    <button class="tab-btn" [class.active]="activeTab === 'requests'" (click)="activeTab = 'requests'">
-                        <i class="bi bi-person-plus-fill"></i> Demandes
-                        <span class="badge-notif" *ngIf="demandes.length > 0">{{ demandes.length }}</span>
-                    </button>
-                </div>
                 <div class="search-box-mini">
                     <i class="bi bi-search"></i>
                     <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher par nom, prénom ou email...">
@@ -81,7 +70,7 @@
             <i class="bi bi-exclamation-octagon-fill"></i> {{ error }}
         </div>
 
-        <div class="table-responsive" *ngIf="activeTab === 'users'">
+        <div class="table-responsive">
             <table class="premium-table">
                 <thead>
                     <tr>
@@ -93,7 +82,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let user of filteredUsers; let i = index" class="table-row-animate"
+                    <tr *ngFor="let user of filteredUsers; let i = index" 
+                        class="table-row-animate" 
                         [style.animation-delay]="i * 0.05 + 's'">
                         <td>
                             <div class="user-identity">
@@ -114,9 +104,10 @@
                         </td>
                         <td>
                             <span class="badge-role" [ngClass]="user.role.toLowerCase()">
-                                <i class="bi" [class.bi-shield-shaded]="user.role === 'ADMIN'"
-                                    [class.bi-tools]="user.role === 'TECHNICIEN'"
-                                    [class.bi-eye-fill]="user.role === 'CONTROLEUR'">
+                                <i class="bi" 
+                                   [class.bi-shield-shaded]="user.role === 'ADMIN'"
+                                   [class.bi-tools]="user.role === 'TECHNICIEN'"
+                                   [class.bi-eye-fill]="user.role === 'CONTROLEUR'">
                                 </i>
                                 {{ user.role }}
                             </span>
@@ -129,79 +120,21 @@
                         </td>
                         <td class="text-end">
                             <div class="action-group">
-                                <button *ngIf="user.statut === 'PENDING' || user.statut === 'INACTIVE'"
-                                    (click)="updateStatus(user.idUtilisateur!, 'ACTIVE')"
-                                    class="btn-action-round approve" title="Activer">
+                                <button *ngIf="user.statut === 'PENDING' || user.statut === 'INACTIVE'" 
+                                        (click)="updateStatus(user.idUtilisateur!, 'ACTIVE')" 
+                                        class="btn-action-round approve" title="Activer">
                                     <i class="bi bi-person-check"></i>
                                 </button>
-                                <button *ngIf="user.statut === 'ACTIVE'"
-                                    (click)="updateStatus(user.idUtilisateur!, 'INACTIVE')"
-                                    class="btn-action-round deactivate" title="Désactiver">
+                                <button *ngIf="user.statut === 'ACTIVE'" 
+                                        (click)="updateStatus(user.idUtilisateur!, 'INACTIVE')" 
+                                        class="btn-action-round deactivate" title="Désactiver">
                                     <i class="bi bi-person-dash"></i>
                                 </button>
                                 <button (click)="openEdit(user)" class="btn-action-round edit" title="Modifier">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
-                                <button (click)="deleteUser(user.idUtilisateur!)" class="btn-action-round delete"
-                                    title="Supprimer">
+                                <button (click)="deleteUser(user.idUtilisateur!)" class="btn-action-round delete" title="Supprimer">
                                     <i class="bi bi-trash3"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="table-responsive" *ngIf="activeTab === 'requests'">
-            <div *ngIf="demandes.length === 0" class="empty-requests">
-                <i class="bi bi-check-all"></i>
-                <p>Aucune demande d'inscription en attente</p>
-            </div>
-            <table class="premium-table" *ngIf="demandes.length > 0">
-                <thead>
-                    <tr>
-                        <th>Candidat</th>
-                        <th>Email</th>
-                        <th>Rôle demandé</th>
-                        <th>Date demande</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let req of demandes; let i = index">
-                        <td>
-                            <div class="user-identity">
-                                <div class="user-avatar req-avatar">
-                                    {{ req.nom.charAt(0) }}{{ req.prenom.charAt(0) }}
-                                </div>
-                                <div class="name-info">
-                                    <span class="full-name">{{ req.nom }} {{ req.prenom }}</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="email-info">
-                                <i class="bi bi-envelope"></i>
-                                <span>{{ req.email }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge-role" [ngClass]="req.role.toLowerCase()">
-                                {{ req.role }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="date-req">{{ req.dateDemande | date:'short' }}</span>
-                        </td>
-                        <td class="text-end">
-                            <div class="action-group">
-                                <button (click)="approveDemande(req.id)" class="btn-action-round approve"
-                                    title="Accepter">
-                                    <i class="bi bi-check-lg"></i>
-                                </button>
-                                <button (click)="rejectDemande(req.id)" class="btn-action-round delete" title="Refuser">
-                                    <i class="bi bi-x-lg"></i>
                                 </button>
                             </div>
                         </td>
@@ -223,25 +156,22 @@
                     <i class="bi bi-x"></i>
                 </button>
             </div>
-
+            
             <form #editForm="ngForm" (ngSubmit)="editForm.valid && saveEdit()" class="modal-body-form">
                 <div class="form-grid-modal">
                     <div class="form-group-pro">
                         <label>Nom <span class="required">*</span></label>
-                        <input type="text" [(ngModel)]="editingUser.nom" name="nom" required
-                            placeholder="Entrez le nom">
+                        <input type="text" [(ngModel)]="editingUser.nom" name="nom" required placeholder="Entrez le nom">
                     </div>
                     <div class="form-group-pro">
                         <label>Prénom <span class="required">*</span></label>
-                        <input type="text" [(ngModel)]="editingUser.prenom" name="prenom" required
-                            placeholder="Entrez le prénom">
+                        <input type="text" [(ngModel)]="editingUser.prenom" name="prenom" required placeholder="Entrez le prénom">
                     </div>
                     <div class="form-group-pro full-width">
                         <label>Adresse Email <span class="required">*</span></label>
                         <div class="input-icon-group">
                             <i class="bi bi-at"></i>
-                            <input type="email" [(ngModel)]="editingUser.email" name="email" required email
-                                placeholder="email@exemple.com">
+                            <input type="email" [(ngModel)]="editingUser.email" name="email" required email placeholder="email@exemple.com">
                         </div>
                     </div>
                     <div class="form-group-pro">
@@ -256,8 +186,7 @@
                         <label>Nouveau Mot de Passe</label>
                         <div class="input-icon-group">
                             <i class="bi bi-key-fill"></i>
-                            <input type="password" [(ngModel)]="editingUser.newPassword" name="newPassword"
-                                minlength="6" placeholder="Optionnel">
+                            <input type="password" [(ngModel)]="editingUser.newPassword" name="newPassword" minlength="6" placeholder="Optionnel">
                         </div>
                     </div>
                 </div>
