@@ -109,14 +109,7 @@ import { Notification } from '../../models/notification.model';
                </div>
             </div>
 
-            <div class="action-btn">
-               <i class="bi bi-question-circle"></i>
-            </div>
-            <div class="user-initial-circle">K</div>
-            <button class="btn-gestion-pro">
-              <i class="bi bi-gear-fill"></i>
-              <span>Gestion Pro</span>
-            </button>
+
           </div>
         </header>
 

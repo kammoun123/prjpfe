@@ -26,6 +26,17 @@ public class UtilisateurService {
         if (utilisateur.getMotDePasse() == null || utilisateur.getMotDePasse().isBlank()) {
             throw new RuntimeException("Le mot de passe est obligatoire pour l'inscription");
         }
+
+        // Vérifier si une demande en attente existe déjà pour cet email
+        if (demandeInscriptionRepository.findByEmail(utilisateur.getEmail()).isPresent()) {
+            throw new RuntimeException("Une demande d'inscription est déjà en attente pour cet email. Veuillez patienter.");
+        }
+
+        // Vérifier si un compte actif existe déjà pour cet email
+        if (utilisateurRepository.findByEmail(utilisateur.getEmail()).isPresent()) {
+            throw new RuntimeException("Un compte existe déjà avec cet email.");
+        }
+
         DemandeInscription demande = new DemandeInscription();
         demande.setNom(utilisateur.getNom());
         demande.setPrenom(utilisateur.getPrenom());

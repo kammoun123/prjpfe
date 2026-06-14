@@ -28,13 +28,21 @@ public class InventaireService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
+    @Transactional(readOnly = true)
     public List<Inventaire> getAllInventaires() {
-        return inventaireRepository.findAll();
+        List<Inventaire> inventaires = inventaireRepository.findAll();
+        // Initialize lazy collection to avoid LazyInitializationException
+        inventaires.forEach(i -> i.getLignes().size());
+        return inventaires;
     }
 
+    @Transactional(readOnly = true)
     public Inventaire getInventaireById(Long id) {
-        return inventaireRepository.findById(id)
+        Inventaire inventaire = inventaireRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inventaire non trouvé"));
+        // Initialize lazy collection to avoid LazyInitializationException
+        inventaire.getLignes().size();
+        return inventaire;
     }
 
     @Transactional

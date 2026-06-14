@@ -34,8 +34,17 @@ public class CommandeService {
     @Autowired
     private FournisseurRepository fournisseurRepository;
 
+    @Transactional(readOnly = true)
     public List<Commande> getAllCommandes() {
-        return commandeRepository.findAll();
+        List<Commande> commandes = commandeRepository.findAll();
+        // Initialize lazy collections to avoid LazyInitializationException
+        commandes.forEach(c -> {
+            c.getLignes().size();
+            if (c.getFournisseur() != null) {
+                c.getFournisseur().getNom();
+            }
+        });
+        return commandes;
     }
 
     @Transactional
@@ -103,27 +112,14 @@ public class CommandeService {
         Commande savedCommande = commandeRepository.save(commande);
 
         // Add history trace for each line
+        // Removed as per user request: orders should not appear in movements until received.
+
+        // Initialize lazy properties
         if (savedCommande.getLignes() != null) {
-            for (CommandeLigne cmdLigne : savedCommande.getLignes()) {
-                Long pid = cmdLigne.getProduitId();
-                if (pid == null && cmdLigne.getProduit() != null)
-                    pid = cmdLigne.getProduit().getIdProduit();
-                if (pid != null) {
-                    Produit p = cmdLigne.getProduit();
-                    if (p == null) {
-                        p = produitRepository.findById(pid).orElse(null);
-                    }
-                    if (p != null) {
-                        MouvementStock mouvement = new MouvementStock();
-                        mouvement.setProduit(p);
-                        mouvement.setQuantite(cmdLigne.getQuantite());
-                        mouvement.setTypeMouvement("COMMANDE");
-                        mouvement.setMotif("Nouvelle commande fournisseur (Reliquat) #" + savedCommande.getId());
-                        mouvement.setDateMouvement(LocalDateTime.now());
-                        mouvementStockService.createMouvement(mouvement);
-                    }
-                }
-            }
+            savedCommande.getLignes().size();
+        }
+        if (savedCommande.getFournisseur() != null) {
+            savedCommande.getFournisseur().getNom();
         }
 
         return savedCommande;
@@ -171,25 +167,14 @@ public class CommandeService {
         }
 
         // Add history trace for each line
-        for (CommandeLigne cmdLigne : savedCommande.getLignes()) {
-            Long pid = cmdLigne.getProduitId();
-            if (pid == null && cmdLigne.getProduit() != null)
-                pid = cmdLigne.getProduit().getIdProduit();
-            if (pid != null) {
-                Produit p = cmdLigne.getProduit();
-                if (p == null) {
-                    p = produitRepository.findById(pid).orElse(null);
-                }
-                if (p != null) {
-                    MouvementStock mouvement = new MouvementStock();
-                    mouvement.setProduit(p);
-                    mouvement.setQuantite(cmdLigne.getQuantite());
-                    mouvement.setTypeMouvement("COMMANDE");
-                    mouvement.setMotif("Nouvelle commande directe #" + savedCommande.getId());
-                    mouvement.setDateMouvement(LocalDateTime.now());
-                    mouvementStockService.createMouvement(mouvement);
-                }
-            }
+        // Removed as per user request: orders should not appear in movements until received.
+
+        // Initialize lazy properties
+        if (savedCommande.getLignes() != null) {
+            savedCommande.getLignes().size();
+        }
+        if (savedCommande.getFournisseur() != null) {
+            savedCommande.getFournisseur().getNom();
         }
 
         return savedCommande;
@@ -282,6 +267,14 @@ public class CommandeService {
         notification.setDateCreation(LocalDateTime.now());
         notificationService.saveNotification(notification);
 
-        return commandeRepository.save(commande);
+        Commande saved = commandeRepository.save(commande);
+        
+        // Initialize lazy properties
+        saved.getLignes().size();
+        if (saved.getFournisseur() != null) {
+            saved.getFournisseur().getNom();
+        }
+        
+        return saved;
     }
 }

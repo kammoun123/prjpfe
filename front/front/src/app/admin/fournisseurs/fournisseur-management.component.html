@@ -1,0 +1,220 @@
+<div class="admin-container animate-fade-in">
+    <!-- DASHBOARD HEADER -->
+    <header class="dashboard-header">
+        <div class="header-left">
+            <h1 class="premium-title">Gestion des Fournisseurs</h1>
+            <nav class="breadcrumb">
+                <span>Admin</span> <i class="bi bi-chevron-right"></i>
+                <span class="active">Fournisseurs</span>
+            </nav>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary-gradient" (click)="openAddForm()">
+                <i class="bi bi-person-plus-fill"></i>
+                <span>Nouveau Fournisseur</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- STATS ROW -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Total Fournisseurs</span>
+                <h3 class="stat-value">{{ stats.total }}</h3>
+            </div>
+        </div>
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Fournisseurs Actifs</span>
+                <h3 class="stat-value">{{ stats.active }}</h3>
+            </div>
+        </div>
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-red">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">En Attente / Inactifs</span>
+                <h3 class="stat-value">{{ stats.inactive }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <section class="main-card glass-premium">
+        <div class="card-header">
+            <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher par nom ou email...">
+            </div>
+        </div>
+
+        <!-- MESSAGES -->
+        <div *ngIf="success" class="alert-premium success-alert slide-up">
+            <i class="bi bi-check-circle-fill"></i> {{ success }}
+        </div>
+        <div *ngIf="error" class="alert-premium error-alert slide-up">
+            <i class="bi bi-exclamation-octagon-fill"></i> {{ error }}
+        </div>
+
+        <div class="table-responsive p-4">
+            <table class="table-premium">
+                <thead>
+                    <tr>
+                        <th>Fournisseur</th>
+                        <th>Contact & Support</th>
+                        <th>Localisation</th>
+                        <th>Statut État</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let f of filteredFournisseurs; let i = index" 
+                        class="row-hover animate-row"
+                        [style.animation-delay]="i * 0.05 + 's'">
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-premium">{{ f.nom.charAt(0) }}</div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ f.nom }}</div>
+                                    <div class="text-muted smaller">ID: #{{ f.idFournisseur }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column gap-1">
+                                <span class="small fw-semibold text-dark"><i class="bi bi-envelope-fill me-1 opacity-50"></i> {{ f.email }}</span>
+                                <span class="smaller text-muted"><i class="bi bi-telephone-fill me-1 opacity-50"></i> {{ f.telephone }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-muted smaller">
+                                <i class="bi bi-geo-alt-fill me-1 opacity-50"></i> {{ f.adresse || 'N/A' }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="status-toggle-wrap" (click)="toggleStatut(f)">
+                                <span class="badge-premium" [class.active]="f.statut === 'ACTIF'" [class.inactive]="f.statut === 'INACTIF'">
+                                    <i class="bi" [class.bi-check-circle-fill]="f.statut === 'ACTIF'" [class.bi-dash-circle-fill]="f.statut === 'INACTIF'"></i>
+                                    {{ f.statut === 'ACTIF' ? 'Opérationnel' : 'Inactif' }}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button class="btn-circle-pro edit" (click)="openEditForm(f)" title="Modifier">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn-circle-pro delete" (click)="deleteFournisseur(f.idFournisseur!)" title="Supprimer">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- EMPTY STATE -->
+            <div *ngIf="filteredFournisseurs.length === 0" class="empty-state-container p-5 text-center">
+                <i class="bi bi-people-fill opacity-10" style="font-size: 5rem;"></i>
+                <h3 class="mt-3">Aucun fournisseur trouvé</h3>
+                <p class="text-muted">Essayez de modifier vos critères de recherche.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FORM MODAL -->
+    <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+        <div class="modal-premium animate-zoom" (click)="$event.stopPropagation()">
+            <div class="modal-hdr" [class.edit-mode]="formMode === 'edit'">
+                <div class="modal-hdr-left">
+                    <div class="modal-icon-wrap">
+                        <i class="bi" [class.bi-person-plus-fill]="formMode === 'add'" [class.bi-pencil-fill]="formMode === 'edit'"></i>
+                    </div>
+                    <div>
+                        <h2 class="modal-hdr-title">{{ formMode === 'add' ? 'Ajouter un Fournisseur' : 'Modifier le Fournisseur' }}</h2>
+                        <p class="modal-hdr-sub">Gérez les informations de vos partenaires logistiques</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" (click)="closeForm()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <form (ngSubmit)="saveFournisseur()" class="modal-body-new p-4">
+                <div class="section-label mb-4"><span class="section-num">1</span> Informations de base</div>
+                
+                <div class="row g-4 overflow-hidden">
+                    <div class="col-md-12">
+                        <div class="field-group">
+                            <label class="field-label">Nom de la société / Fournisseur <span class="req">*</span></label>
+                            <div class="field-input-wrap">
+                                <i class="field-icon bi bi-building"></i>
+                                <input class="field-input with-icon" type="text" [(ngModel)]="currentFournisseur.nom" name="nom" required placeholder="Ex: Pièces Auto SARL">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="field-group">
+                            <label class="field-label">Adresse Email <span class="req">*</span></label>
+                            <div class="field-input-wrap">
+                                <i class="field-icon bi bi-envelope-at"></i>
+                                <input class="field-input with-icon" type="email" [(ngModel)]="currentFournisseur.email" name="email" required placeholder="contact@fournisseur.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="field-group">
+                            <label class="field-label">Téléphone <span class="req">*</span></label>
+                            <div class="field-input-wrap">
+                                <i class="field-icon bi bi-telephone"></i>
+                                <input class="field-input with-icon" type="text" [(ngModel)]="currentFournisseur.telephone" name="tel" required placeholder="+216 ...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="field-group">
+                            <label class="field-label">Adresse physique</label>
+                            <div class="field-input-wrap">
+                                <i class="field-icon bi bi-geo-alt"></i>
+                                <textarea class="field-input with-icon pt-2" [(ngModel)]="currentFournisseur.adresse" name="adr" placeholder="Rue, Ville, Code Postal" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="field-group">
+                            <label class="field-label">Statut du Partenariat</label>
+                            <select class="field-input" [(ngModel)]="currentFournisseur.statut" name="stat">
+                                <option value="ACTIF">ACTIF (Opérationnel)</option>
+                                <option value="INACTIF">INACTIF (Suspendu)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer-new mt-5 pt-4 border-top">
+                    <button type="button" class="btn-cancel-new" (click)="closeForm()">
+                        <i class="bi bi-x"></i> Annuler
+                    </button>
+                    <button type="submit" class="btn-submit-new" [disabled]="loading">
+                        <span *ngIf="!loading"><i class="bi" [class.bi-check-circle-fill]="formMode === 'add'" [class.bi-save-fill]="formMode === 'edit'"></i>
+                            {{ formMode === 'add' ? 'Créer le partenaire' : 'Mettre à jour' }}
+                        </span>
+                        <span *ngIf="loading" class="spinner"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

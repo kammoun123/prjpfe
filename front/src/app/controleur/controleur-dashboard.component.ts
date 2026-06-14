@@ -181,8 +181,9 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
   }
 
   markAsRead(notif: any) {
-    if (notif.idNotification && notif.statut === 'NON_LUE') {
-      this.notificationService.markAsRead(notif.idNotification).subscribe(() => {
+    const notifId = notif.id || notif.idNotification;
+    if (notifId && notif.statut === 'NON_LUE') {
+      this.notificationService.markAsRead(notifId).subscribe(() => {
         this.notificationService.fetchNotificationsForRole('CONTROLEUR').subscribe();
       });
     }

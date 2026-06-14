@@ -30,7 +30,7 @@ export class AdminDashboardComponent implements OnInit {
     };
 
     recentMovements: MouvementStock[] = [];
-    pendingUsers: Utilisateur[] = [];
+    pendingUsers: any[] = [];
     lowStockItems: Produit[] = [];
     loading: boolean = true;
     loadingUsers: boolean = true;
@@ -84,23 +84,29 @@ export class AdminDashboardComponent implements OnInit {
 
     loadPendingUsers(): void {
         this.loadingUsers = true;
+        // Load total users count
         this.authService.getUsers().subscribe({
-            next: (users) => {
-                this.stats.totalUsers = users.length;
-                this.pendingUsers = users.filter(u => u.statut === 'PENDING');
+            next: (users) => { this.stats.totalUsers = users.length; },
+            error: () => { }
+        });
+        // Load pending registration requests from demandes-inscription
+        this.authService.getRegistrationRequests().subscribe({
+            next: (demandes) => {
+                this.pendingUsers = demandes;
                 this.loadingUsers = false;
             },
             error: () => { this.loadingUsers = false; }
         });
     }
 
-    approveUser(user: Utilisateur): void {
-        if (!user.idUtilisateur) return;
-        this.authService.updateUserStatus(user.idUtilisateur, 'ACTIVE').subscribe({
+    approveUser(user: any): void {
+        if (!user.id) return;
+        this.authService.accepterDemande(user.id).subscribe({
             next: () => {
                 this.loadPendingUsers();
+                this.loadStats(); // refresh user count
             },
-            error: (err) => console.error('Error approving user', err)
+            error: (err: any) => console.error('Error approving user', err)
         });
     }
 

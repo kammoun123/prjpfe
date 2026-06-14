@@ -1,0 +1,108 @@
+<div class="d-flex" style="min-height: 100vh; background: #f8fafc;">
+
+    <!-- Sidebar Technicien -->
+    <aside class="sidebar-pro">
+        <div class="p-4 mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="brand-icon shadow-sm">
+                    <i class="bi bi-gear-wide-connected"></i>
+                </div>
+                <div class="brand-text">
+                    <div class="fw-bold h5 mb-0" style="letter-spacing: -1px;">G-PRODUITS</div>
+                    <div class="text-muted smaller fw-bold ls-1">TECHNICIAN PRO</div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="px-3 flex-grow-1">
+            <div class="nav-group-label">EXPÉRIENCE DE TRAVAIL</div>
+            <a class="nav-item-pro" routerLink="/technicien" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                <i class="bi bi-speedometer2"></i> Tableau de bord
+            </a>
+            <a class="nav-item-pro" routerLink="/technicien/nouvelle-demande" routerLinkActive="active">
+                <i class="bi bi-plus-circle-dotted"></i> Nouvelle Demande
+            </a>
+
+            <div class="nav-group-label mt-4">PARAMÈTRES ET COMPTE</div>
+            <a class="nav-item-pro" routerLink="/technicien/profile" routerLinkActive="active">
+                <i class="bi bi-person-badge-fill"></i> Mon Profil
+            </a>
+            <a (click)="logout()" class="nav-item-pro text-danger mt-3" style="cursor: pointer;">
+                <i class="bi bi-box-arrow-right"></i> Déconnexion
+            </a>
+        </nav>
+
+        <div class="mt-auto p-3">
+            <div class="user-card-pro bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="user-avatar shadow-sm">{{ getUserInitial() }}</div>
+                    <div class="user-info overflow-hidden">
+                        <div class="fw-bold small text-truncate">{{ getUserName() }}</div>
+                        <div class="text-muted smaller">Expert Technicien</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper-pro">
+
+        <!-- Topbar Technicien -->
+        <header class="topbar-pro sticky-top bg-white border-bottom px-4 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center flex-grow-1">
+                <div class="search-pro-group d-none d-md-flex">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Rechercher une pièce ou une demande...">
+                </div>
+            </div>
+
+            <div class="topbar-actions d-flex align-items-center gap-3">
+                <!-- Notifications Dropdown -->
+                <div class="notification-wrapper position-relative">
+                    <div class="btn-action-pro" (click)="toggleNotifDropdown()">
+                        <i class="bi bi-bell-fill"></i>
+                        <span class="dot" *ngIf="unreadCount() > 0"></span>
+                    </div>
+
+                    <!-- Dropdown -->
+                    <div class="notif-dropdown shadow-lg rounded-3 bg-white" *ngIf="showNotifDropdown">
+                        <div class="notif-header p-3 border-bottom d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Alertes du Magasin</span>
+                            <button class="btn btn-sm btn-link text-decoration-none p-0" (click)="markAllAsRead()">Tout marquer lu</button>
+                        </div>
+                        <div class="notif-body">
+                            <div *ngFor="let n of notifications()" class="notif-item p-3 border-bottom" [class.unread]="n.statut === 'NON_LUE'" (click)="markAsRead(n)">
+                                <div class="d-flex gap-2">
+                                    <div class="notif-icon-small">
+                                        <i class="bi bi-info-circle-fill text-primary"></i>
+                                    </div>
+                                    <div class="notif-text flex-grow-1">
+                                        <p class="mb-1 smaller fw-medium">{{ n.message }}</p>
+                                        <small class="text-muted smaller-xs">{{ n.dateCreation | date:'short' }}</small>
+                                    </div>
+                                    <div *ngIf="n.statut === 'NON_LUE'" class="unread-dot"></div>
+                                </div>
+                            </div>
+                            <div *ngIf="notifications().length === 0" class="p-4 text-center text-muted">
+                                <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-50"></i>
+                                <span class="smaller">Aucune notification</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vr mx-1"></div>
+                <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2"
+                    style="font-size: 0.85rem;">
+                    <i class="bi bi-lightning-charge-fill"></i> Support Pro
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Area -->
+        <main class="content-pro p-4 p-md-5">
+            <router-outlet></router-outlet>
+        </main>
+    </div>
+</div>

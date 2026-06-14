@@ -79,7 +79,8 @@ export class MouvementManagementComponent implements OnInit {
             const matchesStart = !this.startDate || mDate >= this.startDate;
             const matchesEnd = !this.endDate || mDate <= this.endDate;
 
-            const pieceName = this.getNomPiece(m.produitId).toLowerCase();
+            const resolvedId = m.produitId || (m.produit as any)?.idProduit;
+            const pieceName = this.getNomPiece(resolvedId).toLowerCase();
             const matchesSearch = !this.searchTerm || pieceName.includes(this.searchTerm.toLowerCase());
 
             return matchesType && matchesStart && matchesEnd && matchesSearch;
@@ -127,12 +128,18 @@ export class MouvementManagementComponent implements OnInit {
         });
     }
 
-    getNomPiece(id: number | string): string {
+    getNomPiece(id: number | string | undefined): string {
+        if (!id) return 'Produit inconnu';
         const p = this.produits.find(prod => prod.idProduit == id);
         if (p) {
             return p.designation || p.reference || ('Produit #' + id);
         }
         return 'Produit #' + id;
+    }
+
+    // Helper to resolve produit ID from backend response (which may return object or id)
+    resolveProduitId(m: any): number | undefined {
+        return m.produitId || m.produit?.idProduit;
     }
 
     supprimerMouvement(id: number | undefined) {

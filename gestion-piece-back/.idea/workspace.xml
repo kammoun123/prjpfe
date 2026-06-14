@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a9248021-c94a-4e89-8336-c92b19de65b7" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../.vscode/settings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend_logs.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/.editorconfig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/.prettierrc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/.vscode/extensions.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/.vscode/launch.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/.vscode/mcp.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/.vscode/tasks.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/angular.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/build_error.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/build_error_utf8.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/build_errors.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/build_output.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/build_output_utf8.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/db.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/public/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/auth.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/categorie.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/demande-piece.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/demande-produit.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/inventaire.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/mouvement-stock.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/notification.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/piece.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/produit.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/rapport.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/Services/toast.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/admin-dashboard/admin-dashboard.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/admin-dashboard/admin-dashboard.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/admin-dashboard/admin-dashboard.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/categories/categorie-management.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/categories/categorie-management.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/categories/categorie-management.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/demandes/admin-demandes.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/demandes/admin-demandes.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/demandes/admin-demandes.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/layout/admin-layout.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/layout/admin-layout.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/layout/admin-layout.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/products/product-management.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/products/product-management.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/products/product-management.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/stock-movements/mouvement-management.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/stock-movements/mouvement-management.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/stock-movements/mouvement-management.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/users/user-management.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/users/user-management.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/admin/users/user-management.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/app.config.server.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/app.config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/app.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/app.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/app.routes.server.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/app.routes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/app.spec.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/app.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/auth/login/login.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/auth/login/login.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/auth/login/login.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/auth/register/register.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/auth/register/register.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/auth/register/register.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/controleur/controleur-dashboard.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/controleur/controleur-dashboard.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/controleur/controleur-dashboard.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/guards/auth.guard.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/interceptors/auth.interceptor.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/audit-rapport/audit-rapport.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/audit-rapport/audit-rapport.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/audit-rapport/audit-rapport.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/consultation-stock/consultation-stock.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/consultation-stock/consultation-stock.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/consultation-stock/consultation-stock.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/demande-admin/demande-admin.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/demande-admin/demande-admin.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/demande-admin/demande-admin.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/demandes-consultation/demandes-consultation.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/demandes-consultation/demandes-consultation.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/demandes-consultation/demandes-consultation.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/layout/magasinier-layout.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/magasinier-dashboard/magasinier-dashboard.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/magasinier-dashboard/magasinier-dashboard.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/magasinier/magasinier-dashboard/magasinier-dashboard.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/models/categorie.model.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/models/demande-produit-multi.model.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/models/demande-produit.model.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/models/inventaire.model.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/models/mouvement-stock.model.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/models/notification.model.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/models/produit.model.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/models/utilisateur.model.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/technicien/dashboard/technicien-dashboard.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/technicien/dashboard/technicien-dashboard.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/technicien/dashboard/technicien-dashboard.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/technicien/demande-piece/demande-piece.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/technicien/demande-piece/demande-piece.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/technicien/demande-piece/demande-piece.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/technicien/layout/technician-layout.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/technicien/layout/technician-layout.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/technicien/layout/technician-layout.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/app/technicien/profile/profile.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/environments/environment.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/main.server.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/main.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/server.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/src/styles.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/tsconfig.app.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/tsconfig.spec.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front/workspace.code-workspace" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gestion-piece-back.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/backend_log.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/compile_log.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/db_output.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/GestionProduitBackApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/config/JwtAuthenticationFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/config/JwtUtils.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/config/SecurityConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/config/WebConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/controller/AuthController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/controller/CategorieController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/controller/DemandeProduitController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/controller/InventaireController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/controller/MouvementStockController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/controller/NotificationController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/controller/ProduitController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/controller/UtilisateurController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/exception/GlobalExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/model/Categorie.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/model/DemandeProduit.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/model/Inventaire.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/model/LigneInventaire.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/model/MouvementStock.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/model/Notification.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/model/Produit.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/model/Utilisateur.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/repository/CategorieRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/repository/DemandeProduitRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/repository/InventaireRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/repository/LigneInventaireRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/repository/MouvementStockRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/repository/NotificationRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/repository/ProduitRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/repository/UtilisateurRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/service/CategorieService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/service/DemandeProduitService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/service/EmailService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/service/InventaireService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/service/MouvementStockService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/service/NotificationService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/service/ProduitService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/service/UserDetailsServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/java/com/example/gestion_piece_back/service/UtilisateurService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/src/test/java/com/example/gestion_piece_back/GestionProduitBackApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/uploads/fiches/06b7cb4b-3fa0-4243-a37f-d048f9addb7a_rapport_khalil_kamoun_(4).docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/uploads/fiches/89f2bf33-c150-4793-bcbc-dfacd7d805f2_attestation_khalil_kammoun.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/uploads/fiches/ba2a6de5-c2ec-49d2-84a1-9634a582749f_pfee.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/uploads/fiches/f3e09f55-2f2a-41e6-ab18-03653241c07c_attestation_khalil_kammoun.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/uploads/produits/1e4894e0-a1ec-4068-98b2-91539b348bd0_7b069a9d-d920-4b45-8e6f-ed5537d99c74.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/uploads/produits/45536c51-d823-4a05-aba3-e0a78e2b0584_c2b0a4ec-1b2c-46b6-9647-b05d2b363038.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gestion-piece-back/uploads/produits/f51709da-9e19-4383-aaca-6f1fbd78acc8_0707fb69-77b3-4a83-bf32-72b4c2e515df.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/fiches/8d53f39c-c710-4491-a2a1-cc5fc9dbb429_pfee_(1).pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/fiches/b3eb64b8-56a7-49d8-8f85-9ff7e299635c_rapport_khalil_kamoun_(4).docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/produits/25e91240-a0c3-4f90-8997-671ca029841f_e82b657e-3875-461d-8b5b-838fe2749ede (3).jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/produits/679855dc-51a6-4762-a193-1b59a47154bf_d03012cd-47b0-4b13-babd-d9ca69387a48.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/produits/f860c8bb-8437-4ad9-b292-a05204fc2a9f_d012436c-112d-41e8-9c8a-9951b39dbf92.jpg" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3C4ewxRH34nNK051XsipylI1Uvh" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Docker.gestion-piece-back/Dockerfile.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Spring Boot.GestionProduitBackApplication.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;version-5&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/User/Downloads/prjpfe-main/prjpfe-main/gestion-piece-back&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql&quot;
+    ]
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="GestionProduitBackApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="gestion-piece-back" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.gestion_piece_back.GestionProduitBackApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a9248021-c94a-4e89-8336-c92b19de65b7" name="Changes" comment="" />
+      <created>1775649512720</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1775649512720</updated>
+      <workItem from="1775649514434" duration="896000" />
+      <workItem from="1775650433231" duration="73000" />
+      <workItem from="1775723000045" duration="239000" />
+      <workItem from="1775743378848" duration="3460000" />
+      <workItem from="1775752930425" duration="1943000" />
+      <workItem from="1775755167056" duration="2655000" />
+      <workItem from="1775995509689" duration="14101000" />
+      <workItem from="1776590253848" duration="1164000" />
+      <workItem from="1776591800332" duration="12970000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

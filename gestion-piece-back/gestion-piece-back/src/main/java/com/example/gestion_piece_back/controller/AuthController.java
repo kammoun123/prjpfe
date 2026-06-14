@@ -1,7 +1,6 @@
 package com.example.gestion_piece_back.controller;
 
 import com.example.gestion_piece_back.model.Utilisateur;
-import com.example.gestion_piece_back.model.DemandeInscription;
 import com.example.gestion_piece_back.service.UtilisateurService;
 import com.example.gestion_piece_back.config.JwtUtils;
 import jakarta.validation.Valid;
@@ -28,17 +27,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid Utilisateur utilisateur) {
-        if (utilisateurService.findByEmail(utilisateur.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email déjà utilisé");
+        try {
+            return ResponseEntity.ok(utilisateurService.register(utilisateur));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(java.util.Map.of("message", e.getMessage()));
         }
-        DemandeInscription savedDemande = utilisateurService.register(utilisateur);
-
-        java.util.Map<String, Object> response = new java.util.HashMap<>();
-        response.put("message",
-                "Inscription réussie ! Votre compte est en attente de validation par l'administrateur.");
-        response.put("id", savedDemande.getId());
-
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
@@ -50,13 +44,7 @@ public class AuthController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
                     .body("Email ou mot de passe incorrect");
         } catch (org.springframework.security.authentication.DisabledException e) {
-            Utilisateur user = utilisateurService.findByEmail(request.getEmail()).orElse(null);
-            if (user != null && "PENDING".equals(user.getStatut())) {
-                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
-                        .body("Votre compte est en attente de validation par l'administrateur.");
-            }
-            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
-                    .body("Votre compte est désactivé. Veuillez contacter l'administrateur.");
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body("Compte désactivé");
         } catch (Exception e) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
                     .body("Échec de l'authentification");
@@ -75,41 +63,6 @@ public class AuthController {
     static class LoginRequest {
         private String email;
         private String motDePasse;
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-        try {
-            utilisateurService.initiatePasswordReset(request.getEmail());
-            return ResponseEntity.ok().body("{\"message\": \"Email de réinitialisation envoyé\"}");
-        } catch (RuntimeException e) {
-            if ("Votre compte n'est pas encore activé. Veuillez contacter l'administrateur.".equals(e.getMessage())) {
-                return ResponseEntity.status(403).body("{\"message\": \"" + e.getMessage() + "\"}");
-            }
-            // For security reasons, don't confirm if email exists for other errors
-            return ResponseEntity.ok().body("{\"message\": \"Si l'email existe, un lien a été envoyé\"}");
-        }
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
-        try {
-            utilisateurService.completePasswordReset(request.getToken(), request.getNewPassword());
-            return ResponseEntity.ok().body("{\"message\": \"Mot de passe mis à jour avec succès\"}");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @Data
-    static class ForgotPasswordRequest {
-        private String email;
-    }
-
-    @Data
-    static class ResetPasswordRequest {
-        private String token;
-        private String newPassword;
     }
 
     @Data

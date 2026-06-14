@@ -1,0 +1,149 @@
+<div class="admin-container animate-fade-in">
+    <!-- DASHBOARD HEADER -->
+    <header class="dashboard-header">
+        <div class="header-left">
+            <h1 class="premium-title">Gestion des Catégories</h1>
+            <nav class="breadcrumb">
+                <span>Admin</span> <i class="bi bi-chevron-right"></i>
+                <span class="active">Catégories</span>
+            </nav>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary-gradient" (click)="openAddForm()">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Nouvelle Catégorie</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- STATS ROW -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-blue">
+                <i class="bi bi-grid-fill"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Total Catégories</span>
+                <h3 class="stat-value">{{ categories.length }}</h3>
+            </div>
+            <div class="stat-progress">
+                <div class="progress-bar" style="width: 70%"></div>
+            </div>
+        </div>
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-orange">
+                <i class="bi bi-calendar-check-fill"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Dernière Mise à jour</span>
+                <h3 class="stat-value">{{ stats.lastUpdate }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <section class="main-card glass-premium">
+        <div class="card-header">
+            <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher une catégorie...">
+            </div>
+            <div class="filter-actions">
+                <button class="btn-icon-secondary" title="Exporter">
+                    <i class="bi bi-download"></i>
+                </button>
+                <button class="btn-icon-secondary" title="Filtrer">
+                    <i class="bi bi-filter"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Catégorie</th>
+                        <th>Description</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let cat of filteredCategories; let i = index" 
+                        class="table-row" 
+                        [style.animation-delay]="i * 0.05 + 's'">
+                        <td>
+                            <div class="category-info">
+                                <div class="category-icon-box">
+                                    {{ cat.nomCategorie.charAt(0) }}
+                                </div>
+                                <div class="category-detail">
+                                    <span class="category-name">{{ cat.nomCategorie }}</span>
+                                    <span class="category-id">#{{ cat.idCategorie }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <p class="description-text">{{ cat.description || 'Aucune description disponible' }}</p>
+                        </td>
+                        <td class="text-end">
+                            <div class="actions-wrapper">
+                                <button class="btn-edit" (click)="openEditForm(cat)" title="Modifier">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn-delete" (click)="deleteCategorie(cat.idCategorie)" title="Supprimer">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr *ngIf="filteredCategories.length === 0">
+                        <td colspan="3">
+                            <div class="empty-state">
+                                <img src="https://img.icons8.com/bubbles/200/search.png" alt="No data">
+                                <h3>Aucune catégorie trouvée</h3>
+                                <p>Essayez de modifier vos critères de recherche.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- FORM MODAL (IMPROVED) -->
+    <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+        <div class="modal-container glass-premium" (click)="$event.stopPropagation()">
+            <div class="modal-header-pro">
+                <div class="modal-title-group">
+                    <i class="bi" [class.bi-plus-circle]="formMode === 'add'" [class.bi-pencil-square]="formMode === 'edit'"></i>
+                    <h2>{{ formMode === 'add' ? 'Ajouter' : 'Modifier' }} une catégorie</h2>
+                </div>
+                <button class="btn-close" (click)="closeForm()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <form (ngSubmit)="saveCategorie()" class="modal-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nom de la catégorie</label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-tag"></i>
+                            <input type="text" [(ngModel)]="currentCategorie.nomCategorie" name="nom" required placeholder="Ex: Pneumatiques">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description détaillée</label>
+                        <textarea [(ngModel)]="currentCategorie.description" name="desc" rows="4" placeholder="Décrivez l'usage de cette catégorie..."></textarea>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button type="button" class="btn-cancel" (click)="closeForm()">Annuler</button>
+                    <button type="submit" class="btn-submit" [disabled]="loading">
+                        <span *ngIf="!loading">{{ formMode === 'add' ? 'Créer la catégorie' : 'Mettre à jour' }}</span>
+                        <span *ngIf="loading" class="spinner"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

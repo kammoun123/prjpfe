@@ -1,0 +1,160 @@
+<div class="admin-container animate-fade-in">
+  <!-- DASHBOARD HEADER -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <h1 class="premium-title">Consultation du Stock</h1>
+      <nav class="breadcrumb">
+        <span>Magasinier</span> <i class="bi bi-chevron-right"></i>
+        <span class="active">État de l'Inventaire</span>
+      </nav>
+    </div>
+    <div class="header-right">
+      <div class="stats-grid-small">
+        <div class="stat-card-glass">
+          <div class="s-icon blue-bg"><i class="bi bi-box-seam"></i></div>
+          <div class="s-info">
+            <span class="s-label">STOCK TOTAL</span>
+            <span class="s-count">{{ totalStock() }}</span>
+          </div>
+        </div>
+        <div class="stat-card-glass" [class.danger-glow]="criticalCount() > 0">
+          <div class="s-icon red-bg"><i class="bi bi-exclamation-triangle-fill"></i></div>
+          <div class="s-info">
+            <span class="s-label">STOCK CRITIQUE</span>
+            <span class="s-count text-danger">{{ criticalCount() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CARD -->
+  <section class="main-card glass-premium">
+    <div class="card-header-main">
+      <div class="header-titles">
+        <div class="title-pro">
+          <i class="bi bi-search"></i>
+          <h2>Recherche & Filtrage</h2>
+        </div>
+        <span class="badge-count">{{ filteredPieces().length }} références affichées</span>
+      </div>
+      <div class="filter-tools-row">
+        <!-- Search -->
+        <div class="quick-search">
+          <i class="bi bi-search"></i>
+          <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); filterPieces()" placeholder="Réf, désignation...">
+        </div>
+        <!-- Status Toggles -->
+        <div class="status-toggles">
+          <button [class.active]="filterStatus() === 'all'" (click)="setFilter('all')">Tous</button>
+          <button [class.active]="filterStatus() === 'critical'" (click)="setFilter('critical')">
+            <span class="dot red"></span> Critique
+          </button>
+          <button [class.active]="filterStatus() === 'normal'" (click)="setFilter('normal')">
+            <span class="dot green"></span> Stable
+          </button>
+        </div>
+        <button class="btn-refresh" (click)="loadPieces()" title="Actualiser"><i class="bi bi-arrow-clockwise"></i></button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>RÉFÉRENCE</th>
+            <th>DESCRIPTION DU PRODUIT</th>
+            <th class="text-center">STOCK</th>
+            <th class="text-center">SEUIL</th>
+            <th class="text-center">STATUT</th>
+            <th class="text-end">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of filteredPieces(); let i = index" class="row-animate" [style.animation-delay]="i * 0.05 + 's'">
+            <td>
+              <span class="ref-badge-pro">{{ p.reference }}</span>
+            </td>
+            <td>
+              <div class="product-info">
+                <span class="p-name">{{ p.designation }}</span>
+                <span class="p-cat">{{ $any(p).categorie?.nom || 'Général' }}</span>
+              </div>
+            </td>
+            <td class="text-center">
+              <span class="stock-val" [ngClass]="getStockColorClass(p)">{{ p.quantiteStock }}</span>
+            </td>
+            <td class="text-center">
+              <span class="seuil-val">{{ p.seuilAlerte || 5 }}</span>
+            </td>
+            <td class="text-center">
+              <span class="status-pill-pro" [ngClass]="getStatusBadgeClass(p)">
+                <i class="bi" [ngClass]="p.quantiteStock === 0 ? 'bi-x-circle' : (p.quantiteStock <= (p.seuilAlerte || 5) ? 'bi-exclamation-circle' : 'bi-check-circle')"></i>
+                {{ (p.quantiteStock <= (p.seuilAlerte || 5)) ? (p.quantiteStock === 0 ? 'Rupture' : 'Critique') : 'En Stock' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="action-buttons-pro">
+                <a *ngIf="p.ficheTechniqueUrl" [href]="backendUrl + p.ficheTechniqueUrl" target="_blank" class="btn-icon btn-fiche" title="Fiche Technique">
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                </a>
+                <button class="btn-action-pro" (click)="openAdjustModal(p)">
+                  <i class="bi bi-sliders2-vertical"></i>
+                  Ajuster
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredPieces().length === 0">
+            <td colspan="6">
+              <div class="empty-state-pro">
+                <i class="bi bi-search-heart"></i>
+                <h3>Aucun résultat</h3>
+                <p>Aucun produit ne correspond à vos critères de recherche.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- ADJUST MODAL -->
+<div class="modal-backdrop animate-fade-in" *ngIf="showModal()" (click)="closeModal()">
+  <div class="modal-card-pro glass-premium animate-zoom-in" (click)="$event.stopPropagation()">
+    <div class="modal-header-pro">
+      <div class="m-titles">
+        <span class="m-badge">AJUSTEMENT DE STOCK</span>
+        <h3>Mise à jour manuelle</h3>
+        <p class="m-subtitle">Produit: <span class="fw-bold">{{ selectedPiece()?.designation }}</span></p>
+      </div>
+      <button class="btn-close-circle" (click)="closeModal()"><i class="bi bi-x"></i></button>
+    </div>
+
+    <div class="modal-body-pro">
+      <div class="adjustment-form">
+        <div class="current-stock-box">
+          <span class="l-muted">Stock Actuel</span>
+          <span class="l-main">{{ selectedPiece()?.quantiteStock }}</span>
+        </div>
+        <div class="form-group-pro">
+          <label>Nouvelle Quantité en Stock</label>
+          <div class="input-with-icon">
+            <i class="bi bi-plus-slash-minus"></i>
+            <input type="number" [ngModel]="newQuantity()" (ngModelChange)="newQuantity.set($event)" placeholder="Entrez la nouvelle quantité...">
+          </div>
+          <span class="help-text">Attention: Cette opération modifie directement le stock sans passer par un mouvement formel.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer-pro">
+      <button class="btn-secondary-pro" (click)="closeModal()">Annuler</button>
+      <button class="btn-primary-pro" (click)="saveAdjustment()">
+        <i class="bi bi-check2"></i>
+        Enregistrer les modifications
+      </button>
+    </div>
+  </div>
+</div>

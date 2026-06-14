@@ -1,0 +1,266 @@
+<div class="admin-container animate-fade-in">
+    <!-- DASHBOARD HEADER -->
+    <header class="dashboard-header">
+        <div class="header-left">
+            <h1 class="premium-title">Catalogue des Pièces</h1>
+            <nav class="breadcrumb">
+                <span>Admin</span> <i class="bi bi-chevron-right"></i>
+                <span class="active">Stock</span>
+            </nav>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary-gradient" (click)="openAddForm()">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Ajouter un Produit</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- STATS ROW -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-blue">
+                <i class="bi bi-boxes"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Total Produits</span>
+                <h3 class="stat-value">{{ stats.total }}</h3>
+            </div>
+            <div class="stat-progress">
+                <div class="progress-bar" [style.width.%]="100"></div>
+            </div>
+        </div>
+        <div class="stat-card glass-premium" [class.alert]="stats.lowStock > 0">
+            <div class="stat-icon" [class.bg-red]="stats.lowStock > 0" [class.bg-green]="stats.lowStock === 0">
+                <i class="bi" [class.bi-exclamation-triangle-fill]="stats.lowStock > 0" [class.bi-check-circle-fill]="stats.lowStock === 0"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Alertes Stock</span>
+                <h3 class="stat-value">{{ stats.lowStock }}</h3>
+            </div>
+            <div class="stat-tag" *ngIf="stats.lowStock > 0">Action requise</div>
+            <div class="stat-tag success" *ngIf="stats.lowStock === 0">Stock optimal</div>
+        </div>
+        <div class="stat-card glass-premium">
+            <div class="stat-icon bg-orange">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Dernière Mise à jour</span>
+                <h3 class="stat-value" style="font-size: 1.2rem;">{{ stats.lastUpdate }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <section class="main-card glass-premium">
+        <div class="card-header">
+            <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" [(ngModel)]="searchTerm" placeholder="Rechercher par référence ou désignation...">
+            </div>
+            <div class="filter-actions-group">
+                <select class="select-premium" [(ngModel)]="selectedCategory">
+                    <option [value]="null">Toutes les catégories</option>
+                    <option *ngFor="let cat of categories" [value]="cat.idCategorie">{{ cat.nomCategorie }}</option>
+                </select>
+                <div class="divider-v"></div>
+                <button class="btn-icon-secondary" title="Exporter">
+                    <i class="bi bi-download"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- MESSAGES -->
+        <div *ngIf="success" class="alert-premium success-alert slide-up">
+            <i class="bi bi-check-circle-fill"></i> {{ success }}
+        </div>
+        <div *ngIf="error" class="alert-premium error-alert slide-up">
+            <i class="bi bi-exclamation-octagon-fill"></i> {{ error }}
+        </div>
+
+        <div class="grid-container">
+            <div class="dashboard-grid">
+                <!-- GRID ITEM -->
+                <div *ngFor="let piece of filteredProduits; let i = index" 
+                     class="product-card-premium" 
+                     [class.low-stock-warning]="piece.quantiteStock <= piece.seuilAlerte"
+                     [style.animation-delay]="i * 0.05 + 's'">
+                    
+                    <div class="card-top">
+                        <div class="image-box">
+                            <img *ngIf="piece.photoUrl" [src]="getPhotoUrl(piece)" [alt]="piece.designation">
+                            <div *ngIf="!piece.photoUrl" class="image-placeholder">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                            <span class="badge-stock" [class.danger]="piece.quantiteStock <= piece.seuilAlerte">
+                                {{ piece.quantiteStock }} en stock
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-content">
+                        <div class="content-header">
+                            <span class="category-pill">{{ getCategoryName(piece.idCategorie) }}</span>
+                            <span class="ref-text">{{ piece.reference }}</span>
+                        </div>
+                        <h3 class="product-title">{{ piece.designation }}</h3>
+                        
+                        <div class="report-section">
+                            <a *ngIf="piece.ficheTechniqueUrl" [href]="backendUrl + piece.ficheTechniqueUrl" target="_blank" class="btn-fiche-premium" title="Ouvrir le rapport technique complet">
+                                <i class="bi bi-file-earmark-check-fill"></i> <span>Rapport / Fiche</span>
+                            </a>
+                            <div *ngIf="!piece.ficheTechniqueUrl" class="missing-fiche-banner">
+                                <i class="bi bi-exclamation-triangle-fill"></i> <span>Sans Fiche Tech.</span>
+                            </div>
+                        </div>
+
+                        <div class="stock-meter">
+                            <div class="meter-label">
+                                <span>Niveau de stock</span>
+                                <span>{{ getStockPercent(piece) }}%</span>
+                            </div>
+                            <div class="meter-track">
+                                <div class="meter-fill" 
+                                     [style.width.%]="getStockPercent(piece)"
+                                     [class.danger-fill]="piece.quantiteStock <= piece.seuilAlerte">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer-actions">
+                            <button class="btn-circle edit" (click)="openEditForm(piece)" title="Modifier">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button class="btn-circle delete" (click)="$event.stopPropagation(); deletePiece(piece.idProduit)" title="Supprimer">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EMPTY STATE -->
+                <div *ngIf="filteredProduits.length === 0" class="empty-state-container">
+                    <img src="https://img.icons8.com/bubbles/200/database.png" alt="No data">
+                    <h3>Aucun produit trouvé</h3>
+                    <p>Votre catalogue est vide ou ne correspond pas à vos critères.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FORM MODAL -->
+    <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+        <div class="modal-premium" (click)="$event.stopPropagation()">
+
+            <!-- MODAL HEADER with gradient -->
+            <div class="modal-hdr" [class.edit-mode]="formMode === 'edit'">
+                <div class="modal-hdr-left">
+                    <div class="modal-icon-wrap">
+                        <i class="bi" [class.bi-plus-circle-fill]="formMode === 'add'" [class.bi-pencil-fill]="formMode === 'edit'"></i>
+                    </div>
+                    <div>
+                        <h2 class="modal-hdr-title">{{ formMode === 'add' ? 'Nouveau Produit' : 'Modifier le Produit' }}</h2>
+                        <p class="modal-hdr-sub">{{ formMode === 'add' ? 'Remplissez les informations pour créer une nouvelle pièce' : 'Mettez à jour les informations de la pièce' }}</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" (click)="closeForm()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <form (ngSubmit)="savePiece()" class="modal-body-new">
+                <div class="modal-cols">
+
+                    <!-- LEFT: Photo -->
+                    <div class="modal-left-col">
+                        <div class="section-label"><span class="section-num">1</span> Photo du produit</div>
+                        <label class="photo-zone" [class.has-photo]="photoPreview">
+                            <img *ngIf="photoPreview" [src]="photoPreview" class="photo-preview-img">
+                            <div *ngIf="!photoPreview" class="photo-zone-empty">
+                                <div class="photo-icon-wrap"><i class="bi bi-camera-fill"></i></div>
+                                <span class="photo-zone-label">Cliquer pour ajouter</span>
+                                <span class="photo-zone-sub">JPG, PNG · Max 5 Mo</span>
+                            </div>
+                            <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden>
+                        </label>
+                        <button type="button" *ngIf="photoPreview" class="btn-remove-photo" (click)="photoPreview = null; selectedFile = null">
+                            <i class="bi bi-trash3-fill"></i> Retirer
+                        </button>
+                    </div>
+
+                    <!-- RIGHT: Fields -->
+                    <div class="modal-right-col">
+
+                        <!-- Section 2: Infos de base -->
+                        <div class="section-label"><span class="section-num">2</span> Informations principales</div>
+                        <div class="field-grid-2">
+                            <div class="field-group span-2">
+                                <label class="field-label">Désignation <span class="req">*</span></label>
+                                <input class="field-input" type="text" [(ngModel)]="currentProduit.designation" name="desig" required placeholder="Ex: Plaquette de frein AV">
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Catégorie</label>
+                                <select class="field-input" [(ngModel)]="currentProduit.idCategorie" name="cat" (change)="onCategoryChange()">
+                                    <option *ngFor="let cat of categories" [value]="cat.idCategorie">{{ cat.nomCategorie }}</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">
+                                    Référence <span class="req">*</span>
+                                    <span *ngIf="formMode === 'add'" class="auto-pill"><i class="bi bi-stars"></i> Auto</span>
+                                </label>
+                                <div class="field-input-wrap">
+                                    <i class="field-icon bi" [class.bi-hash]="formMode === 'add'" [class.bi-pencil]="formMode === 'edit'"></i>
+                                    <input class="field-input with-icon" [class.auto-ref]="formMode === 'add'" type="text" [(ngModel)]="currentProduit.reference" name="ref" required placeholder="REF-000" [readonly]="formMode === 'add'">
+                                </div>
+                                <span *ngIf="formMode === 'add'" class="field-hint"><i class="bi bi-magic"></i> Générée automatiquement</span>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Stock -->
+                        <div class="section-label mt-section"><span class="section-num">3</span> Gestion du stock</div>
+                        <div class="field-grid-2">
+                            <div class="field-group">
+                                <label class="field-label"><i class="bi bi-stack text-blue"></i> Quantité actuelle</label>
+                                <input class="field-input" type="number" [(ngModel)]="currentProduit.quantiteStock" name="stock" required min="0">
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label"><i class="bi bi-bell-fill text-orange"></i> Seuil d'alerte</label>
+                                <input class="field-input" type="number" [(ngModel)]="currentProduit.seuilAlerte" name="seuil" required min="0">
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Fiche technique -->
+                        <div class="section-label mt-section"><span class="section-num">4</span> Rapport / Fiche technique</div>
+                        <label class="fiche-dropzone" [class.fiche-selected]="selectedFiche">
+                            <i class="bi" [class.bi-file-earmark-arrow-up-fill]="!selectedFiche" [class.bi-file-earmark-check-fill]="selectedFiche"></i>
+                            <div class="fiche-text">
+                                <span class="fiche-main">{{ selectedFiche ? selectedFiche.name : 'Cliquer pour uploader un rapport' }}</span>
+                                <span class="fiche-sub">{{ selectedFiche ? 'Fichier prêt à enregistrer' : 'PDF, DOC, DOCX · Max 50 Mo' }}</span>
+                            </div>
+                            <input type="file" (change)="onFicheSelected($event)" accept=".pdf,.doc,.docx" hidden>
+                        </label>
+                        <small *ngIf="!selectedFiche && currentProduit.ficheTechniqueUrl" class="fiche-existing">
+                            <i class="bi bi-paperclip"></i> Fiche existante · Chargez un nouveau fichier pour remplacer
+                        </small>
+                    </div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer-new">
+                    <button type="button" class="btn-cancel-new" (click)="closeForm()">
+                        <i class="bi bi-x"></i> Annuler
+                    </button>
+                    <button type="submit" class="btn-submit-new" [disabled]="loading">
+                        <span *ngIf="!loading"><i class="bi" [class.bi-plus-circle-fill]="formMode === 'add'" [class.bi-check-circle-fill]="formMode === 'edit'"></i>
+                            {{ formMode === 'add' ? 'Créer le produit' : 'Enregistrer' }}
+                        </span>
+                        <span *ngIf="loading" class="spinner"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>

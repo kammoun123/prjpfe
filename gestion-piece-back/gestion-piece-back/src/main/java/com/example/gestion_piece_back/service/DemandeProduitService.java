@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 import com.example.gestion_piece_back.repository.DemandeProduitRepository;
 import com.example.gestion_piece_back.repository.NotificationRepository;
 import com.example.gestion_piece_back.repository.UtilisateurRepository;
@@ -42,10 +43,15 @@ public class DemandeProduitService {
     @Autowired
     private FournisseurRepository fournisseurRepository;
 
+    @Transactional(readOnly = true)
     public List<DemandeProduit> getAllDemandes() {
-        return demandeProduitRepository.findAll();
+        List<DemandeProduit> demandes = demandeProduitRepository.findAll();
+        // Initialize lazy collection to avoid LazyInitializationException
+        demandes.forEach(d -> d.getLignes().size());
+        return demandes;
     }
 
+    @Transactional
     public DemandeProduit createDemande(DemandeProduit demande) {
         if (demande.getDateDemande() == null) {
             demande.setDateDemande(LocalDateTime.now());
@@ -121,10 +127,12 @@ public class DemandeProduitService {
         notificationRepository.save(notificationAdmin);
     }
 
+    @Transactional
     public void deleteDemande(Long id) {
         demandeProduitRepository.deleteById(id);
     }
 
+    @Transactional
     public DemandeProduit updateStatus(Long id, String statut) {
         DemandeProduit demande = demandeProduitRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
@@ -170,6 +178,7 @@ public class DemandeProduitService {
                     if (qtyToValidate > 0) {
                         MouvementStock mouvement = new MouvementStock();
                         mouvement.setProduit(produit);
+                        mouvement.setProduitId(produit.getIdProduit()); // Required for stock update
                         mouvement.setQuantite(qtyToValidate);
                         mouvement.setTypeMouvement("SORTIE");
                         mouvement.setMotif("Validation Demande - " + technicienNom + " (#" + id + ")");
@@ -282,6 +291,7 @@ public class DemandeProduitService {
         return saved;
     }
 
+    @Transactional
     public DemandeProduit transferToAdmin(Long id) {
         DemandeProduit demande = demandeProduitRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
@@ -289,6 +299,7 @@ public class DemandeProduitService {
         return demandeProduitRepository.save(demande);
     }
 
+    @Transactional
     public DemandeProduit commanderChezFournisseur(Long idDemande, Long idFournisseur,
             java.time.LocalDate dateLivraison) {
         DemandeProduit demande = demandeProduitRepository.findById(idDemande)

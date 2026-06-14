@@ -1,0 +1,101 @@
+<div class="layout-container">
+    <!-- Sidebar -->
+    <aside class="sidebar-pro">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">G-PIÈCES</span>
+                <span class="brand-role">Espace Contrôleur</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-label">TABLEAU DE BORD</div>
+            <a routerLink="/controleur" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+                <i class="bi bi-grid-1x2-fill"></i> Présentation
+            </a>
+
+            <div class="nav-label mt-4">INSPECTIONS</div>
+            <a routerLink="/controleur/inventories" routerLinkActive="active" class="nav-link">
+                <i class="bi bi-clipboard2-check-fill"></i> Inventaires
+            </a>
+            <a routerLink="/controleur/reports" routerLinkActive="active" class="nav-link">
+                <i class="bi bi-file-earmark-bar-graph-fill"></i> Rapports d'Audit
+            </a>
+
+            <div class="nav-label mt-4">COMPTE</div>
+            <a routerLink="/controleur/profile" routerLinkActive="active" class="nav-link">
+                <i class="bi bi-person-circle"></i> Mon Profil
+            </a>
+            <a (click)="logout()" class="nav-link logout-link">
+                <i class="bi bi-box-arrow-right"></i> Déconnexion
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info-card">
+                <div class="user-avatar">{{ getUserInitial() }}</div>
+                <div class="user-details">
+                    <span class="user-name">{{ getUserName() }}</span>
+                    <span class="user-role">Contrôleur Officiel</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar-pro">
+            <div class="topbar-left">
+                <h2 class="page-title">Console de Contrôle</h2>
+            </div>
+
+            <div class="topbar-right">
+                <!-- Notifications -->
+                <div class="notif-wrapper">
+                    <button class="topbar-btn" (click)="toggleNotifDropdown()">
+                        <i class="bi bi-bell-fill"></i>
+                        <span class="badge-count" *ngIf="unreadCount() > 0">{{ unreadCount() }}</span>
+                    </button>
+
+                    <!-- Dropdown -->
+                    <div class="notif-dropdown-layout glass-premium animate-fade-in" *ngIf="showNotifDropdown">
+                        <div class="nd-header">
+                            <span>Flux d'activités</span>
+                            <button class="btn-mark-all" (click)="markAllAsRead()" *ngIf="unreadCount() > 0">Tout lire</button>
+                        </div>
+                        <div class="nd-body">
+                            <div *ngIf="notifications().length === 0" class="nd-empty">
+                                <i class="bi bi-bell-slash"></i>
+                                <p>Rien à signaler</p>
+                            </div>
+                            <div *ngFor="let n of notifications()" class="nd-item" [class.unread]="n.statut === 'NON_LUE'" (click)="markAsRead(n)">
+                                <div class="nd-icon" [ngClass]="n.typeNotification || 'info'">
+                                    <i class="bi bi-info-circle"></i>
+                                </div>
+                                <div class="nd-text">
+                                    <p>{{ n.message }}</p>
+                                    <small>{{ n.dateCreation | date:'recent' }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <button class="support-btn">
+                    <i class="bi bi-lightning-charge-fill"></i> Support
+                </button>
+            </div>
+        </header>
+
+        <!-- Router Outlet -->
+        <main class="content-body">
+            <router-outlet></router-outlet>
+        </main>
+    </div>
+</div>
