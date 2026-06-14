@@ -113,4 +113,12 @@ export class AuthService {
   updateProfil(id: string, profil: Partial<Profil>): Observable<Profil> {
     return this.http.put<Profil>(`${environment.apiUrl}/users/${id}`, profil);
   }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, { token, newPassword });
+  }
 }
