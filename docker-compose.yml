@@ -3,11 +3,8 @@ services:
 
   # ===== BASE DE DONNÉES =====
   gestion-db:
-    build:
-      context: ./database
-      dockerfile: Dockerfile
     container_name: gestion-db
-    image: gestion-db:latest
+    image: kammounhamdi/gestion-db:latest
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
@@ -26,11 +23,8 @@ services:
 
   # ===== BACKEND =====
   gestion-backend:
-    build:
-      context: ./gestion-piece-back/gestion-piece-back
-      dockerfile: Dockerfile
     container_name: gestion-backend
-    image: gestion-backend:latest
+    image: kammounhamdi/gestion-backend:latest
     restart: always
     ports:
       - "8883:8883"
@@ -46,11 +40,8 @@ services:
 
   # ===== FRONTEND =====
   gestion-frontend:
-    build:
-      context: ./front
-      dockerfile: Dockerfile
     container_name: gestion-frontend
-    image: gestion-frontend:latest
+    image: kammounhamdi/gestion-frontend:latest
     restart: always
     ports:
       - "4200:80"
