@@ -138,7 +138,7 @@
               </div>
             </td>
             <td class="text-center"><span class="qty-badge">{{ row.quantite }}</span></td>
-            <td class="text-center">{{ row.commande.dateReceptionPrevue || 'Non définie' }}</td>
+            <td class="text-center">{{ (row.commande.dateReceptionPrevue | date:'dd/MM/yyyy') || 'Non définie' }}</td>
             <td class="text-end">
               <button class="btn-action-reception" *ngIf="row.commande.statut === 'EN_COURS'"
                 (click)="receptionner(row.commande)">

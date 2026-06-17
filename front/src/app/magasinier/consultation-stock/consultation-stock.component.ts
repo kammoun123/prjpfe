@@ -95,7 +95,8 @@ export class ConsultationStockComponent implements OnInit {
   saveAdjustment() {
     const piece = this.selectedPiece();
     if (piece && piece.idProduit) {
-      this.pieceService.updatePiece(piece.idProduit, { quantiteStock: this.newQuantity() }).subscribe(() => {
+      const updatedPiece = { ...piece, quantiteStock: this.newQuantity() };
+      this.pieceService.updatePiece(piece.idProduit, updatedPiece).subscribe(() => {
         this.loadPieces();
         this.closeModal();
       });

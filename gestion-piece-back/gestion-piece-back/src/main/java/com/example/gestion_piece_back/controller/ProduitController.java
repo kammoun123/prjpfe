@@ -39,6 +39,18 @@ public class ProduitController {
         return produitService.updateProduit(id, produit);
     }
 
+    @PatchMapping("/{id}")
+    public Produit patchProduit(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        Produit produit = produitService.getProduitById(id);
+        if (updates.containsKey("quantiteStock")) {
+            produit.setQuantiteStock(Integer.parseInt(updates.get("quantiteStock").toString()));
+        }
+        if (updates.containsKey("seuilAlerte")) {
+            produit.setSeuilAlerte(Integer.parseInt(updates.get("seuilAlerte").toString()));
+        }
+        return produitService.createProduit(produit);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduit(@PathVariable Long id) {
         produitService.deleteProduit(id);

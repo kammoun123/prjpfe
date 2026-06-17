@@ -17,6 +17,6 @@ export class PieceService {
     }
 
     updatePiece(id: number, data: any): Observable<Piece> {
-        return this.http.patch<Piece>(`${this.apiUrl}/${id}`, data);
+        return this.http.put<Piece>(`${this.apiUrl}/${id}`, data);
     }
 }

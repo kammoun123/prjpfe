@@ -28,6 +28,7 @@ com\example\gestion_piece_back\repository\FournisseurRepository.class
 com\example\gestion_piece_back\service\CommandeService.class
 com\example\gestion_piece_back\controller\ProduitController.class
 com\example\gestion_piece_back\controller\DemandeInscriptionController.class
+com\example\gestion_piece_back\config\WebConfig.class
 com\example\gestion_piece_back\repository\NotificationRepository.class
 com\example\gestion_piece_back\service\InventaireService.class
 com\example\gestion_piece_back\repository\MouvementStockRepository.class

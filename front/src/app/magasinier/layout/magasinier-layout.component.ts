@@ -1,5 +1,5 @@
-import { Component, inject, NgZone } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, NgZone, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../Services/auth.service';
 import { NotificationService } from '../../Services/notification.service';
@@ -298,17 +298,20 @@ export class MagasinierLayoutComponent {
   private intervalId: any;
 
   private ngZone = inject(NgZone);
+  private platformId = inject(PLATFORM_ID);
 
   ngOnInit() {
     this.refreshNotifs();
     // Poll every 10 seconds for real-time feel, outside Angular zone to prevent UI lag
-    this.ngZone.runOutsideAngular(() => {
-      this.intervalId = setInterval(() => {
-         if (!this.showNotifs) {
-           this.ngZone.run(() => this.refreshNotifs());
-         }
-      }, 10000);
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      this.ngZone.runOutsideAngular(() => {
+        this.intervalId = setInterval(() => {
+          if (!this.showNotifs) {
+            this.ngZone.run(() => this.refreshNotifs());
+          }
+        }, 10000);
+      });
+    }
   }
 
   ngOnDestroy() {

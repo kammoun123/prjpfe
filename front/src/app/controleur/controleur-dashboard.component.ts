@@ -88,7 +88,7 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadInitialData();
-    
+
     // Sync tab with URL
     const path = window.location.pathname;
     if (path.includes('inventories')) this.currentTab = 'inventories';
@@ -279,7 +279,7 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
     if (!this.isViewing) {
       const now = new Date();
       const isConforme = this.piecesReport.every(p => p.ecart === 0);
-      
+
       // Persist to database as an Inventaire record with lines
       const newInv: any = {
         dateDebut: now.toISOString(),
@@ -338,16 +338,16 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
       // --- HEADER ---
       doc.setFillColor(13, 148, 136); // Teal primary color
       doc.rect(0, 0, 210, 40, 'F');
-      
+
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(24);
       doc.text("G-PIÈCES", 20, 20);
-      
+
       doc.setFontSize(14);
       doc.setFont('helvetica', 'normal');
       doc.text("RAPPORT D'AUDIT DE STOCK", 20, 30);
-      
+
       doc.setFontSize(10);
       doc.text(`ID Rapport: #${reportId}`, 150, 20);
       doc.text(`Généré le: ${dateStr}`, 150, 28);
@@ -357,13 +357,13 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text("Informations Générales", 20, 55);
-      
+
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       doc.text(`Contrôleur : ${this.profil?.nom || ''} ${this.profil?.prenom || ''}`, 20, 65);
       doc.text(`Email : ${this.profil?.email || ''}`, 20, 72);
       doc.text(`Nombre d'articles : ${this.piecesReport.length}`, 140, 65);
-      
+
       const conforme = this.piecesReport.every(p => p.ecart === 0);
       doc.setTextColor(conforme ? 22 : 220, conforme ? 163 : 38, conforme ? 74 : 38);
       doc.setFont('helvetica', 'bold');
@@ -441,7 +441,7 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
 
   envoyerRapportGeneral() {
     const msg = `Rapport Général: ${this.totalStockUnits} unités en stock, ${this.alertCount} alertes actives.`;
-    
+
     // Save to database as an Inventaire record so others can see it
     const now = new Date();
     const newInv: Partial<Inventaire> = {
@@ -455,7 +455,7 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
       // Also add lines for the general report to ensure Admin sees the detailed state
       // Actually, if we want detailed lines, we should send them now.
       const id = savedInv.idInventaire || savedInv.id;
-      
+
       // Update the inventory with lines from piecesReport
       const lignes = this.pieces.map(p => ({
         produit: { idProduit: p.idProduit },
@@ -483,7 +483,7 @@ export class ControleurDashboardComponent implements OnInit, OnDestroy {
       titre: `Rapport Général du ${now.toLocaleDateString()}`,
       date: now.toISOString(),
       conforme: this.alertCount === 0,
-      data: [] 
+      data: []
     };
     this.rapports.unshift(newRapport);
     this.saveRapports();

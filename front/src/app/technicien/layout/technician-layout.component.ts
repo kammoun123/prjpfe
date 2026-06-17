@@ -29,9 +29,9 @@ export class TechnicianLayoutComponent implements OnInit {
     // Refresh every 10 seconds for real-time feel without UI lag
     this.ngZone.runOutsideAngular(() => {
       this.intervalId = setInterval(() => {
-         if (!this.showNotifDropdown) {
-           this.ngZone.run(() => this.refreshNotifs());
-         }
+        if (!this.showNotifDropdown) {
+          this.ngZone.run(() => this.refreshNotifs());
+        }
       }, 10000);
     });
   }
